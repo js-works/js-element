@@ -1,0 +1,3 @@
+# js-mojo
+
+Project is in a very, very early state .. tbc ...

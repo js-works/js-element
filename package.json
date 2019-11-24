@@ -1,0 +1,40 @@
+{
+  "name": "js-mojo",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook",
+    "build": "webpack --config webpack.config.js",
+    "demo": "webpack-dev-server --config webpack.demo.config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/js-works/js-mojo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/js-works/js-mojo/issues"
+  },
+  "homepage": "https://github.com/js-works/js-mojo#readme",
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/core": "^7.7.4",
+    "@babel/preset-env": "^7.7.4",
+    "@storybook/html": "^5.2.6",
+    "babel-core": "^6.26.3",
+    "babel-loader": "^8.0.6",
+    "babel-preset-es2015": "^6.24.1",
+    "compression-webpack-plugin": "^3.0.0",
+    "lit-html": "^1.1.2",
+    "terser-webpack-plugin": "^2.2.1",
+    "uglifyjs-webpack-plugin": "^2.2.0",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10",
+    "webpack-dev-server": "^3.9.0"
+  }
+}
