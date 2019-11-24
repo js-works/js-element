@@ -1,23 +1,33 @@
-import { component, prop, htm } from '../src/index.js'
+import { component, prop, htm, useOnMount, useOnRefresh, useState } from '../src/index.js'
 
 const Counter = component('Counter', {
   properties: {
-    a: prop.str.nul.opt('A'),
-    b: prop.num.req()
+    initialValue: prop.num.opt(0),
+    label: prop.str.opt('Counter')
   },
-  
+
   main(c, props) {
-    let count = 0
+    const 
+      [state, setState] = useState(c, {
+        count: props.initialValue
+      }),
 
-    setInterval(() => {console.log(count)
-      ++count
-      c.refresh()
-    }, 1000)
+      onIncrement = () => setState('count', it => it + 1)
 
-    return () =>
-      htm`<b>${count}</b>`
+    useOnMount(c, () => {
+      console.log('Mounted')
+    })
+
+    useOnRefresh(c, () => {
+      console.log('Refreshed')
+    })
+
+    return () => htm`
+      <label>${props.label}: </label>
+      <button @click=${onIncrement}>${state.count}</button>
+    `
   }
 })
 
-customElements.define('my-counter', Counter)
+Counter.register('my-counter')
 document.getElementById('app').innerHTML = '<my-counter a="B"/>'

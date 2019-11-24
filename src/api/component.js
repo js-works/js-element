@@ -1,6 +1,9 @@
-import checkComponentConfig from '../internal/checkComponentConfig'
+// external imports
 import { render as litRender } from 'lit-html'
 
+// internal imports
+import checkComponentConfig from '../internal/checkComponentConfig'
+import createNotifier from '../internal/createNotifier'
 export default function component(arg1, arg2) {
   const config = arg2 && typeof arg2 === 'object'
     ? { displayName: arg1, ...arg2 }
@@ -46,7 +49,7 @@ function generateCustomElementClass(config) {
   let
     defaultProps = null 
 
-  const ret = class extends BaseElement {
+  const CustomElement = class extends BaseElement {
     static get observedAttributes() {
       return attrNames
     }
@@ -60,9 +63,21 @@ function generateCustomElementClass(config) {
       if (config.render) {
         this._render = config.render(this._props)
       } else {
+        this._afterMountNotifier = createNotifier(),
+        this._beforeRefreshNotifier = createNotifier(),
+        this._afterRefreshNotifier = createNotifier()
+        this._beforeUnmountNotifier = createNotifier()
+
         const
-          c = { refresh: this._update.bind(this) },
-          render = config.main(c, this._props) // TODO: argument c
+          ctrl = {
+            refresh: () => this._update(),
+            afterMount: this._afterMountNotifier.subscribe,
+            beforeRefresh: this._beforeRefreshNotifier.subscribe,
+            afterRefresh: this._afterRefreshNotifier.subscribe,
+            beforeUnmount: this._beforeUnmountNotifier.subscribe
+          },
+
+          render = config.main(ctrl, this._props) // TODO: argument c
 
         this._render = render
       }
@@ -90,15 +105,22 @@ function generateCustomElementClass(config) {
     connectedCallback() {
       litRender(this._render(), this)
       this._initialized = true
+      this._afterMountNotifier.notify()
+      this._afterMountNotifier.clear()
+    }
+
+    disconnectedCallback() {
+      this._beforeUnmountNotifier.notify()
     }
 
     _update() {
       if (!this._updateTimeout) {
         this._updateTimeout = setTimeout(() => { // TODO
           this._updateTimeout = null
-
+          this._beforeRefreshNotifier.notify()
           const content = this._render(this._props)
           litRender(content, this)
+          this._afterRefreshNotifier.notify()
         }, 0)
       }
     }
@@ -128,7 +150,7 @@ function generateCustomElementClass(config) {
       defaultProps[propName] = propConfig.defaultValue // TODO!
     }
 
-    Object.defineProperty(ret.prototype, propName, {
+    Object.defineProperty(CustomElement.prototype, propName, {
       get() {
         return this._props[propName]
       },
@@ -143,7 +165,11 @@ function generateCustomElementClass(config) {
     })
   })
 
-  return ret
+  return {
+    register(tagName) {
+      customElements.define(tagName, CustomElement)
+    }
+  }
 }
 
 class BaseElement extends HTMLElement {

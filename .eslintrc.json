@@ -1,0 +1,34 @@
+{
+  "parserOptions": {
+    "ecmaVersion": 8,
+    "ecmaFeatures": {
+      "experimentalObjectRestSpread": true,
+      "jsx": true
+    },
+    "sourceType": "module"
+  },
+
+  "env": {
+    "es6": true,
+    "node": true
+  },
+
+  "globals": {
+    "document": false,
+    "navigator": false,
+    "window": false,
+    "console": false,
+    "alert": false
+  },
+
+  "extends": [
+    "eslint:recommended"
+  ],
+
+  "rules": {
+    "indent": ["error", 2],
+    "quotes": ["error", "single", { "avoidEscape": true }],
+    "semi": ["error", "never"],
+    "no-console": ["off"]
+  }
+}
