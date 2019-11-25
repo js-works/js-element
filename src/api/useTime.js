@@ -2,25 +2,23 @@ import supplier from './supplier'
 import useValue from './useValue'
 import useInterval from './useInterval'
 
-function useTime(c, delay, mapper) {
+function useTime(c, delay, getter = getDate) {
   const
     $delay = supplier(delay),
-    $mapper = mapper ? supplier(mapper) : null,
+    $getter = getter ? supplier(getter) : null,
   
-    [time, setTime] =
-      useValue(c, $mapper ? $mapper.get()(new Date()) : new Date())
+    [value, setValue] =
+      useValue(c, $getter.get())
 
   useInterval(c, () => {
-    let value = new Date()
-
-    if ($mapper) {
-      value = $mapper.get()(value)
-    }
-
-    setTime(value)
+    setValue($getter.get()())
   }, $delay)
 
-  return time
+  return value
+}
+
+function getDate() {
+  return new Date()
 }
 
 export default useTime

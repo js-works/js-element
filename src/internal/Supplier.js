@@ -3,12 +3,4 @@ export default class Supplier {
     this.get = getter
     this.map = mapper => mapper(getter())
   }
-
-  get() {
-    // will be overridden in constructor
-  }
-
-  map(map) { 
-    // will be overridden in constructor
-  }
 }

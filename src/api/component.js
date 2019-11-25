@@ -61,7 +61,7 @@ function generateCustomElementClass(config) {
       this._initialized = false
       
       if (config.render) {
-        this._render = config.render(this._props)
+        this._render = () => config.render(this._props)
       } else {
         this._afterMountNotifier = createNotifier(),
         this._beforeRefreshNotifier = createNotifier(),

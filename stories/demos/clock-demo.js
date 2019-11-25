@@ -2,7 +2,7 @@ import { htm, component, useTime } from '../../src/index'
 
 const ClockDemo = component('Clock', {
   main(c) {
-    const time = useTime(c, 1000, date => date.toLocaleTimeString())
+    const time = useTime(c, 1000, () => new Date().toLocaleTimeString())
 
     return () => htm` 
       <div>
