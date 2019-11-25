@@ -1,4 +1,4 @@
-import { htm, component } from '../../src/index'
+import { h, component } from '../../src/index'
 
 const demoContent = {
   [Symbol.iterator]: function * () {
@@ -34,17 +34,17 @@ const demoContent = {
 }
 
 const IteratorDemo = component('IteratorDemo', {
-  render() {
-    return htm` 
+  render () {
+    return ( 
       <div>
         <div>
             If everything works fine then the following line shall be:
             "<i>Iterators seem to work properly!</i>"
         </div>
         <br/>
-        <div>&gt;&gt; ${demoContent}</div>
+        <div>&gt;&gt; {demoContent}</div>
       </div>
-    ` 
+    )
   }
 })
 

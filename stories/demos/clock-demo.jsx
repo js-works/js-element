@@ -1,14 +1,14 @@
-import { htm, component, useTime } from '../../src/index'
+import { h, component, useTime } from '../../src/index'
 
 const ClockDemo = component('Clock', {
   main(c) {
     const time = useTime(c, 1000, () => new Date().toLocaleTimeString())
 
-    return () => htm` 
+    return () => ( 
       <div>
-        Current time: ${time.value}
+        Current time: {time.value}
       </div>
-    `
+    )
   }
 })
 

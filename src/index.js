@@ -1,6 +1,6 @@
 export { default as component } from './api/component'
 export { default as prop } from './api/prop'
-export { default as htm } from './api/htm'
+export { default as h } from './api/h'
 export { default as supply } from './api/supply'
 export { default as supplier } from './api/supplier'
 

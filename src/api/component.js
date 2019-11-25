@@ -1,5 +1,9 @@
 // external imports
-import { render as litRender } from 'lit-html'
+import {
+  h,
+  render as preactRender,
+  Component as PreactComponent
+} from 'preact'
 
 // internal imports
 import checkComponentConfig from '../internal/checkComponentConfig'
@@ -56,12 +60,15 @@ function generateCustomElementClass(config) {
 
     constructor() {
       super()
+
+      const self = this
+
       this._updateTimeout = null
       this._props = defaultProps ? Object.assign({}, defaultProps) : {}
       this._initialized = false
       
       if (config.render) {
-        this._render = () => config.render(this._props)
+        this._render = config.render.bind(null, this._props)
       } else {
         this._afterMountNotifier = createNotifier(),
         this._beforeRefreshNotifier = createNotifier(),
@@ -77,10 +84,19 @@ function generateCustomElementClass(config) {
             beforeUnmount: this._beforeUnmountNotifier.subscribe
           },
 
-          render = config.main(ctrl, this._props) // TODO: argument c
+        render = config.main(ctrl, this._props)
 
         this._render = render
+        this._forceUpdate = null // will be set below
       }
+      this._preactComponent = class extends PreactComponent {
+        constructor(arg) {
+          super(arg)
+          self._forceUpdate = () => this.forceUpdate()
+        }
+      }
+
+      this._preactComponent.prototype.render = this._render
     }
 
     getAttribute(attrName) {
@@ -103,26 +119,29 @@ function generateCustomElementClass(config) {
     }
 
     connectedCallback() {
-      litRender(this._render(), this)
+      preactRender(h(this._preactComponent), this)
       this._initialized = true
-      this._afterMountNotifier.notify()
-      this._afterMountNotifier.clear()
+
+      if (config.main) {
+        this._afterMountNotifier.notify()
+        this._afterMountNotifier.clear()
+      }
     }
 
     disconnectedCallback() {
-      this._beforeUnmountNotifier.notify()
+      if (config.main) {
+        this._beforeUnmountNotifier.notify()
+      }
+
+      preactRender(null, this)
     }
 
     _update() {
-      if (!this._updateTimeout) {
-        this._updateTimeout = setTimeout(() => { // TODO
-          this._updateTimeout = null
-          this._beforeRefreshNotifier.notify()
-          const content = this._render(this._props)
-          litRender(content, this)
-          this._afterRefreshNotifier.notify()
-        }, 0)
-      }
+      this._beforeRefreshNotifier.notify()
+
+      this._forceUpdate(() => {
+        this._afterRefreshNotifier.notify()
+      })
     }
   }
 

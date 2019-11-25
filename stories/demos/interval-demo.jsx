@@ -1,4 +1,4 @@
-import { htm, component, supply, useInterval, useState } from '../../src/index'
+import { h, component, supply, useInterval, useState } from '../../src/index'
 
 const IntervalDemo = component('IntervalDemo', {
   main(c) {
@@ -20,15 +20,14 @@ const IntervalDemo = component('IntervalDemo', {
       }
     }, 1000)
 
-    return () => htm`
+    return () => 
       <div>
-        <h1>Counter: ${state.count}</h1>
-        <h4>Delay: ${state.delay}</h4>
-        <button @click=${onReset}>
+        <h1>Counter: {state.count}</h1>
+        <h4>Delay: {state.delay}</h4>
+        <button onClick={onReset}>
           Reset delay
         </button>
       </div>
-    `
   }
 })
 

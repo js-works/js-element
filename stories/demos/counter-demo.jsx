@@ -1,4 +1,4 @@
-import { component, prop, htm, useEffect, useOnMount, useOnRefresh, useState } from '../../src/index'
+import { h, component, prop, useEffect, useOnMount, useOnRefresh, useState } from '../../src/index'
 
 const CounterDemo = component('CounterDemo', {
   properties: {
@@ -29,11 +29,13 @@ const CounterDemo = component('CounterDemo', {
       console.log(`New value of counter "${props.label}": ${state.count}`)
     }, () => [state.count])
 
-    return () => htm`
-      <h3>Counter demo</h3>
-      <label>${props.label}: </label>
-      <button @click=${onIncrement}>${state.count}</button>
-    `
+    return () => (
+      <div>
+        <h3>Counter demo</h3>
+        <label>{props.label}: </label>
+        <button onClick={onIncrement}>{state.count}</button>
+      </div>
+    )
   }
 })
 

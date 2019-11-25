@@ -1,4 +1,4 @@
-import { htm, component, useState, useOnMount } from '../../src/index'
+import { h, component, useState, useOnMount } from '../../src/index'
 
 const MouseDemo = component('Demo', {
   main(c) {
@@ -6,11 +6,12 @@ const MouseDemo = component('Demo', {
 
     return () => {
       return mousePos.x === -1
-        ? htm`<div>Please move mouse ...</div>`
-        : htm`
-            <div>
-              Current mouse position: ${mousePos.x}x${mousePos.y}
-            </div>`
+        ? <div>Please move mouse ...</div>
+        : (
+          <div>
+            Current mouse position: {mousePos.x}x{mousePos.y}
+          </div>
+        )
     }
   }
 })
