@@ -1,4 +1,4 @@
-import { component, prop, htm, useEffect, useOnMount, useOnRefresh, useState } from '../../src/index.js'
+import { component, prop, htm, useEffect, useOnMount, useOnRefresh, useState } from '../../src/index'
 
 const CounterDemo = component('CounterDemo', {
   properties: {

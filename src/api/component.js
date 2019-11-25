@@ -40,7 +40,7 @@ export default function component(arg1, arg2) {
 
 function generateCustomElementClass(config) {
   const
-    propNames = Object.keys(config.properties),
+    propNames = config.properties ? Object.keys(config.properties) : [],
     attrNames = [],
     attrConverters = {},
     propNameByAttrName = {},
