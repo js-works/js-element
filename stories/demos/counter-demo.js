@@ -6,6 +6,9 @@ const CounterDemo = component('CounterDemo', {
     label: prop.str.opt('Counter')
   },
 
+  // eventNames: ['change']
+  // methodNames: ['focus', 'reset']
+
   main(c, props) {
     const 
       [state, setState] = useState(c, {

@@ -2,16 +2,15 @@
 
 A R&D project to evaluate an alternative approach to define custom components.
 
-Disclaimer:
+#### Disclaimer:
 
 Project is in a very, very early state ...
-and btw: It will never be meant be used in production.
+and btw: It will never be meant to be used in production.
 
 ## Example
 
 ```js
-import { component, prop, htm, useEffect, useOnMount, useOnRefresh, useState }
-  from 'js-mojo'
+import { component, prop, htm, useEffect, useOnMount, useOnRefresh, useState } from 'js-mojo'
 
 const Counter = component('Counter', {
   properties: {
