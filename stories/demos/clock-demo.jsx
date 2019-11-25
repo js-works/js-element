@@ -4,11 +4,10 @@ const ClockDemo = component('Clock', {
   main(c) {
     const time = useTime(c, 1000, () => new Date().toLocaleTimeString())
 
-    return () => ( 
+    return () => 
       <div>
         Current time: {time.value}
       </div>
-    )
   }
 })
 

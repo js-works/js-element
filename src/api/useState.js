@@ -15,7 +15,7 @@ export default function useState(c, initialState) {
         })
       } 
 
-      const unsubscribe = c.beforeRefresh(() => {
+      const unsubscribe = c.beforeUpdate(() => {
         unsubscribe()
 
         Object.assign(state, typeof updater === 'function'
@@ -24,7 +24,7 @@ export default function useState(c, initialState) {
         )
       })
 
-      c.refresh()
+      c.update()
     }
 
   return [state, setState]

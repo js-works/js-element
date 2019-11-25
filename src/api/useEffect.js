@@ -19,7 +19,7 @@ export default function useEffect(c, action, getDeps) {
   }
 
   c.afterMount(callback)
-  c.afterRefresh(callback)
+  c.afterUpdate(callback)
 }
 
 // --- locals -------------------------------------------------------

@@ -66,37 +66,58 @@ function generateCustomElementClass(config) {
       this._updateTimeout = null
       this._props = defaultProps ? Object.assign({}, defaultProps) : {}
       this._initialized = false
+      this._update = () => {} // will be updated later
       
       if (config.render) {
         this._render = config.render.bind(null, this._props)
       } else {
         this._afterMountNotifier = createNotifier(),
-        this._beforeRefreshNotifier = createNotifier(),
-        this._afterRefreshNotifier = createNotifier()
+        this._beforeUpdateNotifier = createNotifier(),
+        this._afterUpdateNotifier = createNotifier()
         this._beforeUnmountNotifier = createNotifier()
 
         const
           ctrl = {
-            refresh: () => this._update(),
+            update: () => this._update(),
             afterMount: this._afterMountNotifier.subscribe,
-            beforeRefresh: this._beforeRefreshNotifier.subscribe,
-            afterRefresh: this._afterRefreshNotifier.subscribe,
+            beforeUpdate: this._beforeUpdateNotifier.subscribe,
+            afterUpdate: this._afterUpdateNotifier.subscribe,
             beforeUnmount: this._beforeUnmountNotifier.subscribe
-          },
+          }
 
-        render = config.main(ctrl, this._props)
-
-        this._render = render
+        this._render = config.main(ctrl, this._props)
         this._forceUpdate = null // will be set below
       }
       this._preactComponent = class extends PreactComponent {
         constructor(arg) {
           super(arg)
-          self._forceUpdate = () => this.forceUpdate()
+
+          self._update = () => {
+            this.forceUpdate()
+          }
+        }
+
+        componentDidMount() {
+          self._afterMountNotifier.notify()
+          self._afterMountNotifier.clear()
+          self._initialized = true
+        }
+        componentDidUpdate() {
+          self._afterUpdateNotifier.notify()
+        }
+
+        componentWillUnmount() {
+          self._beforeUnmountNotifier.notify()
+        }
+
+        render() {
+          if (self._initialized) {
+            self._beforeUpdateNotifier.notify()
+          }
+
+          return self._render()
         }
       }
-
-      this._preactComponent.prototype.render = this._render
     }
 
     getAttribute(attrName) {
@@ -121,27 +142,10 @@ function generateCustomElementClass(config) {
     connectedCallback() {
       preactRender(h(this._preactComponent), this)
       this._initialized = true
-
-      if (config.main) {
-        this._afterMountNotifier.notify()
-        this._afterMountNotifier.clear()
-      }
     }
 
     disconnectedCallback() {
-      if (config.main) {
-        this._beforeUnmountNotifier.notify()
-      }
-
       preactRender(null, this)
-    }
-
-    _update() {
-      this._beforeRefreshNotifier.notify()
-
-      this._forceUpdate(() => {
-        this._afterRefreshNotifier.notify()
-      })
     }
   }
 

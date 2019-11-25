@@ -1,4 +1,4 @@
-import { h, component, prop, useEffect, useOnMount, useOnRefresh, useState } from '../../src/index'
+import { h, component, prop, useEffect, useOnMount, useOnUpdate, useState } from '../../src/index'
 
 const CounterDemo = component('CounterDemo', {
   properties: {
@@ -21,8 +21,8 @@ const CounterDemo = component('CounterDemo', {
       console.log('Component has been mounted mounted')
     })
 
-    useOnRefresh(c, () => {
-      console.log('Component has been refreshed')
+    useOnUpdate(c, () => {
+      console.log('Component has been updateed')
     })
 
     useEffect(c, () => {
