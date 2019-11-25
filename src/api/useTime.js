@@ -8,7 +8,7 @@ function useTime(c, delay, getter = getDate) {
     $getter = getter ? supplier(getter) : null,
   
     [value, setValue] =
-      useValue(c, $getter.get())
+      useValue(c, $getter.get()())
 
   useInterval(c, () => {
     setValue($getter.get()())
