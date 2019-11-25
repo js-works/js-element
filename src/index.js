@@ -3,6 +3,7 @@ export { default as prop } from './api/prop'
 export { default as htm } from './api/htm'
 
 // hooks
+export { default as useEffect } from './api/useEffect'
 export { default as useOnMount } from './api/useOnMount'
 export { default as useOnRefresh } from './api/useOnRefresh'
 export { default as useOnUnmount } from './api/useOnUnmount'

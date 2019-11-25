@@ -1,6 +1,6 @@
-import { component, prop, htm, useOnMount, useOnRefresh, useState } from '../src/index.js'
+import { component, prop, htm, useEffect, useOnMount, useOnRefresh, useState } from '../../src/index.js'
 
-const Counter = component('Counter', {
+const CounterDemo = component('CounterDemo', {
   properties: {
     initialValue: prop.num.opt(0),
     label: prop.str.opt('Counter')
@@ -15,19 +15,23 @@ const Counter = component('Counter', {
       onIncrement = () => setState('count', it => it + 1)
 
     useOnMount(c, () => {
-      console.log('Mounted')
+      console.log('Component has been mounted mounted')
     })
 
     useOnRefresh(c, () => {
-      console.log('Refreshed')
+      console.log('Component has been refreshed')
     })
 
+    useEffect(c, () => {
+      console.log(`New value of counter "${props.label}": ${state.count}`)
+    }, () => [state.count])
+
     return () => htm`
+      <h3>Counter demo</h3>
       <label>${props.label}: </label>
       <button @click=${onIncrement}>${state.count}</button>
     `
   }
 })
 
-Counter.register('my-counter')
-document.getElementById('app').innerHTML = '<my-counter a="B"/>'
+CounterDemo.register('counter-demo')
