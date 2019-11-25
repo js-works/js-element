@@ -140,7 +140,8 @@ function generateCustomElementClass(config) {
     }
 
     connectedCallback() {
-      preactRender(h(this._preactComponent), this)
+      this.attachShadow({ mode: 'open' });
+      preactRender(h(this._preactComponent), this.shadowRoot)
       this._initialized = true
     }
 
