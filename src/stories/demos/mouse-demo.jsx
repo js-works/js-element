@@ -1,4 +1,4 @@
-import { html, component, useState, useEffect } from '../../src/index'
+import { html, component, useState, useEffect } from '../../main/index'
 
 component('mouse-demo', {
   main(c) {

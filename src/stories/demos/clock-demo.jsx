@@ -1,4 +1,4 @@
-import { html, component, useTime } from '../../src/index'
+import { html, component, useTime } from '../../main/index'
 
 component('clock-demo', {
   main(c) {

@@ -1,4 +1,4 @@
-import { html, component } from '../../src/index'
+import { html, component } from '../../main/index'
 
 const demoContent = {
   [Symbol.iterator]: function * () {

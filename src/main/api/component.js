@@ -2,6 +2,7 @@
 import { render as litRender } from 'lit-html'
 
 // internal imports
+import hasOwnProp from '../internal/hasOwnProp'
 import checkComponentConfig from '../internal/checkComponentConfig'
 import createNotifier from '../internal/createNotifier'
 export default function component(name, config) {
@@ -75,8 +76,9 @@ function generateCustomElementClass(config) {
     }
 
     connectedCallback() {
-
       let
+        mounted = false,
+        isRendering = true,
         root,
         render,
         update,
@@ -102,6 +104,8 @@ function generateCustomElementClass(config) {
 
         const ctrl = {
           getRoot: () => root,
+          isMounted: () => mounted,
+          isRendering: () => isRendering,
           update: () => update && update(),
           afterMount: afterMountNotifier.subscribe,
           beforeUpdate: beforeUpdateNotifier.subscribe,
@@ -114,15 +118,30 @@ function generateCustomElementClass(config) {
         })
       }
 
+
       const { update: forceUpdate, unmount } = mountComponent(
         root,
         render,
-        afterMountNotifier && afterMountNotifier.notify,
-        beforeUpdateNotifier && beforeUpdateNotifier.notify,
-        afterUpdateNotifier && afterUpdateNotifier.notify,
+
+        () => {
+          isRendering = false
+          afterMountNotifier && afterMountNotifier.notify()
+        },
+        
+        () => {
+          isRendering = true 
+          beforeUpdateNotifier && beforeUpdateNotifier.notify()
+        },
+
+        () => {
+          isRendering = false
+          afterUpdateNotifier && afterUpdateNotifier.notify()
+        },
+
         beforeUnmountNotifier && beforeUnmountNotifier.notify
       )
 
+      mounted = true
       update = forceUpdate
       this._unmount = unmount
     }
@@ -151,7 +170,7 @@ function generateCustomElementClass(config) {
       attrNameByPropName[propName] = attrName
     }
 
-    if (propConfig.hasOwnProperty('defaultValue')) {
+    if (hasOwnProp(propConfig, 'defaultValue')) {
       defaultProps = defaultProps || {}
       defaultProps[propName] = propConfig.defaultValue // TODO!
     }
@@ -215,7 +234,7 @@ function mountComponent(
     update = () => {
       mounted && doBeforeUpdate && doBeforeUpdate()
       litRender(getContent(), target)
-      doAfterUpdate && doAfterUpdate()
+      mounted && doAfterUpdate && doAfterUpdate()
     },
 
     unmount = () => {

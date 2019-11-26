@@ -1,4 +1,4 @@
-import { html, component, prop, useEffect, useState } from '../../src/index'
+import { html, component, prop, useEffect, useState } from '../../main/index'
 
 component('simple-counter-demo', {
   props: {
@@ -15,7 +15,7 @@ component('simple-counter-demo', {
       onIncrement = () => setState('count', it => it + 1)
 
     useEffect(c, () => {
-      console.log('Component has been mounted mounted')
+      console.log('Component has been mounted')
       
       return () => console.log('Component will be umounted')
     }, null)

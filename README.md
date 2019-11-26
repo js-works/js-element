@@ -10,7 +10,7 @@ and btw: It will never be meant to be used in production.
 ## Example
 
 ```js
-import { component, html, prop, useEffect, useOnMount, useOnUpdate, useState } from 'js-mojo'
+import { component, html, prop, useEffect, useState } from 'js-mojo'
 
 // custom element will automatically be registered as 'my-counter' 
 
@@ -28,13 +28,9 @@ component('my-counter', {
 
       onIncrement = () => setState('count', it => it + 1)
 
-    useOnMount(c, () => {
-      console.log('Component has been mounted mounted')
-    })
-
-    useOnUpdate(c, () => {
-      console.log('Component has been updated')
-    })
+    useEffect(c, () => {
+      console.log('Component has been mounted')
+    }, null)
 
     useEffect(c, () => {
       console.log(`New value of counter "${props.label}": ${state.count}`)

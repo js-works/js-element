@@ -1,4 +1,4 @@
-import { html, component, supply, useInterval, useState } from '../../src/index'
+import { html, component, supply, useInterval, useState } from '../../main/index'
 
 component('interval-demo', {
   main(c) {

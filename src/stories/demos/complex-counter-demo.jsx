@@ -1,4 +1,4 @@
-import { html, component, prop, useEffect, useElementRef, useState } from '../../src/index'
+import { html, component, prop, useEffect, useElementRef, useState } from '../../main/index'
 
 component('complex-counter', {
   props: {

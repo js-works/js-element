@@ -1,4 +1,4 @@
-import hasOwnProp from '../internal/hasOwnProp'
+import hasOwnProp from './hasOwnProp'
 
 const
   ALLOWED_COMPONENT_CONFIG_KEYS = ['props', 'methods', 'shadow', 'render', 'main'],
