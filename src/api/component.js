@@ -26,7 +26,7 @@ export default function component(name, config) {
 
 function generateCustomElementClass(config) {
   const
-    propNames = config.properties ? Object.keys(config.properties) : [],
+    propNames = config.props ? Object.keys(config.props) : [],
     attrNames = [],
     attrConverters = {},
     propNameByAttrName = {},
@@ -115,7 +115,7 @@ function generateCustomElementClass(config) {
 
   propNames.forEach(propName => {
     const
-      propConfig = config.properties[propName],
+      propConfig = config.props[propName],
       type = propConfig.type
 
     if (type === Boolean || type === Number || type === String) {

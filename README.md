@@ -12,8 +12,10 @@ and btw: It will never be meant to be used in production.
 ```js
 import { component, htm, prop, useEffect, useOnMount, useOnUpdate, useState } from 'js-mojo'
 
-const Counter = component('Counter', {
-  properties: {
+// custom element will automatically be registered as 'my-counter' 
+
+component('my-counter', {
+  props: {
     initialValue: prop.num.opt(0),
     label: prop.str.opt('Counter')
   },
@@ -46,6 +48,4 @@ const Counter = component('Counter', {
     `
   }
 })
-
-Counter.register('simple-counter') // register as custom element
 ```

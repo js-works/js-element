@@ -1,5 +1,5 @@
 const
-  ALLOWED_COMPONENT_CONFIG_KEYS = ['displayName', 'properties', 'main', 'render'],
+  ALLOWED_COMPONENT_CONFIG_KEYS = ['displayName', 'props', 'main', 'render'],
   ALLOWED_PROPERTY_CONFIG_KEYS = ['type', 'nullable', 'required', 'defaultValue'],
   ALLOWED_PROPERTY_TYPES = [Boolean, Number, String, Object, Function],
   REGEX_PROPERTY_NAME = /^[a-z][a-zA-Z0-9]*$/
@@ -8,7 +8,7 @@ export default function checkComponentConfig(config) {
   const
     render = getParam(config, 'render', 'function'),
     main = getParam(config, 'main', 'function'),
-    properties = getParam(config, 'properties', 'object')
+    props = getParam(config, 'props', 'object')
 
   ifInvalidKey(config, ALLOWED_COMPONENT_CONFIG_KEYS, key => {
     throw `Invalid component configuration parameter ${key}`
@@ -22,8 +22,8 @@ export default function checkComponentConfig(config) {
     throw 'Component configuration must either have a parameter "render" or a parameter "main"'
   }
 
-  if (properties) {
-    checkProperties(properties)
+  if (props) {
+    checkProps(props)
   }
 }
 
@@ -52,14 +52,14 @@ function ifInvalidKey(obj, allowedKeys, fn) {
   }
 }
 
-function checkProperties(properties) {
-  for (const key in properties) {
-    if (hasOwnProp(properties, key)) {
+function checkProps(props) {
+  for (const key in props) {
+    if (hasOwnProp(props, key)) {
       if (!REGEX_PROPERTY_NAME.test(key)) {
         throw `Illegal property name "${key}"`
       }
 
-      checkPropertyConfig(key, properties[key])
+      checkPropertyConfig(key, props[key])
     }
   }
 }

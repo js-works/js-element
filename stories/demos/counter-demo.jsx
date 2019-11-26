@@ -1,7 +1,7 @@
 import { htm, component, prop, useEffect, useOnMount, useOnUpdate, useState } from '../../src/index'
 
 component('counter-demo', {
-  properties: {
+  props: {
     initialValue: prop.num.opt(0),
     label: prop.str.opt('Counter')
   },
