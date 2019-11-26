@@ -10,7 +10,7 @@ and btw: It will never be meant to be used in production.
 ## Example
 
 ```js
-import { component, h, prop, useEffect, useOnMount, useOnUpdate, useState } from 'js-mojo'
+import { component, htm, prop, useEffect, useOnMount, useOnUpdate, useState } from 'js-mojo'
 
 const Counter = component('Counter', {
   properties: {
@@ -38,11 +38,12 @@ const Counter = component('Counter', {
       console.log(`New value of counter "${props.label}": ${state.count}`)
     }, () => [state.count])
 
-    return () =>
+    return () => htm`
       <div> 
         <label>${props.label}: </label>
-        <button onclick={onIncrement}>{state.count}</button>
+        <button onclick=${onIncrement}>${state.count}</button>
       </div>
+    `
   }
 })
 

@@ -1,36 +1,18 @@
-// external imports
-import {
-  h,
-  render as preactRender,
-  Component as PreactComponent
-} from 'preact'
+// external import
+import { render as litRender } from 'lit-html'
 
 // internal imports
 import checkComponentConfig from '../internal/checkComponentConfig'
 import createNotifier from '../internal/createNotifier'
-export default function component(arg1, arg2) {
-  const config = arg2 && typeof arg2 === 'object'
-    ? { displayName: arg1, ...arg2 }
-    : arg1
-
+export default function component(name, config) {
   if (process.env.NODE_ENV === 'development') {
     try {
-      if (arguments.length > 1) {
-        if (typeof arg1 !== 'string') {
-          throw 'String expected as first argument'
-        }
+      if (typeof name !== 'string') {
+        throw 'String expected as first argument'
+      }
 
-        if (!arg2 || typeof arg2 !== 'object') {
-          throw 'Object expected as second argument'
-        }
-
-        if (arg2.hasOwnProperty('displayName')) {
-          throw 'Unexpected component configuration parameter "displayName"'
-        }
-      } else {
-        if (!arg1 || typeof arg1 !== 'object') {
-          throw 'Expected object as first argument'
-        }
+      if (typeof config !== 'object') {
+        throw 'Object expected as second argument'
       }
 
       checkComponentConfig(config)
@@ -39,7 +21,7 @@ export default function component(arg1, arg2) {
     }
   }
 
-  return generateCustomElementClass(config)
+  customElements.define(name, generateCustomElementClass(config))
 }
 
 function generateCustomElementClass(config) {
@@ -65,14 +47,14 @@ function generateCustomElementClass(config) {
     }
 
     getAttribute(attrName) {
-       const
-         propName = attrNameByPropName[attrName],
-         val = this._props[propName],
-         converter = attrConverters[attrName]
+      const
+        propName = attrNameByPropName[attrName],
+        val = this._props[propName],
+        converter = attrConverters[attrName]
 
-       return (val === undefined || val === null)
-         ? val
-         : (converter ? converter.toString(val) : val.toString())
+      return (val === undefined || val === null)
+        ? val
+        : (converter ? converter.toString(val) : val.toString())
     }
 
     attributeChangedCallback(attrName, oldValue, newValue) {
@@ -170,11 +152,7 @@ function generateCustomElementClass(config) {
     })
   })
 
-  return {
-    register(tagName) {
-      customElements.define(tagName, CustomElement)
-    }
-  }
+  return CustomElement
 }
 
 class BaseElement extends HTMLElement {
@@ -206,46 +184,29 @@ const
 
 function mountComponent(
   target,
-  render,
+  getContent,
   doAfterMount,
   doBeforeUpdate,
   doAfterUpdate, 
   doBeforeUnmount
 ) {
-  let preactComponentInstance = null
+  let mounted = false
 
-  const CustomPreactComponent = class extends PreactComponent {
-    constructor(arg) {
-      super(arg)
-      this._mounted = false
-      preactComponentInstance = this
-    }
-
-    componentDidMount() {
-      this._mounted = true
-      doAfterMount && doAfterMount()
-    }
-    componentDidUpdate() {
+  const
+    update = () => {
+      mounted && doBeforeUpdate && doBeforeUpdate()
+      litRender(getContent(), target)
       doAfterUpdate && doAfterUpdate()
+    },
+
+    unmount = () => {
+      doBeforeUnmount && doBeforeUnmount()
+      target.innerHtml = ''
     }
 
-    componentWillUnmount() {
-      doBeforeUnmount && doBeforeUnmount() 
-    }
+  update()
+  mounted = true
+  doAfterMount && doAfterMount()
 
-    render() {
-      if (this._mounted) {
-        doBeforeUpdate && doBeforeUpdate()
-      }
-
-      return render()
-    }
-  }
-
-  preactRender(h(CustomPreactComponent), target)
-
-  return {
-    update: () => preactComponentInstance.forceUpdate(),
-    unmount: () => preactRender(null, target)
-  }
+  return { update, unmount }
 }

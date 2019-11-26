@@ -1,6 +1,6 @@
-import { h, component, prop, useEffect, useOnMount, useOnUpdate, useState } from '../../src/index'
+import { htm, component, prop, useEffect, useOnMount, useOnUpdate, useState } from '../../src/index'
 
-const CounterDemo = component('CounterDemo', {
+component('counter-demo', {
   properties: {
     initialValue: prop.num.opt(0),
     label: prop.str.opt('Counter')
@@ -29,14 +29,12 @@ const CounterDemo = component('CounterDemo', {
       console.log(`New value of counter "${props.label}": ${state.count}`)
     }, () => [state.count])
 
-    return () => (
+    return () => htm`
       <div>
         <h3>Counter demo</h3>
-        <label>{props.label}: </label>
-        <button onClick={onIncrement}>{state.count}</button>
+        <label>${props.label}: </label>
+        <button @click=${onIncrement}>${state.count}</button>
       </div>
-    )
+    `
   }
 })
-
-CounterDemo.register('counter-demo')

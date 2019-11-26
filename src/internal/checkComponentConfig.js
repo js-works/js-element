@@ -2,23 +2,13 @@ const
   ALLOWED_COMPONENT_CONFIG_KEYS = ['displayName', 'properties', 'main', 'render'],
   ALLOWED_PROPERTY_CONFIG_KEYS = ['type', 'nullable', 'required', 'defaultValue'],
   ALLOWED_PROPERTY_TYPES = [Boolean, Number, String, Object, Function],
-  REGEX_DISPLAY_NAME = /^[A-Z][a-zA-Z0-9]*$/,
   REGEX_PROPERTY_NAME = /^[a-z][a-zA-Z0-9]*$/
 
 export default function checkComponentConfig(config) {
   const
-    displayName = getParam(config, 'displayName', 'string'),
     render = getParam(config, 'render', 'function'),
     main = getParam(config, 'main', 'function'),
     properties = getParam(config, 'properties', 'object')
-
-  if (displayName === undefined) {
-    throw 'Missing parameter "displayName"'
-  }
-
-  if (!REGEX_DISPLAY_NAME.test(displayName)) {
-    throw 'Illegal parameter "displayName"'
-  }
 
   ifInvalidKey(config, ALLOWED_COMPONENT_CONFIG_KEYS, key => {
     throw `Invalid component configuration parameter ${key}`
@@ -40,7 +30,7 @@ export default function checkComponentConfig(config) {
 function getParam(config, paramName, type) {
   let ret
 
-  if (config.hasOwnProperty(paramName)) {
+  if (hasOwnProp(config, paramName)) {
     ret = config[paramName]
 
     if (type && typeof ret !== type) {
@@ -53,7 +43,7 @@ function getParam(config, paramName, type) {
 
 function ifInvalidKey(obj, allowedKeys, fn) {
   for (const key in obj) {
-    if (obj.hasOwnProperty(key)) {
+    if (hasOwnProp(obj, key)) {
       if (allowedKeys.indexOf(key) === -1) {
         fn(key)
         break
@@ -64,7 +54,7 @@ function ifInvalidKey(obj, allowedKeys, fn) {
 
 function checkProperties(properties) {
   for (const key in properties) {
-    if (properties.hasOwnProperty(key)) {
+    if (hasOwnProp(properties, key)) {
       if (!REGEX_PROPERTY_NAME.test(key)) {
         throw `Illegal property name "${key}"`
       }
@@ -84,15 +74,19 @@ function checkPropertyConfig(propName, propConfig) {
     nullable = getParam(propConfig, 'nullable', 'boolean'),
     required = getParam(propConfig, 'required', 'boolean')
 
-  if (required === true && propConfig.hasOwnProperty('defaultValue')) {
+  if (required === true && hasOwnProp(propConfig, 'defaultValue')) {
     throw `Unexpected parameter "defaultValue" from property "${propName}"`
   }
 
   if (type && ALLOWED_PROPERTY_TYPES.indexOf(type) === -1) {
-    throw `Illegal parameter "${key}" for property "${propName}"`
+    throw `Illegal parameter "type" for property "${propName}"`
   }
 
   if (nullable && !type) {
-    throw `Unexpected parameter "${key}" for property "${propName}"`
+    throw `Unexpected parameter "nullable" for property "${propName}"`
   }
+}
+
+function hasOwnProp(obj, propName) {
+  return Object.prototype.hasOwnProperty.call(obj, propName)
 }
