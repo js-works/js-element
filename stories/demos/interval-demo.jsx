@@ -1,4 +1,4 @@
-import { htm, component, supply, useInterval, useState } from '../../src/index'
+import { html, component, supply, useInterval, useState } from '../../src/index'
 
 component('interval-demo', {
   main(c) {
@@ -20,7 +20,7 @@ component('interval-demo', {
       }
     }, 1000)
 
-    return () => htm`
+    return () => html`
       <div>
         <h1>Counter: ${state.count}</h1>
         <h4>Delay: ${state.delay}</h4>

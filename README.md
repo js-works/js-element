@@ -10,7 +10,7 @@ and btw: It will never be meant to be used in production.
 ## Example
 
 ```js
-import { component, htm, prop, useEffect, useOnMount, useOnUpdate, useState } from 'js-mojo'
+import { component, html, prop, useEffect, useOnMount, useOnUpdate, useState } from 'js-mojo'
 
 // custom element will automatically be registered as 'my-counter' 
 
@@ -40,7 +40,7 @@ component('my-counter', {
       console.log(`New value of counter "${props.label}": ${state.count}`)
     }, () => [state.count])
 
-    return () => htm`
+    return () => html`
       <div> 
         <label>${props.label}: </label>
         <button onclick=${onIncrement}>${state.count}</button>
