@@ -1,6 +1,6 @@
 # js-mojo
 
-A R&D project to evaluate an alternative approach to define custom components.
+A R&D project to evaluate an alternative approach to define custom elements.
 
 #### Disclaimer:
 
