@@ -6,6 +6,7 @@ export { default as supplier } from './api/supplier'
 
 // hooks
 export { default as useEffect } from './api/useEffect'
+export { default as useElementRef } from './api/useElementRef'
 export { default as useInterval } from './api/useInterval'
 export { default as useUpdater } from './api/useUpdater'
 export { default as useState } from './api/useState'

@@ -44,6 +44,15 @@ function generateCustomElementClass(config) {
       super()
       this._props = defaultProps ? Object.assign({}, defaultProps) : {}
       this._unmount = null // will be set in method connectedCallback
+      this._methods = null
+
+      if (config.methods && config.methods.length > 0) {
+        this._methods = null
+
+        config.methods.forEach(method => {
+          this[method] = (...args) => this._methods[method](...args)
+        })
+      }
     }
 
     getAttribute(attrName) {
@@ -66,13 +75,22 @@ function generateCustomElementClass(config) {
     }
 
     connectedCallback() {
+
       let
+        root,
         render,
         update,
         afterMountNotifier,
         beforeUpdateNotifier,
         afterUpdateNotifier,
         beforeUnmountNotifier
+
+      if (config.shadow === 'open' || config.shadow === 'closed') {
+        this.attachShadow({ mode: config.shadow })
+        root = this.shadowRoot
+      } else {
+        root = this
+      }
 
       if (config.render) {
         render = config.render.bind(null, this._props)
@@ -83,6 +101,7 @@ function generateCustomElementClass(config) {
         beforeUnmountNotifier = createNotifier()
 
         const ctrl = {
+          getRoot: () => root,
           update: () => update && update(),
           afterMount: afterMountNotifier.subscribe,
           beforeUpdate: beforeUpdateNotifier.subscribe,
@@ -90,13 +109,13 @@ function generateCustomElementClass(config) {
           beforeUnmount: beforeUnmountNotifier.subscribe
         }
 
-        render = config.main(ctrl, this._props)
+        render = config.main(ctrl, this._props, methods => {
+          this._methods = methods
+        })
       }
 
-      this.attachShadow({ mode: 'open' })
-
       const { update: forceUpdate, unmount } = mountComponent(
-        this.shadowRoot,
+        root,
         render,
         afterMountNotifier && afterMountNotifier.notify,
         beforeUpdateNotifier && beforeUpdateNotifier.notify,

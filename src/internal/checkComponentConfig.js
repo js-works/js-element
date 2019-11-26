@@ -1,5 +1,7 @@
+import hasOwnProp from '../internal/hasOwnProp'
+
 const
-  ALLOWED_COMPONENT_CONFIG_KEYS = ['displayName', 'props', 'main', 'render'],
+  ALLOWED_COMPONENT_CONFIG_KEYS = ['props', 'methods', 'render', 'main'],
   ALLOWED_PROPERTY_CONFIG_KEYS = ['type', 'nullable', 'required', 'defaultValue'],
   ALLOWED_PROPERTY_TYPES = [Boolean, Number, String, Object, Function],
   REGEX_PROPERTY_NAME = /^[a-z][a-zA-Z0-9]*$/
@@ -11,7 +13,7 @@ export default function checkComponentConfig(config) {
     props = getParam(config, 'props', 'object')
 
   ifInvalidKey(config, ALLOWED_COMPONENT_CONFIG_KEYS, key => {
-    throw `Invalid component configuration parameter ${key}`
+    throw `Invalid component configuration parameter "${key}"`
   })
 
   if (render && main) {
@@ -85,8 +87,4 @@ function checkPropertyConfig(propName, propConfig) {
   if (nullable && !type) {
     throw `Unexpected parameter "nullable" for property "${propName}"`
   }
-}
-
-function hasOwnProp(obj, propName) {
-  return Object.prototype.hasOwnProperty.call(obj, propName)
 }
