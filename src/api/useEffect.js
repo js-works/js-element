@@ -1,25 +1,34 @@
 export default function useEffect(c, action, getDeps) {
   let
     oldDeps = null,
-    cleanup = null
+    cleanup
 
-  const callback = () => {
-    const newDeps = typeof getDeps === 'function' ? getDeps() : null
+  if (getDeps === null) {
+    c.afterMount(() => { cleanup = action() })
+    c.beforeUnmount(() => { cleanup && cleanup() }) 
+  } else if (getDeps === undefined || typeof getDeps === 'function'){
+    const callback = () => {
+      let needsAction = getDeps === undefined
 
-    if (oldDeps === null || newDeps ===  null || !isEqual(oldDeps, newDeps)) {
-      if (cleanup) {
-        cleanup()
-        cleanup = null
+      if (!needsAction) {
+        const newDeps = getDeps()
+
+        needsAction = oldDeps === null || newDeps ===  null || !isEqual(oldDeps, newDeps)
+        oldDeps = newDeps
       }
 
-      cleanup = action()
+      if (needsAction) {
+        cleanup && cleanup()
+        cleanup = action()
+      }
     }
 
-    oldDeps = newDeps
+    c.afterMount(callback)
+    c.afterUpdate(callback)
+  } else {
+    throw new TypeError(
+      '[useEffect] Third argument must either be undefined, null or a function')
   }
-
-  c.afterMount(callback)
-  c.afterUpdate(callback)
 }
 
 // --- locals -------------------------------------------------------

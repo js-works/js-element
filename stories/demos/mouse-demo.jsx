@@ -1,4 +1,4 @@
-import { html, component, useState, useOnMount } from '../../src/index'
+import { html, component, useState, useEffect } from '../../src/index'
 
 component('mouse-demo', {
   main(c) {
@@ -20,7 +20,7 @@ function useMousePosition(c) {
   const
     [mousePos, setMousePos] = useState(c, { x: -1, y: -1 })
 
-  useOnMount(c, () => {
+  useEffect(c, () => {
     const listener = ev => {
       setMousePos({ x: ev.pageX, y: ev.pageY })
     }
@@ -30,7 +30,7 @@ function useMousePosition(c) {
     return () => {
       window.removeEventListener('mousemove', listener)
     }
-  })
+  }, null)
 
   return mousePos
 }

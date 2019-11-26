@@ -1,13 +1,10 @@
-import { html, component, prop, useEffect, useOnMount, useOnUpdate, useState } from '../../src/index'
+import { html, component, prop, useEffect, useState } from '../../src/index'
 
 component('counter-demo', {
   props: {
     initialValue: prop.num.opt(0),
     label: prop.str.opt('Counter')
   },
-
-  // eventNames: ['change']
-  // methodNames: ['focus', 'reset']
 
   main(c, props) {
     const 
@@ -17,13 +14,11 @@ component('counter-demo', {
 
       onIncrement = () => setState('count', it => it + 1)
 
-    useOnMount(c, () => {
+    useEffect(c, () => {
       console.log('Component has been mounted mounted')
-    })
-
-    useOnUpdate(c, () => {
-      console.log('Component has been updateed')
-    })
+      
+      return () => console.log('Component will be umounted')
+    }, null)
 
     useEffect(c, () => {
       console.log(`New value of counter "${props.label}": ${state.count}`)
