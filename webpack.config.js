@@ -21,6 +21,10 @@ function createConfig(moduleType, mode) {
       filename: `js-mojo.${moduleType}.${mode}.js`
     },
 
+    externals: {
+      'lit-html': 'litHtml'
+    },
+
     module: {
       rules: [
         {

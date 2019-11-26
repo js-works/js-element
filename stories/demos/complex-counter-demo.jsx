@@ -1,5 +1,4 @@
 import { html, component, prop, useEffect, useElementRef, useState } from '../../src/index'
-import { directive, AttributePart } from 'lit-html'
 
 component('complex-counter', {
   props: {
