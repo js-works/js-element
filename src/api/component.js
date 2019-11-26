@@ -60,64 +60,8 @@ function generateCustomElementClass(config) {
 
     constructor() {
       super()
-
-      const self = this
-
-      this._updateTimeout = null
       this._props = defaultProps ? Object.assign({}, defaultProps) : {}
-      this._initialized = false
-      this._update = () => {} // will be updated later
-      
-      if (config.render) {
-        this._render = config.render.bind(null, this._props)
-      } else {
-        this._afterMountNotifier = createNotifier(),
-        this._beforeUpdateNotifier = createNotifier(),
-        this._afterUpdateNotifier = createNotifier()
-        this._beforeUnmountNotifier = createNotifier()
-
-        const
-          ctrl = {
-            update: () => this._update(),
-            afterMount: this._afterMountNotifier.subscribe,
-            beforeUpdate: this._beforeUpdateNotifier.subscribe,
-            afterUpdate: this._afterUpdateNotifier.subscribe,
-            beforeUnmount: this._beforeUnmountNotifier.subscribe
-          }
-
-        this._render = config.main(ctrl, this._props)
-        this._forceUpdate = null // will be set below
-      }
-      this._preactComponent = class extends PreactComponent {
-        constructor(arg) {
-          super(arg)
-
-          self._update = () => {
-            this.forceUpdate()
-          }
-        }
-
-        componentDidMount() {
-          self._afterMountNotifier.notify()
-          self._afterMountNotifier.clear()
-          self._initialized = true
-        }
-        componentDidUpdate() {
-          self._afterUpdateNotifier.notify()
-        }
-
-        componentWillUnmount() {
-          self._beforeUnmountNotifier.notify()
-        }
-
-        render() {
-          if (self._initialized) {
-            self._beforeUpdateNotifier.notify()
-          }
-
-          return self._render()
-        }
-      }
+      this._unmount = null // will be set in method connectedCallback
     }
 
     getAttribute(attrName) {
@@ -140,13 +84,50 @@ function generateCustomElementClass(config) {
     }
 
     connectedCallback() {
-      this.attachShadow({ mode: 'open' });
-      preactRender(h(this._preactComponent), this.shadowRoot)
-      this._initialized = true
+      let
+        render,
+        update,
+        afterMountNotifier,
+        beforeUpdateNotifier,
+        afterUpdateNotifier,
+        beforeUnmountNotifier
+
+      if (config.render) {
+        render = config.render.bind(null, this._props)
+      } else {
+        afterMountNotifier = createNotifier()
+        beforeUpdateNotifier = createNotifier()
+        afterUpdateNotifier = createNotifier()
+        beforeUnmountNotifier = createNotifier()
+
+        const ctrl = {
+          update: () => update && update(),
+          afterMount: afterMountNotifier.subscribe,
+          beforeUpdate: beforeUpdateNotifier.subscribe,
+          afterUpdate: afterUpdateNotifier.subscribe,
+          beforeUnmount: beforeUnmountNotifier.subscribe
+        }
+
+        render = config.main(ctrl, this._props)
+      }
+
+      this.attachShadow({ mode: 'open' })
+
+      const { update: forceUpdate, unmount } = mountComponent(
+        this.shadowRoot,
+        render,
+        afterMountNotifier && afterMountNotifier.notify,
+        beforeUpdateNotifier && beforeUpdateNotifier.notify,
+        afterUpdateNotifier && afterUpdateNotifier.notify,
+        beforeUnmountNotifier && beforeUnmountNotifier.notify
+      )
+
+      update = forceUpdate
+      this._unmount = unmount
     }
 
     disconnectedCallback() {
-      preactRender(null, this)
+      this._unmount()
     }
   }
 
@@ -222,3 +203,49 @@ const
     toString: String,
     fromString: Number
   }
+
+function mountComponent(
+  target,
+  render,
+  doAfterMount,
+  doBeforeUpdate,
+  doAfterUpdate, 
+  doBeforeUnmount
+) {
+  let preactComponentInstance = null
+
+  const CustomPreactComponent = class extends PreactComponent {
+    constructor(arg) {
+      super(arg)
+      this._mounted = false
+      preactComponentInstance = this
+    }
+
+    componentDidMount() {
+      this._mounted = true
+      doAfterMount && doAfterMount()
+    }
+    componentDidUpdate() {
+      doAfterUpdate && doAfterUpdate()
+    }
+
+    componentWillUnmount() {
+      doBeforeUnmount && doBeforeUnmount() 
+    }
+
+    render() {
+      if (this._mounted) {
+        doBeforeUpdate && doBeforeUpdate()
+      }
+
+      return render()
+    }
+  }
+
+  preactRender(h(CustomPreactComponent), target)
+
+  return {
+    update: () => preactComponentInstance.forceUpdate(),
+    unmount: () => preactRender(null, target)
+  }
+}
