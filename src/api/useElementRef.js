@@ -1,8 +1,37 @@
 import { directive, AttributePart } from 'lit-html'
 
 export default function useElementRef(c) {
+  const root = c.getRoot()
+  
+  let
+    currentElement = null,
+    needsCheck = true
+
   const ref = {
-    current: null,
+    get current() {
+      if (!needsCheck) {
+        return currentElement
+      }
+
+      let elem = currentElement
+
+      if (elem) {
+        while (elem && elem !== root) {
+          elem = elem.parentNode
+        }
+
+        if (elem !== root) {
+          currentElement = null
+        }
+      }
+
+      needsCheck = false
+
+      return currentElement
+    },
+    set current(_) {
+      throw Error('The propery "current" of element refs is not writable')
+    },
 
     bind: directive(() => part => {
       const
@@ -14,22 +43,11 @@ export default function useElementRef(c) {
       }
 
       if (ref && typeof ref === 'object') {
-        ref.current = element
+        currentElement = element
       }
 
-      c.afterUpdate(() => {
-        const root = c.getRoot()
-        let elem = ref.current
-
-        if (elem) {
-          while (elem && elem !== root) {
-            elem = elem.parentNode
-          }
-
-          if (elem !== root) {
-            ref.current = null
-          }
-        }
+      c.beforeUpdate(() => {
+        needsCheck = true
       })
     })()
   }
