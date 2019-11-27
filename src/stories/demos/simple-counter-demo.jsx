@@ -7,7 +7,8 @@ component('simple-counter-demo', {
   },
 
   main(c, props) {
-    const 
+    const
+      { isMounted } = c,
       [state, setState] = useState(c, {
         count: props.initialValue
       }),
@@ -19,6 +20,12 @@ component('simple-counter-demo', {
       
       return () => console.log('Component will be umounted')
     }, null)
+    
+    useEffect(c, () => {
+      if (isMounted()) {
+        console.log('Component has been updated')
+      }
+    })
 
     useEffect(c, () => {
       console.log(`New value of counter "${props.label}": ${state.count}`)
