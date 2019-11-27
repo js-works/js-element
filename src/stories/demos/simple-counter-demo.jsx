@@ -8,7 +8,6 @@ component('simple-counter-demo', {
 
   main(c, props) {
     const
-      { isMounted } = c,
       [state, setState] = useState(c, {
         count: props.initialValue
       }),
@@ -22,7 +21,7 @@ component('simple-counter-demo', {
     }, null)
     
     useEffect(c, () => {
-      if (isMounted()) {
+      if (c.isMounted()) {
         console.log('Component has been updated')
       }
     })
