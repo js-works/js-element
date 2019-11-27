@@ -1,3 +1,4 @@
+import './demos/button-demo'
 import './demos/simple-counter-demo'
 import './demos/complex-counter-demo'
 import './demos/clock-demo'
@@ -9,6 +10,7 @@ export default {
   title: 'Demos',
 }
 
+export const button =  () => '<button-demo/>'
 export const simpleCounter =  () => '<simple-counter-demo/>'
 export const complexCounter =  () => '<complex-counter-demo/>'
 export const clock =  () => '<clock-demo/>'

@@ -46,6 +46,7 @@ function generateCustomElementClass(config) {
       this._props = defaultProps ? Object.assign({}, defaultProps) : {}
       this._unmount = null // will be set in method connectedCallback
       this._methods = null
+      this._listenersByEventName
 
       if (config.methods && config.methods.length > 0) {
         this._methods = null
@@ -103,7 +104,6 @@ function generateCustomElementClass(config) {
         beforeUnmountNotifier = createNotifier()
 
         const ctrl = {
-          getRoot: () => root,
           isMounted: () => mounted,
           isRendering: () => isRendering,
           update: () => update && update(),
@@ -129,7 +129,8 @@ function generateCustomElementClass(config) {
         },
         
         () => {
-          isRendering = true 
+          isRendering = true
+          this._adjustEventProps() 
           beforeUpdateNotifier && beforeUpdateNotifier.notify()
         },
 
@@ -149,9 +150,13 @@ function generateCustomElementClass(config) {
     disconnectedCallback() {
       this._unmount()
     }
+
+    addEventListener(...args) {
+      console.log(1111, ...args)
+    }
   }
 
-  propNames.forEach(propName => {
+  propNames.filter(it => !isEventPropName(it)).forEach(propName => {
     const
       propConfig = config.props[propName],
       type = propConfig.type
@@ -190,7 +195,115 @@ function generateCustomElementClass(config) {
     })
   })
 
+  addEventFeatures(CustomElement, config)
+
   return CustomElement
+}
+
+function addEventFeatures(CustomElement, config) {
+  const
+    self = this,
+    proto = CustomElement.prototype,
+    propNames = !config.props ? [] : Object.keys(config.props),
+    eventPropNames = propNames.filter(isEventPropName),
+    eventNames = eventPropNames.map(it => toKebabCase(it.substr(2))),
+    eventNameMappings = getEventNameMappings(eventNames),
+    origAddEventListenerFunc = proto.addEventListener,
+    origRemoveEventListenerFunc = proto.removeEventListener,
+    origDispatchEventFunc = proto.dispatchEvent
+
+  eventPropNames.forEach(eventPropName => {
+    const eventName = eventNameMappings[eventPropName.substr(2)]
+
+    Object.defineProperty(proto, eventPropName, {
+      set: callback => { self[`_${eventName}_callback`] = callback },
+      get: () => self[`_${eventName}_callback`]
+    })
+  })
+
+  proto.addEventListener = function (eventName, callback) {
+    const normalizedEventName =
+      hasOwnProp(eventNameMappings, eventName)
+        ? eventNameMappings[eventName]
+        : null
+
+    if (!normalizedEventName) {
+      origAddEventListenerFunc.call(this, eventName, callback)
+      return
+    }
+
+    this._listenersByEventName[eventName] = self._listenersByEventName[eventName] || new Set()
+    this._listenersByEventName[eventName].add(callback)
+    origAddEventListenerFunc.call(this, normalizedEventName, callback)
+  }
+
+  proto.removeEventListener = function (eventName, callback) {
+    const normalizedEventName =
+      hasOwnProp(eventNameMappings, eventName)
+        ? eventNameMappings[eventName]
+        : null
+    
+    if (!normalizedEventName) {
+      origRemoveEventListenerFunc.call(this, eventName, callback)
+      return
+    }
+
+    if (!this._listenersByEventName[eventName]) {
+      return
+    }
+
+    this._listenersByEventName[eventName].remove(callback)
+    origRemoveEventListenerFunc.call(this, normalizedEventName, callback)
+  }
+
+  proto.dispatchEvent = function (event) {
+    const
+      callback = this[`_${event.type}_callback`],
+      listeners = this._listenersByEventName[event.type]
+
+    if (callback && (!listeners || !listeners.has(callback))) {
+      callback(event)
+    }
+
+    return origDispatchEventFunc.apply(this, arguments)
+  }
+
+  proto._adjustEventProps = function () {
+    eventPropNames.forEach(eventPropName => {
+      const
+        eventName = eventNameMappings[eventPropName.substr(2)],
+        listeners = this._listenersByEventName[eventName],
+        hasAnyListeners = this[eventPropName] || (listeners && listeners.size > 0)
+
+      if (hasAnyListeners) {
+        if (!this._props[eventPropName]) {
+          this._props[eventPropName] = event => this.dispatchEvent(event)
+        }
+      } else {
+        delete this._props[eventPropName]
+      }
+    })
+  }
+}
+
+function toKebabCase(string) {
+  return string
+    .replace(/^on([A-Z])(.*)/, '$1$2')
+    .replace(/([A-Z]+)([A-Z])([a-z0-9])/, '$1-$2$3')
+    .replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
+}
+
+function getEventNameMappings(eventNames) {
+  const ret = {}
+
+  eventNames
+    .forEach(eventName => {
+      ret[eventName] = eventName
+      ret[eventName.toLowerCase()] = eventName
+      ret[eventName.substr(2)] = eventName
+    })
+
+  return ret
 }
 
 class BaseElement extends HTMLElement {
@@ -199,7 +312,7 @@ class BaseElement extends HTMLElement {
   }
 }
 
-function isEventName(name) {
+function isEventPropName(name) {
   return name.match(/^on[A-Z]/)
 }
 
