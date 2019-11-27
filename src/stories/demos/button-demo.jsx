@@ -12,17 +12,19 @@ component('my-button', {
     }
 
     return html`
-      <button onClick=${onClick}>${props.text}</button>
+      <button @click=${onClick}>${props.text}</button>
     `
   }
 })
 
 component('button-demo', {
   render() {
+    const onClick = e => alert(e.type)
+
     return html`
       <div>
         <h3>Button demo</h3>
-        <my-button text="Click me"/>
+        <my-button .onclick=${onClick} text="Click me"/>
       </div>
     `
   }

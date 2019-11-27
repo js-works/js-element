@@ -96,6 +96,7 @@ function generateCustomElementClass(config) {
       }
 
       if (config.render) {
+        this._adjustEventProps()
         render = config.render.bind(null, this._props)
       } else {
         afterMountNotifier = createNotifier()
@@ -150,10 +151,6 @@ function generateCustomElementClass(config) {
     disconnectedCallback() {
       this._unmount()
     }
-
-    addEventListener(...args) {
-      console.log(1111, ...args)
-    }
   }
 
   propNames.filter(it => !isEventPropName(it)).forEach(propName => {
@@ -202,22 +199,25 @@ function generateCustomElementClass(config) {
 
 function addEventFeatures(CustomElement, config) {
   const
-    self = this,
     proto = CustomElement.prototype,
     propNames = !config.props ? [] : Object.keys(config.props),
     eventPropNames = propNames.filter(isEventPropName),
-    eventNames = eventPropNames.map(it => toKebabCase(it.substr(2))),
-    eventNameMappings = getEventNameMappings(eventNames),
+    eventNameMappings = getEventNameMappings(eventPropNames),
     origAddEventListenerFunc = proto.addEventListener,
     origRemoveEventListenerFunc = proto.removeEventListener,
     origDispatchEventFunc = proto.dispatchEvent
 
   eventPropNames.forEach(eventPropName => {
     const eventName = eventNameMappings[eventPropName.substr(2)]
-
+    
     Object.defineProperty(proto, eventPropName, {
-      set: callback => { self[`_${eventName}_callback`] = callback },
-      get: () => self[`_${eventName}_callback`]
+      set(callback) {
+        this[`_${eventName}_callback`] = callback
+      },
+
+      get() {
+        return this[`_${eventName}_callback`]
+      }
     })
   })
 
@@ -232,7 +232,8 @@ function addEventFeatures(CustomElement, config) {
       return
     }
 
-    this._listenersByEventName[eventName] = self._listenersByEventName[eventName] || new Set()
+    this._listenersByEventName = this._listenersByEventName || {}
+    this._listenersByEventName[eventName] = this._listenersByEventName[eventName] || new Set()
     this._listenersByEventName[eventName].add(callback)
     origAddEventListenerFunc.call(this, normalizedEventName, callback)
   }
@@ -270,9 +271,10 @@ function addEventFeatures(CustomElement, config) {
 
   proto._adjustEventProps = function () {
     eventPropNames.forEach(eventPropName => {
+
       const
         eventName = eventNameMappings[eventPropName.substr(2)],
-        listeners = this._listenersByEventName[eventName],
+        listeners = this._listenersByEventName && this._listenersByEventName[eventName],
         hasAnyListeners = this[eventPropName] || (listeners && listeners.size > 0)
 
       if (hasAnyListeners) {
@@ -293,23 +295,25 @@ function toKebabCase(string) {
     .replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
 }
 
-function getEventNameMappings(eventNames) {
+function getEventNameMappings(eventPropNames) {
   const ret = {}
 
-  eventNames
-    .forEach(eventName => {
+  eventPropNames
+    .forEach(eventPropName => {
+      const
+        name = eventPropName.substr(2),
+        eventName = toKebabCase(name)
+
       ret[eventName] = eventName
-      ret[eventName.toLowerCase()] = eventName
-      ret[eventName.substr(2)] = eventName
+      ret[name] = eventName
+      ret[name.toLowerCase()] = eventName
+      ret[name[0].toLowerCase() + name.substr(1)] = eventName
     })
 
   return ret
 }
 
 class BaseElement extends HTMLElement {
-  constructor() {
-    super()
-  }
 }
 
 function isEventPropName(name) {
