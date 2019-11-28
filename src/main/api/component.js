@@ -5,7 +5,7 @@ import { render as litRender } from 'lit-html'
 import hasOwnProp from '../internal/hasOwnProp'
 import checkComponentConfig from '../internal/checkComponentConfig'
 import createNotifier from '../internal/createNotifier'
-export default function component(name, config) {
+export default function component(componentName, config) {
   if (process.env.NODE_ENV === 'development') {
     try {
       if (typeof name !== 'string') {
@@ -18,14 +18,16 @@ export default function component(name, config) {
 
       checkComponentConfig(config)
     } catch (e) {
-      throw new TypeError(`[component] ${e}`)
+      throw new TypeError(
+        `[component] Invalid configuration for component type "${componentName}": ${e}`)
     }
   }
 
-  customElements.define(name, generateCustomElementClass(config))
+  customElements.define(componentName,
+    generateCustomElementClass(componentName, config))
 }
 
-function generateCustomElementClass(config) {
+function generateCustomElementClass(componentName, config) {
   const
     propNames = config.props ? Object.keys(config.props) : [],
     attrNames = [],
@@ -119,6 +121,22 @@ function generateCustomElementClass(config) {
         })
       }
 
+      if (config.validate) {
+        const oldRender = render
+
+        render = () => {
+          const result = config.validate(this._props)
+
+          if (result) {
+            const errorMsg = 'Inorrect props for component '
+              + `of type "${componentName}": ${result.message}`
+
+            console.error(errorMsg)
+          }
+
+          return oldRender()
+        }
+      }
 
       const { update: forceUpdate, unmount } = mountComponent(
         root,
@@ -221,7 +239,7 @@ function addEventFeatures(CustomElement, config) {
     })
   })
 
-  proto.addEventListener = function (eventName, callback) {
+  proto.addEventListener = function (eventName, callback) {console.log('addEventListener', eventName)
     const normalizedEventName =
       hasOwnProp(eventNameMappings, eventName)
         ? eventNameMappings[eventName]
@@ -235,6 +253,8 @@ function addEventFeatures(CustomElement, config) {
     this._listenersByEventName = this._listenersByEventName || {}
     this._listenersByEventName[eventName] = this._listenersByEventName[eventName] || new Set()
     this._listenersByEventName[eventName].add(callback)
+    console.log('xxxx', normalizedEventName, callback)
+    origAddEventListenerFunc.call(this, normalizedEventName, () => alert('juhu'))
     origAddEventListenerFunc.call(this, normalizedEventName, callback)
   }
 
@@ -257,15 +277,17 @@ function addEventFeatures(CustomElement, config) {
     origRemoveEventListenerFunc.call(this, normalizedEventName, callback)
   }
 
-  proto.dispatchEvent = function (event) {
+  proto.dispatchEvent = function (event) {console.log('dispatchEvent 1', event)
     const
       callback = this[`_${event.type}_callback`],
-      listeners = this._listenersByEventName[event.type]
+      listenersByEventName = this._listenersByEventName,
+      listeners = listenersByEventName && this._listenersByEventName[event.type]
 
     if (callback && (!listeners || !listeners.has(callback))) {
       callback(event)
     }
 
+    console.log('dispatchEvent 2')
     return origDispatchEventFunc.apply(this, arguments)
   }
 
@@ -290,7 +312,7 @@ function addEventFeatures(CustomElement, config) {
 
 function toKebabCase(string) {
   return string
-    .replace(/^on([A-Z])(.*)/, '$1$2')
+    .replace(/^on([A-Z])(.*)/, '$1$2') // TODO
     .replace(/([A-Z]+)([A-Z])([a-z0-9])/, '$1-$2$3')
     .replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
 }

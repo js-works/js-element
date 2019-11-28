@@ -20,7 +20,10 @@
     "url": "https://github.com/js-works/js-mojo/issues"
   },
   "homepage": "https://github.com/js-works/js-mojo#readme",
-  "dependencies": {},
+  "dependencies": {
+    "@clr/icons": "^2.3.2",
+    "@clr/ui": "^2.3.2"
+  },
   "devDependencies": {
     "@babel/core": "^7.7.4",
     "@babel/preset-env": "^7.7.4",
@@ -30,6 +33,7 @@
     "babel-preset-es2015": "^6.24.1",
     "compression-webpack-plugin": "^3.0.0",
     "eslint": "^6.7.0",
+    "js-spec": "^0.1.72",
     "lit-html": "^1.1.2",
     "terser-webpack-plugin": "^2.2.1",
     "uglifyjs-webpack-plugin": "^2.2.0",
