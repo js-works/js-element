@@ -103,16 +103,16 @@ function renderPaginationBar() {
     paginationInfo = renderPaginationInfo()
 
   return html`
-    <div class="jsc-data-explorer__pagination-bar">
-        <div class="jsc-data-explorer__pagination-bar-start">
+    <div class="jsc-data-explorer__footer">
+        <div class="jsc-data-explorer__footer-start">
           ${pageSizeSelector}
         </div>
 
-        <div class="jsc-data-explorer__pagination-bar-center">
+        <div class="jsc-data-explorer__footer-center">
           ${paginationInfo}
         </div>
         
-        <div class="jsc-data-explorer__pagination-bar-end">
+        <div class="jsc-data-explorer__footer-end">
           ${btnFirst}
           ${btnPrevious}
           ${pageNumInput}
@@ -125,7 +125,7 @@ function renderPaginationBar() {
 
 function renderFirstPageButton() {
   return html` 
-    <button class="jsc-data-explorer__pagination-bar-button">
+    <button class="jsc-data-explorer__footer-button">
       <clr-icon shape="step-forward-2" style="transform: rotate(180deg);"/>
     </button>
   `
@@ -133,7 +133,7 @@ function renderFirstPageButton() {
 
 function renderPreviousPageButton() {
   return html` 
-    <button class="jsc-data-explorer__pagination-bar-button">
+    <button class="jsc-data-explorer__footer-button">
       <clr-icon shape="caret" style="transform: rotate(-90deg)"/>
     </button>
   `
@@ -141,7 +141,7 @@ function renderPreviousPageButton() {
 
 function renderNextPageButton() {
   return html` 
-    <button class="jsc-data-explorer__pagination-bar-button">
+    <button class="jsc-data-explorer__footer-button">
       <clr-icon shape="caret" style="transform: rotate(90deg)"/>
     </button>
   `
@@ -149,7 +149,7 @@ function renderNextPageButton() {
 
 function renderLastPageButton() {
   return html` 
-    <button class="jsc-data-explorer__pagination-bar-button">
+    <button class="jsc-data-explorer__footer-button">
       <clr-icon shape="step-forward-2"/>
     </button>
   `
@@ -157,25 +157,21 @@ function renderLastPageButton() {
 
 function renderPageNumInput() {
   return html`
-    <input class="jsc-data-explorer__pagination-bar-input"/> / 123
+    <input class="jsc-data-explorer__footer-input"/> / 123
   `
 }
 
 function renderPaginationInfo() {
   return html`
-    <div class="jsc-data-explorer__pagination-bar-info">300 - 350 of 587 items</div>
+    <div class="jsc-data-explorer__footer-info">300 - 350 of 587 items</div>
   `
 }
 
 function renderPageSizeSelector() {
   return html`
-
-  <iron-dropdown id="dropdown" horizontal-align="right" vertical-align="top">
-        <div slot="dropdown-content">Hello!</div>
-      </iron-dropdown>
     <div>
       <div class="clr-select-wrapper">
-        <label>Items per page:</label>
+        <label class="jsc-data-explorer__footer-page-size-label">Items per page</label>
         <select>
             <option>10</option>
             <option>20</option>
@@ -227,6 +223,11 @@ addStyleSheet(`
   .jsc-data-explorer {
   }
 
+  .jsc-data-explorer__table {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
   .jsc-data-explorer__table > thead > tr > th {
     font-size: .55rem !important;
   }
@@ -235,22 +236,30 @@ addStyleSheet(`
     font-size: .65rem !important;
    }
 
-  .jsc-data-explorer__pagination-bar {
+  .jsc-data-explorer__footer {
     font-size: .55rem;
     white-space: nowrap;
-    padding: 3px;
+    padding: 4px 8px;
     text-align: right;
+    background-color: var(--clr-thead-bgcolor,#fafafa);
+    border: var(--clr-global-borderwidth,.05rem) solid var(--clr-table-footer-border-top-color,#ccc);
+    border-bottom-left-radius: var(--clr-global-borderradius,.15rem);
+    border-bottom-right-radius: var(--clr-global-borderradius,.15rem);
   }
 
-  .jsc-data-explorer__pagination-bar > * {
+  .jsc-data-explorer__footer > * {
     display: inline-block;
   }
 
-  .jsc-data-explorer__pagination-bar-info {
+  .jsc-data-explorer__footer-page-size-label {
+    margin-right: 10px;
+  }
+
+  .jsc-data-explorer__footer-info {
     margin: 0 30px 0 20px;
   }
 
-  .jsc-data-explorer__pagination-bar-button {
+  .jsc-data-explorer__footer-button {
     background: none;
     border: none;
     width: .8rem;
@@ -261,7 +270,7 @@ addStyleSheet(`
     color: var(--clr-datagrid-pagination-btn-color,#666);
   }
 
-  .jsc-data-explorer__pagination-bar-input {
+  .jsc-data-explorer__footer-input {
     height: 1rem;
     margin: 0 3px 0 5px;
     width: 2rem;
@@ -269,7 +278,6 @@ addStyleSheet(`
     background-color: var(--clr-forms-textarea-background-color,#fff);
     border-color: var(--clr-datagrid-pagination-input-border-color,#ccc);
     border-width: var(--clr-global-borderwidth,.05rem);
-    border-radius: .15rem;
     border-radius: var(--clr-global-borderradius,.15rem);
     line-height: 1.2rem;
     font-size: .55rem;
@@ -277,12 +285,11 @@ addStyleSheet(`
     text-align: center;
     transition: none!important;
     border: .05rem solid #ccc;
-    border-radius: 3px;
     border-color: rgb(204, 204, 204);
   }
   
-  .jsc-data-explorer__pagination-bar-input:focus {
+  .jsc-data-explorer__footer-input:focus {
     outline: none;
-    border: var(--clr-global-borderwidth,.05rem) solid var(--clr-forms-focused-color, #179bd3); // TODO
+    border: var(--clr-global-borderwidth,.05rem) solid var(--clr-forms-focused-color,#179bd3); // TODO
   }
 `)
