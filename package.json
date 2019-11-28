@@ -22,7 +22,8 @@
   "homepage": "https://github.com/js-works/js-mojo#readme",
   "dependencies": {
     "@clr/icons": "^2.3.2",
-    "@clr/ui": "^2.3.2"
+    "@clr/ui": "^2.3.2",
+    "@polymer/iron-dropdown": "^3.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.7.4",

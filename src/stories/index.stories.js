@@ -7,6 +7,8 @@ import './demos/mouse-demo'
 import './demos/interval-demo'
 import './demos/data-explorer-demo'
 
+import './styles.css'
+
 export default {
   title: 'Demos',
 }

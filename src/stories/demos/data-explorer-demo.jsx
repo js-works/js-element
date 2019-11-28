@@ -7,6 +7,8 @@ import '@clr/ui/clr-ui.min.css'
 import '@clr/icons/clr-icons.min.css'
 import '@clr/icons/clr-icons.min.js'
 
+import '@polymer/iron-dropdown/iron-dropdown.js'
+
 component('jsc-data-explorer', {
   props: {
   },
@@ -21,7 +23,7 @@ component('jsc-data-explorer', {
     return () => {
       const data = []
 
-      for (let i = 0; i < 5; ++i) {
+      for (let i = 0; i < 2; ++i) {
         data[i] = []
 
         for (let j = 0; j < 7; ++j) {
@@ -30,7 +32,7 @@ component('jsc-data-explorer', {
       }
 
       return html`<button class="btn btn-link">Juhu</button>
-        <table width="100%" class="table">
+        <table width="100%" class="table jsc-data-explorer__table">
           <thead>
             <tr>
                 <th>User ID</th>
@@ -45,7 +47,8 @@ component('jsc-data-explorer', {
           <tbody>
             ${
             data.map(row => {
-                const cells = row.map(field => html`<td>${field}</td>`)
+                const cells = row.map(field =>
+                  html`<td class="jsc-data-explorer__table-cell">${field}</td>`)
 
                 return html`<tr>${cells}</tr>`
             })
@@ -102,24 +105,23 @@ function renderPaginationBar() {
   return html`
     <div class="jsc-data-explorer__pagination-bar">
         <div class="jsc-data-explorer__pagination-bar-start">
+          ${pageSizeSelector}
+        </div>
+
+        <div class="jsc-data-explorer__pagination-bar-center">
+          ${paginationInfo}
+        </div>
+        
+        <div class="jsc-data-explorer__pagination-bar-end">
           ${btnFirst}
           ${btnPrevious}
           ${pageNumInput}
           ${btnNext}
           ${btnLast}
         </div>
-
-        <div class="jsc-data-explorer__pagination-bar-center">
-           ${pageSizeSelector}
-        </div>
-        
-        <div class="jsc-data-explorer__pagination-bar-end">
-          ${paginationInfo}
-        </div>
     </div>
     `
 }
-
 
 function renderFirstPageButton() {
   return html` 
@@ -155,28 +157,34 @@ function renderLastPageButton() {
 
 function renderPageNumInput() {
   return html`
-    Page <input class="jsc-data-explorer__pagination-bar-input"/> of 123
+    <input class="jsc-data-explorer__pagination-bar-input"/> / 123
   `
 }
 
 function renderPaginationInfo() {
   return html`
-    Items 300 - 350 of 587
+    <div class="jsc-data-explorer__pagination-bar-info">300 - 350 of 587 items</div>
   `
 }
 
 function renderPageSizeSelector() {
   return html`
+
+  <iron-dropdown id="dropdown" horizontal-align="right" vertical-align="top">
+        <div slot="dropdown-content">Hello!</div>
+      </iron-dropdown>
     <div>
-      <label>Page size:</label>
-      <select class="select">
-        <option>10</option>
-        <option>20</option>
-        <option>50</option>
-        <option>100</option>
-        <option>250</option>
-        <option>500</option>
-      </select>
+      <div class="clr-select-wrapper">
+        <label>Items per page:</label>
+        <select>
+            <option>10</option>
+            <option>20</option>
+            <option>50</option>
+            <option>100</option>
+            <option>250</option>
+            <option>500</option>
+        </select>
+      </div>
     </div>
   `
 }
@@ -219,33 +227,62 @@ addStyleSheet(`
   .jsc-data-explorer {
   }
 
-  .jsc-data-explorer__paginationbar {
-    display: table-row
+  .jsc-data-explorer__table > thead > tr > th {
+    font-size: .55rem !important;
   }
 
-  .jsc-data-explorer__pagination-bar-start {
-    display: table-cell;
+  .jsc-data-explorer__table > tbody > tr > td {
+    font-size: .65rem !important;
+   }
+
+  .jsc-data-explorer__pagination-bar {
+    font-size: .55rem;
     white-space: nowrap;
+    padding: 3px;
+    text-align: right;
   }
 
-  .jsc-data-explorer__pagination-bar-center {
-    display: table-cell;
-    margin: 10px;
-    width: 100%;
-    white-space: nowrap;
+  .jsc-data-explorer__pagination-bar > * {
+    display: inline-block;
   }
 
-  .jsc-data-explorer__pagination-bar-end {
-    display: table-cell;
-    white-space: nowrap;
+  .jsc-data-explorer__pagination-bar-info {
+    margin: 0 30px 0 20px;
   }
 
   .jsc-data-explorer__pagination-bar-button {
     background: none;
     border: none;
+    width: .8rem;
+    height: 1.2rem;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    color: var(--clr-datagrid-pagination-btn-color,#666);
+  }
+
+  .jsc-data-explorer__pagination-bar-input {
+    height: 1rem;
+    margin: 0 3px 0 5px;
+    width: 2rem;
+    background: #fff;
+    background-color: var(--clr-forms-textarea-background-color,#fff);
+    border-color: var(--clr-datagrid-pagination-input-border-color,#ccc);
+    border-width: var(--clr-global-borderwidth,.05rem);
+    border-radius: .15rem;
+    border-radius: var(--clr-global-borderradius,.15rem);
+    line-height: 1.2rem;
+    font-size: .55rem;
+    min-width: 1.2rem;
+    text-align: center;
+    transition: none!important;
+    border: .05rem solid #ccc;
+    border-radius: 3px;
+    border-color: rgb(204, 204, 204);
   }
   
-  .jsc-data-explorer__pagination-bar-input {
-    width: 3rem;
+  .jsc-data-explorer__pagination-bar-input:focus {
+    outline: none;
+    border: var(--clr-global-borderwidth,.05rem) solid var(--clr-forms-focused-color, #179bd3); // TODO
   }
 `)
