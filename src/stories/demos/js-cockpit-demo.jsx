@@ -1,17 +1,18 @@
 import { Spec } from 'js-spec'
 
 import { html, component, prop, useInterval } from '../../main/index'
-import '../js-cockpit/modules/data-driven/components/data-explorer'
-import '../js-cockpit/modules/layout/components/cockpit'
-import '../js-cockpit/modules/misc/components/brand'
+import '../js-cockpit/components/data-explorer'
+import '../js-cockpit/components/cockpit'
+import '../js-cockpit/components/brand'
+import '../js-cockpit/components/logout-button'
 import '@clr/ui/clr-ui.min.css'
 import '@clr/icons/clr-icons.min.css'
 import '@clr/icons/clr-icons.min.js'
 
-component('data-explorer-demo', {
+component('js-cockpit-demo', {
   render() {
     return html`
-      <jsc-cockpit header-color="default">
+      <jsc-cockpit header-color="teal">
         <div slot="brand">
           <jsc-brand vendor="meet&greet" title="Back Office">
             <div slot="logo">
@@ -23,7 +24,7 @@ component('data-explorer-demo', {
           Top Navi
         </div>
         <div slot="action-area">
-          User Navi
+          <jsc-logout-button/>
         </div>
         <div slot="menu">
           Menu

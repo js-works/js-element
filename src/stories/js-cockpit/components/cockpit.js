@@ -1,7 +1,7 @@
 import { Spec } from 'js-spec'
 
-import { html, component, prop, useStyleSheet } from '../../../../../../main/index'
-import addStyleSheet from '../../../../tools/addStyleSheet'
+import { html, component, prop, useStyleSheet } from '../../../main/index'
+import addStyleSheet from '../tools/addStyleSheet'
 
 component('jsc-cockpit', {
   props: {
@@ -17,9 +17,15 @@ component('jsc-cockpit', {
       <style>${styleSheet}</style>
       <div class="jsc-cockpit">
         <div class="jsc-cockpit__header ${headerColorClass}">
-          <slot name="brand"></slot>
-          <slot name="top-navi"></slot>
-          <slot name="action-area"></slot>
+          <div class="jsc-cockpit__brand">
+            <slot name="brand"></slot>
+          </div>
+          <div class="jsc-cockpit__top-navi">
+            <slot name="top-navi"></slot>
+          </div>
+          <div class="jsc-cockpit__action-area">
+            <slot name="action-area"></slot>
+          </div>
         </div>
         <div class="jsc-cockpit__menu">
           <slot name="menu"></slot>
@@ -70,6 +76,16 @@ const styleSheet = `
   .jsc-cockpit__header--teal {
     color: white;
     background-color: #007E7A;
+  }
+  
+  .jsc-cockpit__brand {
+  }
+
+  .jsc-cockpit__top-navi {
+    flex-grow: 1;
+  }
+
+  .jsc-cockpit__action-area {
   }
 
   .jsc-cockpit__content {

@@ -1,7 +1,7 @@
 import { Spec } from 'js-spec'
 
-import { html, component, prop } from '../../../../../../main/index'
-import addStyleSheet from '../../../../tools/addStyleSheet'
+import { html, component, prop } from '../../../main/index'
+import addStyleSheet from '../tools/addStyleSheet'
 
 component('jsc-brand', {
   props: {
