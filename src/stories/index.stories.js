@@ -2,6 +2,7 @@ import '@webcomponents/webcomponentsjs'
 
 import './demos/button-demo'
 import './demos/simple-counter-demo'
+import './demos/simple-counter-2-demo'
 import './demos/complex-counter-demo'
 import './demos/clock-demo'
 import './demos/iterator-demo'
@@ -20,7 +21,9 @@ export default {
 }
 
 export const Button =  () => '<button-demo/>'
+
 export const SimpleCounter =  () => '<simple-counter-demo/>'
+export const SimpleCounter2 =  () => '<simple-counter-2-demo/>'
 export const ComplexCounter =  () => '<complex-counter-demo/>'
 export const Clock =  () => '<clock-demo/>'
 export const Mouse =  () => '<mouse-demo/>'

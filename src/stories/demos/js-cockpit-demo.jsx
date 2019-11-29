@@ -33,7 +33,7 @@ component('js-cockpit-demo', {
           sidebar
         </div>
         <div slot="main">
-          Main
+          <jsc-data-explorer/>
         </div>
       </jsc-cockpit>
     `

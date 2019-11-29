@@ -2,11 +2,6 @@ import { Spec } from 'js-spec'
 
 import { html, component, prop, useInterval } from '../../../main/index'
 import addStyleSheet from '../tools/addStyleSheet'
-import '@clr/ui/clr-ui.min.css'
-import '@clr/icons/clr-icons.min.css'
-import '@clr/icons/clr-icons.min.js'
-
-import '@polymer/iron-dropdown/iron-dropdown.js'
 
 component('jsc-data-explorer', {
   props: {
