@@ -23,7 +23,8 @@
   "dependencies": {
     "@clr/icons": "^2.3.2",
     "@clr/ui": "^2.3.2",
-    "@polymer/iron-dropdown": "^3.0.1"
+    "@polymer/iron-dropdown": "^3.0.1",
+    "@webcomponents/webcomponentsjs": "^2.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.7.4",

@@ -1,8 +1,7 @@
 import { Spec } from 'js-spec'
 
-import { html, component, prop, useInterval } from '../../main/index'
-import addStyleSheet  from './tools/addStyleSheet'
-
+import { html, component, prop, useInterval } from '../../../../../../main/index'
+import addStyleSheet from '../../../../tools/addStyleSheet'
 import '@clr/ui/clr-ui.min.css'
 import '@clr/icons/clr-icons.min.css'
 import '@clr/icons/clr-icons.min.js'
@@ -61,35 +60,6 @@ component('jsc-data-explorer', {
     }
   }
 })
-
-component('data-explorer-demo', {
-  render() {
-    const
-      columns = [
-        {
-          type: 'column',
-          title: 'First name',
-          field: 'firstName',
-          align: 'center',
-          sortable: false,
-          width: 100
-        }
-      ]
-
-    return html`
-      <div>
-        <h3>Data explorer demo</h3>
-        <jsc-data-explorer
-          .columns=${columns}
-        />
-      </div>
-    `
-  }
-})
-
-function renderTable() {
-
-}
 
 
 function renderPaginationBar() {
@@ -219,7 +189,7 @@ function getDataExplorerPropsValidator() {
 
 // --- styles -------------------------------------------------------
 
-addStyleSheet(`
+addStyleSheet('jsc-data-explorer', `
   .jsc-data-explorer {
   }
 

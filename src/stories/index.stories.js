@@ -1,3 +1,5 @@
+import '@webcomponents/webcomponentsjs'
+
 import './demos/button-demo'
 import './demos/simple-counter-demo'
 import './demos/complex-counter-demo'
@@ -5,9 +7,13 @@ import './demos/clock-demo'
 import './demos/iterator-demo'
 import './demos/mouse-demo'
 import './demos/interval-demo'
-import './demos/data-explorer-demo'
+import './demos/js-cockpit-demo'
 
 import './styles.css'
+
+import '@clr/ui/clr-ui.min.css'
+import '@clr/icons/clr-icons.min.css'
+import '@clr/icons/clr-icons.min.js'
 
 export default {
   title: 'Demos',

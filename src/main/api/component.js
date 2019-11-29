@@ -107,6 +107,7 @@ function generateCustomElementClass(componentName, config) {
         beforeUnmountNotifier = createNotifier()
 
         const ctrl = {
+          getRoot: () => root,
           isMounted: () => mounted,
           isRendering: () => isRendering,
           update: () => update && update(),
@@ -360,7 +361,7 @@ const
   }
 
 function mountComponent(
-  target,
+  root,
   getContent,
   doAfterMount,
   doBeforeUpdate,
@@ -372,13 +373,13 @@ function mountComponent(
   const
     update = () => {
       mounted && doBeforeUpdate && doBeforeUpdate()
-      litRender(getContent(), target)
+      litRender(getContent(), root)
       mounted && doAfterUpdate && doAfterUpdate()
     },
 
     unmount = () => {
       doBeforeUnmount && doBeforeUnmount()
-      target.innerHtml = ''
+      root.innerHtml = ''
     }
 
   update()
