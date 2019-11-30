@@ -10,10 +10,11 @@ component('jsc-data-explorer', {
   validate: getDataExplorerPropsValidator(),
 
   main(c) {
+    /*
     useInterval(c, () => {
       c.update()
     }, 1000)
-
+    */
     return () => {
       const data = []
 
@@ -25,7 +26,7 @@ component('jsc-data-explorer', {
         }
       }
 
-      return html`<button class="btn btn-link">Juhu</button>
+      return html`
         <table width="100%" class="table jsc-data-explorer__table">
           <thead>
             <tr>
@@ -91,7 +92,7 @@ function renderPaginationBar() {
 function renderFirstPageButton() {
   return html` 
     <button class="jsc-data-explorer__footer-button">
-      <clr-icon shape="step-forward-2" style="transform: rotate(180deg);"/>
+      <clr-icon shape="step-forward-2" style="transform: rotate(180deg);"></clr-icon>
     </button>
   `
 }
@@ -99,7 +100,7 @@ function renderFirstPageButton() {
 function renderPreviousPageButton() {
   return html` 
     <button class="jsc-data-explorer__footer-button">
-      <clr-icon shape="caret" style="transform: rotate(-90deg)"/>
+      <clr-icon shape="caret" style="transform: rotate(-90deg)"></crl-icon>
     </button>
   `
 }
@@ -107,7 +108,7 @@ function renderPreviousPageButton() {
 function renderNextPageButton() {
   return html` 
     <button class="jsc-data-explorer__footer-button">
-      <clr-icon shape="caret" style="transform: rotate(90deg)"/>
+      <clr-icon shape="caret" style="transform: rotate(90deg)"></clr-icon>
     </button>
   `
 }
@@ -115,14 +116,14 @@ function renderNextPageButton() {
 function renderLastPageButton() {
   return html` 
     <button class="jsc-data-explorer__footer-button">
-      <clr-icon shape="step-forward-2"/>
+      <clr-icon shape="step-forward-2"></crl-icon>
     </button>
   `
 }
 
 function renderPageNumInput() {
   return html`
-    <input class="jsc-data-explorer__footer-input"/> / 123
+    <input class="jsc-data-explorer__footer-input"> / 123
   `
 }
 

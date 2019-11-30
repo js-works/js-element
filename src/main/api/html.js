@@ -1,1 +1,1 @@
-export { html as default } from 'lit-html'
+export { externalHtml as default } from '../internal/external-adaption'

@@ -3,7 +3,6 @@ import { Spec } from 'js-spec'
 
 // internal imports
 import { html, component, prop } from '../../../main/index'
-import addStyleSheet from '../tools/addStyleSheet'
 
 // === js-menu-bar ==================================================
 
@@ -21,10 +20,10 @@ component('jsc-menu-bar', {
   main(c, props) {console.log('props:', props)
     return () => html`
       <span>
+        <style>${styleSheet}</style>
         <div class="jsc-menu-bar">
-        Menubar
           <ul>
-            <slot/>
+            <slot></slot>
           </ul>
         </div>
       </span>
@@ -42,32 +41,20 @@ const validateMenuBarProps = Spec.checkProps({
 
 // === styles =======================================================
 
-addStyleSheet('jsc-logout-button', `
+const styleSheet = `
   .jsc-menu-bar {
   }
 
-  .jsc-menu-bar * {
-    xxxdisplay: none;
-  }
-  
   .jsc-menu-bar .jsc-menu {
-    display: block !important;
+    border: 1px solid #aaa;
   }
 
-  .jsc-menu-bar .jsc-menu-item {
-    display: block !important;
-  }
-  
-  .jsc-menu-bar .jsc-menu-separator {
-    display: block !important;
+  .jsc-menu-bar ul {
+    display: flex;
+    flex-direction: row;
+     list-style-type: none;
   }
 
-  .jsc-logout-button__icon {
-    margin-top: 4px;
-    margin-left: 7px;
-    width: 28px;
-    height: 28px;
-  }
-`)
+`
 
 // === misc =========================================================

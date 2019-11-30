@@ -13,7 +13,7 @@ function createConfig(moduleType, mode) {
   const isProd = mode === 'production'
 
   return {
-    entry: './src/index.js',
+    entry: './src/main/index.js',
     mode,
 
     output: {
@@ -22,7 +22,8 @@ function createConfig(moduleType, mode) {
     },
 
     externals: {
-      'lit-html': 'litHtml'
+      'lit-html': 'litHtml',
+      'hyperhtml': 'hyperhtml'
     },
 
     module: {

@@ -9,9 +9,6 @@ import '../js-cockpit/components/cockpit'
 import '../js-cockpit/components/brand'
 import '../js-cockpit/components/logout-button'
 import '../js-cockpit/components/menu-bar'
-import '../js-cockpit/components/menu'
-import '../js-cockpit/components/menu-item'
-import '../js-cockpit/components/menu-separator'
 
 component('js-cockpit-demo', {
   render() {
@@ -31,17 +28,7 @@ component('js-cockpit-demo', {
           <jsc-logout-button/>
         </div>
         <div slot="menu">
-          <jsc-menu-bar>
-            <jsc-menu text="Menu-1">
-              <jsc-menu-item text="Item-1-1"></jsc-menu-item>
-              <jsc-menu-item text="Item-1-2"></jsc-menu-item>
-            </js-menu>
-            <jsc-menu-separator></jsc-menu-separator>
-            <jsc-menu text="Menu-2">
-              <jsc-menu-item text="Item-1-1"><jsc-menu-item>
-              <jsc-menu-item text="Item-1-2"></jsc-menu-item>
-            </js-menu>
-          </jsc-menu-bar>
+          MenuBar
         </div>
         <div slot="sidebar">
           sidebar

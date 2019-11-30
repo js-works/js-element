@@ -1,5 +1,5 @@
 // external import
-import { render as litRender } from 'lit-html'
+import { externalRender } from '../internal/external-adaption'
 
 // internal imports
 import hasOwnProp from '../internal/hasOwnProp'
@@ -98,7 +98,7 @@ function generateCustomElementClass(componentName, config) {
       }
 
       if (config.render) {
-        this._adjustEventProps(); 
+        this._adjustEventProps() 
         render = () => config.render(this._props)
       } else {
         afterMountNotifier = createNotifier()
@@ -254,7 +254,6 @@ function addEventFeatures(CustomElement, config) {
     this._listenersByEventName = this._listenersByEventName || {}
     this._listenersByEventName[eventName] = this._listenersByEventName[eventName] || new Set()
     this._listenersByEventName[eventName].add(callback)
-    origAddEventListenerFunc.call(this, normalizedEventName, () => alert('juhu'))
     origAddEventListenerFunc.call(this, normalizedEventName, callback)
   }
 
@@ -371,7 +370,7 @@ function mountComponent(
   const
     update = () => {
       mounted && doBeforeUpdate && doBeforeUpdate()
-      litRender(getContent(), root)
+      externalRender(getContent(), root)
       mounted && doAfterUpdate && doAfterUpdate()
     },
 

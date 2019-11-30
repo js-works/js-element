@@ -12,7 +12,7 @@ component('jsc-logout-button', {
     return html`
       <span>
         <div class="jsc-logout-button">
-          <clr-icon class="jsc-logout-button__icon" shape="power"/>
+          <clr-icon class="jsc-logout-button__icon" shape="power"></clr-icon>
         </div>
       </span>
     `

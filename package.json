@@ -23,7 +23,9 @@
   "dependencies": {
     "@clr/icons": "^2.3.2",
     "@clr/ui": "^3.0.0-next.3",
-    "@webcomponents/webcomponentsjs": "^2.4.0"
+    "@webcomponents/webcomponentsjs": "^2.4.0",
+    "hyperhtml": "^2.31.5",
+    "lighterhtml": "^2.0.7"
   },
   "devDependencies": {
     "@babel/core": "^7.7.4",
