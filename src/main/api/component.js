@@ -74,7 +74,7 @@ function generateCustomElementClass(componentName, config) {
       const
         propName = propNameByAttrName[attrName],
         converter = attrConverters[attrName]
-
+      
       this[propName] = converter ? converter.fromString(newValue) : newValue
     }
 
@@ -98,8 +98,8 @@ function generateCustomElementClass(componentName, config) {
       }
 
       if (config.render) {
-        this._adjustEventProps()
-        render = config.render.bind(null, this._props)
+        this._adjustEventProps(); 
+        render = () => config.render(this._props)
       } else {
         afterMountNotifier = createNotifier()
         beforeUpdateNotifier = createNotifier()
@@ -129,7 +129,7 @@ function generateCustomElementClass(componentName, config) {
           const result = config.validate(this._props)
 
           if (result) {
-            const errorMsg = 'Inorrect props for component '
+            const errorMsg = 'Incorrect props for component '
               + `of type "${componentName}": ${result.message}`
 
             console.error(errorMsg)
@@ -203,7 +203,7 @@ function generateCustomElementClass(componentName, config) {
 
       set(value) {
         this._props[propName] = value
-
+        
         if (this._initialized) {
           this._update()
         }
@@ -240,7 +240,7 @@ function addEventFeatures(CustomElement, config) {
     })
   })
 
-  proto.addEventListener = function (eventName, callback) {console.log('addEventListener', eventName)
+  proto.addEventListener = function (eventName, callback) {
     const normalizedEventName =
       hasOwnProp(eventNameMappings, eventName)
         ? eventNameMappings[eventName]
@@ -254,7 +254,6 @@ function addEventFeatures(CustomElement, config) {
     this._listenersByEventName = this._listenersByEventName || {}
     this._listenersByEventName[eventName] = this._listenersByEventName[eventName] || new Set()
     this._listenersByEventName[eventName].add(callback)
-    console.log('xxxx', normalizedEventName, callback)
     origAddEventListenerFunc.call(this, normalizedEventName, () => alert('juhu'))
     origAddEventListenerFunc.call(this, normalizedEventName, callback)
   }
@@ -278,7 +277,7 @@ function addEventFeatures(CustomElement, config) {
     origRemoveEventListenerFunc.call(this, normalizedEventName, callback)
   }
 
-  proto.dispatchEvent = function (event) {console.log('dispatchEvent 1', event)
+  proto.dispatchEvent = function (event) {
     const
       callback = this[`_${event.type}_callback`],
       listenersByEventName = this._listenersByEventName,
@@ -288,7 +287,6 @@ function addEventFeatures(CustomElement, config) {
       callback(event)
     }
 
-    console.log('dispatchEvent 2')
     return origDispatchEventFunc.apply(this, arguments)
   }
 

@@ -20,13 +20,13 @@ export default {
   title: 'Demos',
 }
 
-export const Button =  () => '<button-demo/>'
+export const Button =  () => '<button-demo></button-demo>'
 
-export const SimpleCounter =  () => '<simple-counter-demo/>'
-export const SimpleCounter2 =  () => '<simple-counter-2-demo/>'
-export const ComplexCounter =  () => '<complex-counter-demo/>'
-export const Clock =  () => '<clock-demo/>'
-export const Mouse =  () => '<mouse-demo/>'
+export const SimpleCounter =  () => '<simple-counter-demo></simple-counter-demo>'
+export const SimpleCounter2 =  () => '<simple-counter-2-demo></simple-counter-2-demo>'
+export const ComplexCounter =  () => '<complex-counter-demo></complex-counter-demo>'
+export const Clock =  () => '<clock-demo></clock-demo>'
+export const Mouse =  () => '<mouse-demo></mouse-demo'
 export const Iterator =  () => '<iterator-demo/>'
-export const Interval =  () => '<interval-demo/>'
+export const Interval =  () => '<interval-demo></iterator-demo>'
 export const JSCockpit =  () => '<js-cockpit-demo/>'

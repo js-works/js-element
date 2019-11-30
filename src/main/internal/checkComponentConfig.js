@@ -12,8 +12,8 @@ export default function checkComponentConfig(config) {
     shadow = getParam(config, 'shadow', 'string'),
     render = getParam(config, 'render', 'function'),
     main = getParam(config, 'main', 'function')
-   
-  getParam(config, 'validate', 'function')
+
+  config.validate === null || getParam(config, 'validate', 'function')
 
   ifInvalidKey(config, ALLOWED_COMPONENT_CONFIG_KEYS, key => {
     throw `Invalid component configuration parameter "${key}"`

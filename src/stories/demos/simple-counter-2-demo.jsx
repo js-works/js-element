@@ -1,5 +1,5 @@
 import { html, component, prop, useEffect } from '../../main/index'
-import componentActions from '../js-cockpit/tools/componentActions'
+import componentActions from './tools/componentActions'
 
 const useActions = componentActions(update => ({
   increment(state) {
@@ -38,7 +38,7 @@ component('simple-counter-2-demo', {
     useEffect(c, () => {
       console.log(`New value of counter "${props.label}": ${state.count}`)
     }, () => [state.count])
-console.log(state)
+
     return () => html`
       <div>
         <h3>Counter demo</h3>

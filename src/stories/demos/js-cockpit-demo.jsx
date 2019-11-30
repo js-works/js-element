@@ -1,13 +1,17 @@
 import { Spec } from 'js-spec'
+import '@clr/ui/clr-ui.min.css'
+import '@clr/icons/clr-icons.min.css'
+import '@clr/icons/clr-icons.min.js'
 
-import { html, component, prop, useInterval } from '../../main/index'
+import { html, component } from '../../main/index'
 import '../js-cockpit/components/data-explorer'
 import '../js-cockpit/components/cockpit'
 import '../js-cockpit/components/brand'
 import '../js-cockpit/components/logout-button'
-import '@clr/ui/clr-ui.min.css'
-import '@clr/icons/clr-icons.min.css'
-import '@clr/icons/clr-icons.min.js'
+import '../js-cockpit/components/menu-bar'
+import '../js-cockpit/components/menu'
+import '../js-cockpit/components/menu-item'
+import '../js-cockpit/components/menu-separator'
 
 component('js-cockpit-demo', {
   render() {
@@ -27,7 +31,17 @@ component('js-cockpit-demo', {
           <jsc-logout-button/>
         </div>
         <div slot="menu">
-          Menu
+          <jsc-menu-bar>
+            <jsc-menu text="Menu-1">
+              <jsc-menu-item text="Item-1-1"></jsc-menu-item>
+              <jsc-menu-item text="Item-1-2"></jsc-menu-item>
+            </js-menu>
+            <jsc-menu-separator></jsc-menu-separator>
+            <jsc-menu text="Menu-2">
+              <jsc-menu-item text="Item-1-1"><jsc-menu-item>
+              <jsc-menu-item text="Item-1-2"></jsc-menu-item>
+            </js-menu>
+          </jsc-menu-bar>
         </div>
         <div slot="sidebar">
           sidebar
