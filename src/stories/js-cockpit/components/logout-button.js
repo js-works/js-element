@@ -1,7 +1,7 @@
 import { Spec } from 'js-spec'
 
 import { html, component, prop } from '../../../main/index'
-import addStyleSheet from '../tools/addStyleSheet'
+import addStyles from '../tools/addStyles'
 
 component('jsc-logout-button', {
   props: {
@@ -19,7 +19,7 @@ component('jsc-logout-button', {
   }
 })
 
-addStyleSheet('jsc-logout-button', `
+addStyles('jsc-logout-button', `
   .jsc-logout-button {
     border: 0;
     background-color: orange;

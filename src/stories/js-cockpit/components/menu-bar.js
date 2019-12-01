@@ -23,7 +23,7 @@ component('jsc-menu-bar', {
         <style>${styleSheet}</style>
         <div class="jsc-menu-bar">
           <ul>
-            <slot></slot>
+            <slot>jUHUUU</slot>
           </ul>
         </div>
       </span>

@@ -3,7 +3,7 @@ import hasOwnProp from './hasOwnProp'
 const
   ALLOWED_COMPONENT_CONFIG_KEYS = ['props', 'validate', 'methods', 'shadow', 'render', 'main'],
   ALLOWED_PROPERTY_CONFIG_KEYS = ['type', 'nullable', 'required', 'defaultValue'],
-  ALLOWED_PROPERTY_TYPES = [Boolean, Number, String, Object, Function],
+  ALLOWED_PROPERTY_TYPES = [Boolean, Number, String, Object, Function, Array, Date],
   REGEX_PROPERTY_NAME = /^[a-z][a-zA-Z0-9]*$/
 
 export default function checkComponentConfig(config) {

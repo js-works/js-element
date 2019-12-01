@@ -1,7 +1,7 @@
 import { Spec } from 'js-spec'
 
 import { html, component, prop, useInterval } from '../../../main/index'
-import addStyleSheet from '../tools/addStyleSheet'
+import addStyles from '../tools/addStyles'
 
 component('jsc-data-explorer', {
   props: {
@@ -56,7 +56,6 @@ component('jsc-data-explorer', {
     }
   }
 })
-
 
 function renderPaginationBar() {
   const
@@ -185,7 +184,7 @@ function getDataExplorerPropsValidator() {
 
 // --- styles -------------------------------------------------------
 
-addStyleSheet('jsc-data-explorer', `
+addStyles('jsc-data-explorer', `
   .jsc-data-explorer {
   }
 

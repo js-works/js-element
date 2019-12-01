@@ -9,8 +9,9 @@ import '../js-cockpit/components/cockpit'
 import '../js-cockpit/components/brand'
 import '../js-cockpit/components/logout-button'
 import '../js-cockpit/components/menu-bar'
+import '../js-cockpit/components/login-form'
 
-component('js-cockpit-demo', {
+component('jsc-cockpit-demo', {
   render() {
     return html`
       <jsc-cockpit header-color="teal">
@@ -34,14 +35,18 @@ component('js-cockpit-demo', {
           sidebar
         </div>
         <div slot="main">
-          <jsc-data-explorer/>
-        </div>
+          <jsc-data-explorer></jsc-data-explorer>
+          <xjsc-login-form></xjsc-login-form>
+         </div>
       </jsc-cockpit>
     `
   }
 
     /*
 
+           <jsc-login-form
+             ?remember-login=${true}
+           ></jsc-login-form>
     const
       columns = [
         {

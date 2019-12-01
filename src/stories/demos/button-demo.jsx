@@ -1,4 +1,4 @@
-import { html, component, prop } from '../../main/index'
+import { html, lighten, component, prop } from '../../main/index'
 
 component('demo-button', {
   props: {
@@ -20,7 +20,6 @@ component('demo-button', {
 component('button-demo', {
   render() {
     const onClick = e => alert(e.type)
-
     return html`
       <div>
         <h3>Button demo</h3>

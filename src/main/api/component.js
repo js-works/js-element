@@ -1,10 +1,11 @@
 // external import
-import { externalRender } from '../internal/external-adaption'
+import { render as litRender } from 'lit-html'
 
 // internal imports
 import hasOwnProp from '../internal/hasOwnProp'
 import checkComponentConfig from '../internal/checkComponentConfig'
 import createNotifier from '../internal/createNotifier'
+import registerCustomElement from '../internal/registerCustomElement'
 export default function component(componentName, config) {
   if (process.env.NODE_ENV === 'development') {
     try {
@@ -23,7 +24,7 @@ export default function component(componentName, config) {
     }
   }
 
-  customElements.define(componentName,
+  registerCustomElement(componentName,
     generateCustomElementClass(componentName, config))
 }
 
@@ -74,7 +75,7 @@ function generateCustomElementClass(componentName, config) {
       const
         propName = propNameByAttrName[attrName],
         converter = attrConverters[attrName]
-      
+
       this[propName] = converter ? converter.fromString(newValue) : newValue
     }
 
@@ -131,8 +132,6 @@ function generateCustomElementClass(componentName, config) {
           if (result) {
             const errorMsg = 'Incorrect props for component '
               + `of type "${componentName}": ${result.message}`
-
-            console.error(errorMsg)
           }
 
           return oldRender()
@@ -348,8 +347,8 @@ function propNameToAttrName(propName) {
 
 const
   booleanConverter = {
-    toString: value => value === true ? 'true' : 'false',
-    fromString: value => value === 'true' ? true : false
+    toString: value => value === true ? '' : null,
+    fromString: value => typeof value === 'string' ? true : false
   },
 
   numberConverter = {
@@ -370,7 +369,7 @@ function mountComponent(
   const
     update = () => {
       mounted && doBeforeUpdate && doBeforeUpdate()
-      externalRender(getContent(), root)
+      litRender(getContent(), root)
       mounted && doAfterUpdate && doAfterUpdate()
     },
 

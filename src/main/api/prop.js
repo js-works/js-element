@@ -35,5 +35,7 @@ export default Object.freeze({
   str: typedProp(String),
   obj: typedProp(Object),
   func: typedProp(Function),
+  arr: typedProp(Array),
+  date: typedProp(Date),
   ...reqAndOpt(null, false)
 })

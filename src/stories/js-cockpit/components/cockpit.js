@@ -1,7 +1,7 @@
 import { Spec } from 'js-spec'
 
-import { html, component, prop, useStyleSheet } from '../../../main/index'
-import addStyleSheet from '../tools/addStyleSheet'
+import { html, component, prop } from '../../../main/index'
+import addStyles from '../tools/addStyles'
 
 component('jsc-cockpit', {
   props: {
@@ -14,7 +14,9 @@ component('jsc-cockpit', {
       headerColorClass = getHeaderColorClass(props.headerColor)
 
     return () => html`
-      <style>${styleSheet}</style>
+      <use-styles name="jsc-cockpit"></use-styles>
+      <use-all-global-styles></use-all-global-styles>
+      <button class="btn btn-primary">xxx</button>
       <div class="jsc-cockpit">
         <div class="jsc-cockpit__header ${headerColorClass}">
           <div class="jsc-cockpit__brand">
@@ -43,7 +45,7 @@ component('jsc-cockpit', {
   }
 })
 
-const styleSheet = `
+addStyles('jsc-cockpit', `
   .jsc-cockpit {
     display: flex;
     flex-direction: column;
@@ -101,7 +103,8 @@ const styleSheet = `
   .jsc-cockpit__main {
     flex-grow: 1;
   }
-`
+`)
+
 function getHeaderColorClass(headerColor) {
   switch (headerColor) {
   case 'blue':
