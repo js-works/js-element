@@ -11,14 +11,15 @@ component('jsc-cockpit', {
   shadow: 'open',
   main(c, props) {
     const
-      headerColorClass = getHeaderColorClass(props.headerColor)
+      headerClass =
+        'js-cockpit__header '
+          + getHeaderColorClass(props.headerColor)
 
     return () => html`
-      <use-styles name="jsc-cockpit"></use-styles>
-      <use-all-global-styles></use-all-global-styles>
-      <button class="btn btn-primary">xxx</button>
       <div class="jsc-cockpit">
-        <div class="jsc-cockpit__header ${headerColorClass}">
+        <use-styles name="jsc-cockpit"></use-styles>
+        <use-all-global-styles></use-all-global-styles>
+        <div class=${headerClass}>
           <div class="jsc-cockpit__brand">
             <slot name="brand"></slot>
           </div>

@@ -42,14 +42,12 @@ class UseAllGlobalStyles extends HTMLElement {
   constructor() {
     super()
 
-    const styleElems = document.head.querySelectorAll('style')
+    const styleElems = document.head.getElementsByTagName('style')
 
     styleElems.forEach(styleElem => {
-      if (!styleElem.hasAttribute('class')) {
-        const clonedElem = styleElem.cloneNode(true)
-        clonedElem.removeAttribute('id')
-        this.appendChild(clonedElem)
-      }
+      const clonedStyleElem = styleElem.cloneNode(true)
+      clonedStyleElem.removeAttribute('id')
+      this.appendChild(clonedStyleElem)
     })
   }
 }
