@@ -1,7 +1,6 @@
 import { Spec } from 'js-spec'
 
-import { html, component, prop } from '../../../main/index'
-import addStyles from '../tools/addStyles'
+import { html, component, prop, css } from '../../../main/index'
 
 component('jsc-cockpit', {
   props: {
@@ -9,6 +8,8 @@ component('jsc-cockpit', {
   },
 
   shadow: 'open',
+  styles: getCockpitStyles(),
+
   main(c, props) {
     const
       headerClass =
@@ -17,9 +18,7 @@ component('jsc-cockpit', {
 
     return () => html`
       <div class="jsc-cockpit">
-        <use-styles name="jsc-cockpit"></use-styles>
-        <use-all-global-styles></use-all-global-styles>
-        <div class=${headerClass}>
+        <div class="${headerClass}">xxxx
           <div class="jsc-cockpit__brand">
             <slot name="brand"></slot>
           </div>
@@ -46,65 +45,67 @@ component('jsc-cockpit', {
   }
 })
 
-addStyles('jsc-cockpit', `
-  .jsc-cockpit {
-    display: flex;
-    flex-direction: column;
-    position: absolute;
-    width: 100%;
-    height: 100%;
-  }
+function getCockpitStyles() {
+  return css`
+    .jsc-cockpit {
+      display: flex;
+      flex-direction: column;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
 
-  .jsc-cockpit__header {
-    display: flex;
-    flex-direction: row;
-    height: 40px;
-  }
+    .jsc-cockpit__header {
+      display: flex;
+      flex-direction: row;
+      height: 40px;
+    }
 
-  .jsc-cockpit__header--default-color {
-     color: white;
-     background-color: #002538;
-  }
-  
-  .jsc-cockpit__header--blue {
-    color: white;
-    background-color: #006690;
-  }
-  
-  .jsc-cockpit__header--orange {
-    color: black;
-    background-color: #DE400F;
-  }
-  
-  .jsc-cockpit__header--teal {
-    color: white;
-    background-color: #007E7A;
-  }
-  
-  .jsc-cockpit__brand {
-  }
+    .jsc-cockpit__header--default-color {
+      color: white;
+      background-color: #002538;
+    }
+    
+    .jsc-cockpit__header--blue {
+      color: white;
+      background-color: #006690;
+    }
+    
+    .jsc-cockpit__header--orange {
+      color: black;
+      background-color: #DE400F;
+    }
+    
+    .jsc-cockpit__header--teal {
+      color: white;
+      background-color: #007E7A;
+    }
+    
+    .jsc-cockpit__brand {
+    }
 
-  .jsc-cockpit__top-navi {
-    flex-grow: 1;
-  }
+    .jsc-cockpit__top-navi {
+      flex-grow: 1;
+    }
 
-  .jsc-cockpit__action-area {
-  }
+    .jsc-cockpit__action-area {
+    }
 
-  .jsc-cockpit__content {
-    display: flex;
-    flex-direction: row;
-    flex-grow: 1;
-  }
+    .jsc-cockpit__content {
+      display: flex;
+      flex-direction: row;
+      flex-grow: 1;
+    }
 
-  .jsc-cockpit__sidebar {
-    width: 200px;
-  }
+    .jsc-cockpit__sidebar {
+      width: 200px;
+    }
 
-  .jsc-cockpit__main {
-    flex-grow: 1;
-  }
-`)
+    .jsc-cockpit__main {
+      flex-grow: 1;
+    }
+  `
+}
 
 function getHeaderColorClass(headerColor) {
   switch (headerColor) {

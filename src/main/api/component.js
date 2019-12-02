@@ -24,6 +24,21 @@ export default function component(componentName, config) {
     }
   }
 
+  if ((!config.shadow || config.shadow !== 'none') && config.styles) {
+    const styles = Array.isArray(config.styles) ? config.styles : [config.styles]
+
+    styles.forEach(item => {
+      const id = 'styles::' + item.id
+
+      if (!document.getElementById(id)) {
+        const styleElem = item.styleElement.cloneNode()
+
+        styleElem.setAttribute('id', id)
+        document.head.appendChild(styleElem)
+      }
+    })
+  }
+
   registerCustomElement(componentName,
     generateCustomElementClass(componentName, config))
 }
@@ -91,9 +106,29 @@ function generateCustomElementClass(componentName, config) {
         afterUpdateNotifier,
         beforeUnmountNotifier
 
+      
       if (config.shadow === 'open' || config.shadow === 'closed') {
         this.attachShadow({ mode: config.shadow })
-        root = this.shadowRoot
+
+        const styles =
+          !config.styles
+            ? []
+            : Array.isArray(config.styles) 
+              ? config.styles
+              : [config.styles]
+        
+        if (!config.styles || config.styles.length === 0) {
+          root = this.shadowRoot
+        } else {
+          this.shadowRoot.appendChild(document.createElement('span'))
+          this.shadowRoot.appendChild(document.createElement('span'))
+          root = this.shadowRoot.childNodes[1]
+
+          styles.forEach(item => {
+            this.shadowRoot.firstChild.appendChild(
+              item.styleElement.cloneNode(true))
+          })
+        }
       } else {
         root = this
       }

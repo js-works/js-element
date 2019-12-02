@@ -1,6 +1,7 @@
 export { default as component } from './api/component'
 export { default as prop } from './api/prop'
 export { default as html } from './api/html'
+export { default as css } from './api/css'
 export { default as supply } from './api/supply'
 export { default as supplier } from './api/supplier'
 
