@@ -24,14 +24,14 @@ export default function component(componentName, config) {
     }
   }
 
-  if ((!config.shadow || config.shadow !== 'none') && config.styles) {
+  if ((!config.shadow || config.shadow === 'none') && config.styles) {
     const styles = Array.isArray(config.styles) ? config.styles : [config.styles]
-
+    
     styles.forEach(item => {
       const id = 'styles::' + item.id
 
       if (!document.getElementById(id)) {
-        const styleElem = item.styleElement.cloneNode()
+        const styleElem = item.styleElement.cloneNode(true)
 
         styleElem.setAttribute('id', id)
         document.head.appendChild(styleElem)

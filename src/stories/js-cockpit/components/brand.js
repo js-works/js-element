@@ -1,7 +1,7 @@
 import { Spec } from 'js-spec'
+import { html, component, prop, css } from '../../../main/index'
 
-import { html, component, prop } from '../../../main/index'
-import addStyles from '../tools/addStyles'
+import brandStyles from './brand-styles'
 
 component('jsc-brand', {
   props: {
@@ -9,15 +9,29 @@ component('jsc-brand', {
     title: prop.str.req(),
   },
 
+  styles: brandStyles,
   shadow: 'open',
   render(props) {
-    const sizeClass = getSizeClass(props.size)
+    const
+      sizeClass = getSizeClass(props.size)
 
     return html`
-      <style>${styleSheet}</style>
       <div class="jsc-brand ${sizeClass}">
         <div class="jsc-brand__first-column">
-          <clr-icon shape="layers"></clr-icon>
+          <slot name="logo">
+            <svg version="1.1" width="36" height="36"  viewBox="0 0 36 36"
+              preserveAspectRatio="xMidYMid meet"
+              xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+            >
+              <g fill="currentColor">
+              <path d="M18,20.25a1,1,0,0,1-.43-.1l-15-7.09a1,1,0,0,1,0-1.81l15-7.09a1,1,0,0,1,.85,0l15,7.09a1,1,0,0,1,0,1.81l-15,7.09A1,1,0,0,1,18,20.25ZM5.34,12.16l12.66,6,12.66-6L18,6.18Z"></path>
+              <path d="M18,26.16a1,1,0,0,1-.43-.1L2.57,19a1,1,0,1,1,.85-1.81L18,24.06l14.57-6.89A1,1,0,1,1,33.43,19l-15,7.09A1,1,0,0,1,18,26.16Z"></path><
+              <path d="M18,32.07a1,1,0,0,1-.43-.1l-15-7.09a1,1,0,0,1,.85-1.81L18,30l14.57-6.89a1,1,0,1,1,.85,1.81L18.43,32A1,1,0,0,1,18,32.07Z"></path>
+              <rect x="0" y="0" width="36" height="36" fill-opacity="0"/>
+              </g>
+            </svg>
+          </slot>
         </div>
         <div class="jsc-brand__second-column">
           <div class="jsc-brand__vendor">
@@ -31,45 +45,6 @@ component('jsc-brand', {
     `
   }
 })
-
-const styleSheet = `
-  .jsc-brand {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-  }
-
-  .jsc-brand--small {
-    transform-scale: (0.75, 0.75)
-  }
-  
-  .jsc-brand--medium {
-  }
-
-  .jsc-brand-large {
-    transform-scale: (1.25, 1.25)
-  }
-  
-  .jsc-brand-large {
-    transform-scale: (1.5, 1.5)
-  }
-  
-  .jsc-brand__first-column {
-    padding: 8px;
-  }
-  
-  .jsc-brand__second-column {
-    padding: 0 8px;
-  }
-  
-  .jsc-brand__vendor {
-
-  }
-  
-  .jsc-brand__title {
-
-  }
-`
 
 function getSizeClass(size) {
   switch (size) {

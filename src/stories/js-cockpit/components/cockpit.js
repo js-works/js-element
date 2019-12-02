@@ -1,6 +1,7 @@
 import { Spec } from 'js-spec'
+import { html, component, prop } from '../../../main/index'
 
-import { html, component, prop, css } from '../../../main/index'
+import cockpitStyles from './cockpit-styles'
 
 component('jsc-cockpit', {
   props: {
@@ -8,17 +9,17 @@ component('jsc-cockpit', {
   },
 
   shadow: 'open',
-  styles: getCockpitStyles(),
+  styles: cockpitStyles,
 
   main(c, props) {
     const
       headerClass =
-        'js-cockpit__header '
+        'jsc-cockpit__header '
           + getHeaderColorClass(props.headerColor)
 
     return () => html`
       <div class="jsc-cockpit">
-        <div class="${headerClass}">xxxx
+        <div class="${headerClass}">
           <div class="jsc-cockpit__brand">
             <slot name="brand"></slot>
           </div>
@@ -44,68 +45,6 @@ component('jsc-cockpit', {
     `
   }
 })
-
-function getCockpitStyles() {
-  return css`
-    .jsc-cockpit {
-      display: flex;
-      flex-direction: column;
-      position: absolute;
-      width: 100%;
-      height: 100%;
-    }
-
-    .jsc-cockpit__header {
-      display: flex;
-      flex-direction: row;
-      height: 40px;
-    }
-
-    .jsc-cockpit__header--default-color {
-      color: white;
-      background-color: #002538;
-    }
-    
-    .jsc-cockpit__header--blue {
-      color: white;
-      background-color: #006690;
-    }
-    
-    .jsc-cockpit__header--orange {
-      color: black;
-      background-color: #DE400F;
-    }
-    
-    .jsc-cockpit__header--teal {
-      color: white;
-      background-color: #007E7A;
-    }
-    
-    .jsc-cockpit__brand {
-    }
-
-    .jsc-cockpit__top-navi {
-      flex-grow: 1;
-    }
-
-    .jsc-cockpit__action-area {
-    }
-
-    .jsc-cockpit__content {
-      display: flex;
-      flex-direction: row;
-      flex-grow: 1;
-    }
-
-    .jsc-cockpit__sidebar {
-      width: 200px;
-    }
-
-    .jsc-cockpit__main {
-      flex-grow: 1;
-    }
-  `
-}
 
 function getHeaderColorClass(headerColor) {
   switch (headerColor) {
