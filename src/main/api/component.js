@@ -109,21 +109,20 @@ function generateCustomElementClass(componentName, config) {
       
       if (config.shadow === 'open' || config.shadow === 'closed') {
         this.attachShadow({ mode: config.shadow })
+        this.shadowRoot.appendChild(document.createElement('span'))
+        this.shadowRoot.appendChild(document.createElement('span'))
+        this.shadowRoot.childNodes[0].setAttribute('data-role', 'styles')
+        this.shadowRoot.childNodes[1].setAttribute('data-role', 'content')
+        root = this.shadowRoot.childNodes[1]
 
-        const styles =
-          !config.styles
-            ? []
-            : Array.isArray(config.styles) 
-              ? config.styles
-              : [config.styles]
+        if (config.styles) {
+          const styles =
+            !config.styles
+              ? []
+              : Array.isArray(config.styles) 
+                ? config.styles
+                : [config.styles]
         
-        if (!config.styles || config.styles.length === 0) {
-          root = this.shadowRoot
-        } else {
-          this.shadowRoot.appendChild(document.createElement('span'))
-          this.shadowRoot.appendChild(document.createElement('span'))
-          root = this.shadowRoot.childNodes[1]
-
           styles.forEach(item => {
             this.shadowRoot.firstChild.appendChild(
               item.styleElement.cloneNode(true))
