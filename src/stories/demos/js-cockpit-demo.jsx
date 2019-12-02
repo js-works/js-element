@@ -16,8 +16,7 @@ component('jsc-cockpit-demo', {
     return html`
       <jsc-cockpit header-color="teal">
         <div slot="brand">
-          <jsc-brand vendor="meet&greet" title="Back Office">
-          </jsc-brand>
+          <jsc-brand vendor="meet&greet" title="Back Office"></jsc-brand>
         </div>
         <div slot="top-navi">
           Top Navi

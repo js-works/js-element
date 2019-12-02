@@ -18,7 +18,7 @@ component('jsc-brand', {
     return html`
       <div class="jsc-brand ${sizeClass}">
         <div class="jsc-brand__first-column">
-          <slot name="logo">
+          <slot>
             <svg version="1.1" width="36" height="36"  viewBox="0 0 36 36"
               preserveAspectRatio="xMidYMid meet"
               xmlns="http://www.w3.org/2000/svg"

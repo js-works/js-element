@@ -5,7 +5,6 @@ export default css`
     display: flex;
     flex-direction: row;
     align-items: center;
-    background-color: orange;
   }
 
   .jsc-brand--small {

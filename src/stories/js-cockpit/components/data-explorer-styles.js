@@ -9,6 +9,12 @@ export default css`
     border-bottom-right-radius: 0;
   }
 
+  .jsc-data-explorer__table > thead {
+  }
+
+  .jsc-data-explorer__table > thead > tr {
+  }
+  
   .jsc-data-explorer__table > thead > tr > th {
     font-size: .55rem !important;
   }
