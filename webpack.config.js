@@ -5,12 +5,19 @@ const
   path = require('path')
 
 module.exports = [
+  createConfig('umd', 'development'),
+  createConfig('umd', 'production'),
+  
   createConfig('esm', 'development'),
   createConfig('esm', 'production')
 ]
 
 function createConfig(moduleType, mode) {
-  const isProd = mode === 'production'
+  const
+    isProd = mode === 'production',
+    externals = moduleType !== 'esm'
+      ? {}
+      : { 'lit-html': 'litHTML' }
 
   return {
     entry: './src/main/index.js',
@@ -21,10 +28,7 @@ function createConfig(moduleType, mode) {
       filename: `js-elements.${moduleType}.${mode}.js`
     },
 
-    externals: {
-      'lit-html': 'litHtml',
-      'hyperhtml': 'hyperhtml'
-    },
+    externals,
 
     module: {
       rules: [

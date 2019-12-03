@@ -39,7 +39,7 @@ component('my-counter', {
     return () => html`
       <div> 
         <label>${props.label}: </label>
-        <button onclick=${onIncrement}>${state.count}</button>
+        <button @click=${onIncrement}>${state.count}</button>
       </div>
     `
   }
