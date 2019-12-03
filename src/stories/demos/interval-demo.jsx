@@ -1,4 +1,4 @@
-import { html, component, supply, useInterval, useState } from '../../main/index'
+import { html, component, toRef, useInterval, useState } from '../../main/index'
 
 component('interval-demo', {
   main(c) {
@@ -12,7 +12,7 @@ component('interval-demo', {
 
     useInterval(c, () => {
       setState('count', it => it + 1)
-    }, supply(() => state.delay))
+    }, toRef(() => state.delay))
 
     useInterval(c, () => {
       if (state.delay > 10) {

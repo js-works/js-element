@@ -1,14 +1,14 @@
-import { html, lighten, component, prop } from '../../main/index'
+import { html, component, prop } from '../../main/index'
 
 component('demo-button', {
   props: {
     text: prop.str.opt(''),
-    onClickx: prop.func.opt()
+    onClick: prop.func.opt()
   },
 
   render(props) {
     const onClick = () => {
-      props.onClickx && props.onClickx(new CustomEvent('click-button1'))
+      props.onClick && props.onClick(new CustomEvent('click-button1'))
     }
 
     return html`
@@ -23,7 +23,7 @@ component('button-demo', {
     return html`
       <div>
         <h3>Button demo</h3>
-        <demo-button .onclickx=${onClick} text="Click me"></demo-button>
+        <demo-button @click=${onClick} text="Click me"></demo-button>
       </div>
     `
   }

@@ -1,16 +1,16 @@
 import useEffect from './useEffect'
-import supplier from './supplier'
+import asRef from './asRef'
 
 function useInterval(c, callback, delay) {
   const
-    $callback = supplier(callback),
-    $delay = supplier(delay)
+    callbackRef = asRef(callback),
+    delayRef = asRef(delay)
   
   useEffect(c, () => {
-    const id = setInterval($callback.get(), $delay.get())
+    const id = setInterval(callbackRef.current, delayRef.current)
 
     return () => clearInterval(id)
-  }, () => [$callback.get(), $delay.get()])
+  }, () => [callbackRef.current, delayRef.current])
 }
 
 export default useInterval

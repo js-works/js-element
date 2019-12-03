@@ -52,7 +52,7 @@ component('complex-counter-demo', {
     return () => html`
       <div>
         <h3>Complex counter demo</h3>
-        <complex-counter  @click="${() => alert(111)}"  *ref=${counterRef.bind}></complex-counter>
+        <complex-counter *ref=${counterRef.bind}></complex-counter>
         <br/>
         <button @click=${onSetTo0}>Set to 0</button>
         <button @click=${onSetTo100}>Set to 100</button>

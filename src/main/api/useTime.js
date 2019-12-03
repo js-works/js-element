@@ -1,18 +1,18 @@
-import supplier from './supplier'
+import asRef from './asRef'
 import useValue from './useValue'
 import useInterval from './useInterval'
 
 function useTime(c, delay, getter = getDate) {
   const
-    $delay = supplier(delay),
-    $getter = getter ? supplier(getter) : null,
+    delayRef = asRef(delay),
+    getterRef = getter ? asRef(getter) : null,
   
     [value, setValue] =
-      useValue(c, $getter.get()())
+      useValue(c, getterRef.current())
 
   useInterval(c, () => {
-    setValue($getter.get()())
-  }, $delay)
+    setValue(getterRef.current())
+  }, delayRef.curren)
 
   return value
 }

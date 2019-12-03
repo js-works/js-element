@@ -5,6 +5,9 @@ const
   path = require('path')
 
 module.exports = [
+  createConfig('cjs', 'development'),
+  createConfig('cjs', 'production'),
+  
   createConfig('umd', 'development'),
   createConfig('umd', 'production'),
   
