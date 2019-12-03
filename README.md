@@ -1,4 +1,4 @@
-# js-mojo
+# js-elements
 
 A R&D project to evaluate an alternative approach to define custom elements.
 
@@ -10,7 +10,7 @@ and btw: It will never be meant to be used in production.
 ## Example
 
 ```js
-import { component, html, prop, useEffect, useState } from 'js-mojo'
+import { component, html, prop, useEffect, useState } from 'js-elements'
 
 // custom element will automatically be registered as 'my-counter' 
 

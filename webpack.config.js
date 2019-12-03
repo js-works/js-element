@@ -18,7 +18,7 @@ function createConfig(moduleType, mode) {
 
     output: {
       path: path.resolve(__dirname, 'dist'),
-      filename: `js-mojo.${moduleType}.${mode}.js`
+      filename: `js-elements.${moduleType}.${mode}.js`
     },
 
     externals: {

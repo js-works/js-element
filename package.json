@@ -1,5 +1,5 @@
 {
-  "name": "js-mojo",
+  "name": "js-elements",
   "version": "0.0.1",
   "description": "",
   "main": "index.js",
@@ -11,15 +11,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/js-works/js-mojo.git"
+    "url": "git+https://github.com/js-works/js-elements.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/js-works/js-mojo/issues"
+    "url": "https://github.com/js-works/js-elements/issues"
   },
-  "homepage": "https://github.com/js-works/js-mojo#readme",
+  "homepage": "https://github.com/js-works/js-elements#readme",
   "dependencies": {
     "@clr/core": "^3.0.0-next.3",
     "@clr/icons": "^2.3.2",
