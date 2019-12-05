@@ -271,8 +271,8 @@ function addEventFeatures(CustomElement, config) {
     }
 
     this._listenersByEventName = this._listenersByEventName || {}
-    this._listenersByEventName[eventName] = this._listenersByEventName[eventName] || new Set()
-    this._listenersByEventName[eventName].add(callback)
+    this._listenersByEventName[normalizedEventName] = this._listenersByEventName[normalizedEventName] || new Set()
+    this._listenersByEventName[normalizedEventName].add(callback)
     origAddEventListenerFunc.call(this, normalizedEventName, callback)
   }
 
