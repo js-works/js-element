@@ -4,14 +4,14 @@ import '@clr/icons/clr-icons.min.css'
 import '@clr/icons/clr-icons.min.js'
 
 import { html, component } from '../../main/index'
-import '../js-cockpit/components/data-explorer'
-import '../js-cockpit/components/cockpit'
-import '../js-cockpit/components/brand'
-import '../js-cockpit/components/logout-button'
-import '../js-cockpit/components/menu-bar'
-import '../js-cockpit/components/login-form'
+import '../admin-ui/components/data-explorer'
+import '../admin-ui/components/cockpit'
+import '../admin-ui/components/brand'
+import '../admin-ui/components/logout-button'
+import '../admin-ui/components/menu-bar'
+import '../admin-ui/components/login-form'
 
-component('jsc-cockpit-demo', {
+component('admin-ui-demo', {
   render() {
     return html`
       <jsc-cockpit header-color="teal">

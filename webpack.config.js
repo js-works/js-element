@@ -1,7 +1,9 @@
 const
+  CleanupPlugin = require('webpack-cleanup-plugin'),
   UglifyJsPlugin = require('uglifyjs-webpack-plugin'),
   TerserPlugin = require('terser-webpack-plugin'),
   CompressionPlugin = require('compression-webpack-plugin'),
+  ZipPlugin = require('zip-webpack-plugin'),
   path = require('path'),
 
   libraryTargetMap = {
@@ -11,7 +13,7 @@ const
   }
 
 module.exports = [
-  createConfig('cjs', 'development'),
+  createConfig('cjs', 'development', false, true), // TODO
   createConfig('cjs', 'production'),
   
   createConfig('umd', 'development'),
@@ -21,7 +23,7 @@ module.exports = [
   createConfig('esm', 'production')
 ]
 
-function createConfig(moduleType, mode) {
+function createConfig(moduleType, mode, cleanup = false, zip = false) {
   const
     isProd = mode === 'production',
     externals = moduleType !== 'esm'
@@ -33,7 +35,7 @@ function createConfig(moduleType, mode) {
     mode,
 
     output: {
-      library:  'jsElements',
+      library: 'jsElements',
       libraryTarget:  libraryTargetMap[moduleType],
       path: path.resolve(__dirname, 'dist'),
       filename: `js-elements.${moduleType}.${mode}.js`
@@ -57,7 +59,17 @@ function createConfig(moduleType, mode) {
       ]
     },
 
-    plugins: isProd ? [new CompressionPlugin()] : [],
+    plugins: [
+      ...(!cleanup ? [] : [new CleanupPlugin()]),
+      ...(!isProd ? [] : [new CompressionPlugin()]),
+
+      ...(!zip ? [] : [
+        new ZipPlugin({
+          filename: 'source.zip',
+          exclude: ['node_modules', '.git', 'dist'],
+        })
+      ])
+    ],
 
     optimization: {
       minimize: true,
@@ -75,6 +87,8 @@ function createConfig(moduleType, mode) {
       ]
       
       //new UglifyJsPlugin()
-    }
+    },
+
+
   }
 }

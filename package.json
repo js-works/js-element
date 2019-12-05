@@ -1,9 +1,11 @@
 {
   "name": "js-elements",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "",
   "main": "index.js",
-   "files": [
+  "module": "dist/js-elements.esm.producion.js",
+  "unpkg": "dist/js-elements.umd.poduction.js",
+  "files": [
     "index.js",
     "dist"
   ],
@@ -11,7 +13,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
-    "build": "webpack --config webpack.config.js"
+    "build": "webpack --config webpack.config.js",
+    "dist": "npm run build"
   },
   "repository": {
     "type": "git",
@@ -46,6 +49,8 @@
     "terser-webpack-plugin": "^2.2.1",
     "uglifyjs-webpack-plugin": "^2.2.0",
     "webpack": "^4.41.2",
-    "webpack-cli": "^3.3.10"
+    "webpack-cleanup-plugin": "^0.5.1",
+    "webpack-cli": "^3.3.10",
+    "zip-webpack-plugin": "^3.0.0"
   }
 }
