@@ -3,12 +3,12 @@ import { html, component, prop } from '../../main/index'
 component('demo-button', {
   props: {
     text: prop.str.opt(''),
-    onClick: prop.func.opt()
+    onAction: prop.func.opt()
   },
 
   render(props) {
     const onClick = () => {
-      props.onClick && props.onClick(new CustomEvent('click-button1'))
+      props.onAction && props.onAction(new CustomEvent('action'))
     }
 
     return html`
@@ -19,11 +19,11 @@ component('demo-button', {
 
 component('button-demo', {
   render() {
-    const onClick = e => alert(e.type)
+    const onAction = e => alert(e.type)
     return html`
       <div>
         <h3>Button demo</h3>
-        <demo-button @click=${onClick} text="Click me"></demo-button>
+        <demo-button @action=${onAction} text="Click me"></demo-button>
       </div>
     `
   }

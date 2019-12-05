@@ -259,20 +259,6 @@ function addEventFeatures(CustomElement, config) {
     origRemoveEventListenerFunc = proto.removeEventListener,
     origDispatchEventFunc = proto.dispatchEvent
 
-  eventPropNames.forEach(eventPropName => {
-    const eventName = eventNameMappings[eventPropName.substr(2)]
-    
-    Object.defineProperty(proto, eventPropName, {
-      set(callback) {
-        this[`_${eventName}_callback`] = callback
-      },
-
-      get() {
-        return this[`_${eventName}_callback`]
-      }
-    })
-  })
-
   proto.addEventListener = function (eventName, callback) {
     const normalizedEventName =
       hasOwnProp(eventNameMappings, eventName)
@@ -309,30 +295,18 @@ function addEventFeatures(CustomElement, config) {
     origRemoveEventListenerFunc.call(this, normalizedEventName, callback)
   }
 
-  proto.dispatchEvent = function (event) {
-    const
-      callback = this[`_${event.type}_callback`],
-      listenersByEventName = this._listenersByEventName,
-      listeners = listenersByEventName && this._listenersByEventName[event.type]
-
-    if (callback && (!listeners || !listeners.has(callback))) {
-      callback(event)
-    }
-
-    return origDispatchEventFunc.apply(this, arguments)
-  }
-
   proto._adjustEventProps = function () {
     eventPropNames.forEach(eventPropName => {
-
       const
         eventName = eventNameMappings[eventPropName.substr(2)],
         listeners = this._listenersByEventName && this._listenersByEventName[eventName],
-        hasAnyListeners = this[eventPropName] || (listeners && listeners.size > 0)
+        hasAnyListeners = listeners && listeners.size > 0
 
       if (hasAnyListeners) {
         if (!this._props[eventPropName]) {
-          this._props[eventPropName] = event => this.dispatchEvent(event)
+          this._props[eventPropName] = event => {
+            this.dispatchEvent(event)
+          }
         }
       } else {
         delete this._props[eventPropName]
