@@ -31,7 +31,7 @@ component('my-counter', {
     useEffect(c, () => {
       console.log(`"${props.label}" has been mounted`)
 
-      () => console.log(`Unmounting "${props.label}"`)
+      return () => console.log(`Unmounting "${props.label}"`)
     }, null)
 
     useEffect(c, () => {
