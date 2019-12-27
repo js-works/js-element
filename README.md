@@ -29,11 +29,13 @@ component('my-counter', {
       onIncrement = () => setState('count', it => it + 1)
 
     useEffect(c, () => {
-      console.log('Component has been mounted')
+      console.log(`"${props.label}" has been mounted`)
+
+      () => console.log(`Unmounting "${props.label}"`)
     }, null)
 
     useEffect(c, () => {
-      console.log(`New value of counter "${props.label}": ${state.count}`)
+      console.log(`New value of "${props.label}": ${state.count}`)
     }, () => [state.count])
 
     return () => html`
