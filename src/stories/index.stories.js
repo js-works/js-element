@@ -8,13 +8,7 @@ import './demos/clock-demo'
 import './demos/iterator-demo'
 import './demos/mouse-demo'
 import './demos/interval-demo'
-import './demos/admin-ui-demo'
-
 import './styles.css'
-
-import '@clr/ui/clr-ui.min.css'
-import '@clr/icons/clr-icons.min.css'
-import '@clr/icons/clr-icons.min.js'
 
 export default {
   title: 'Demos',
@@ -29,5 +23,3 @@ export const Clock =  () => '<clock-demo></clock-demo>'
 export const Mouse =  () => '<mouse-demo></mouse-demo'
 export const Iterator =  () => '<iterator-demo/>'
 export const Interval =  () => '<interval-demo></iterator-demo>'
-
-export const AdminUI=  () => '<admin-ui-demo></admin-ui-demo>'

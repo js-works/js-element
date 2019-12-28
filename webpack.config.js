@@ -26,9 +26,7 @@ module.exports = [
 function createConfig(moduleType, mode, cleanup = false, zip = false) {
   const
     isProd = mode === 'production',
-    externals = moduleType !== 'esm'
-      ? {}
-      : { 'lit-html': 'litHTML' }
+    externals = { 'lit-html': 'litHTML'}
 
   return {
     entry: './src/main/index.js',
