@@ -11,9 +11,7 @@ export default function componentActions(initActions, initState = null) {
       getState = () => currentImmutableState,
       
       updater = update => {
-        const unsubscribe = c.beforeUpdate(() => {
-          unsubscribe()
-
+        c.update(() => {
           if (typeof update === 'function') {
             currentImmutableState =
               Object.assign({},
@@ -28,8 +26,6 @@ export default function componentActions(initActions, initState = null) {
 
           Object.assign(mutableState, currentImmutableState)
         })
-
-        c.update()
       },
 
       actions = { ...initActions(updater, getState) },

@@ -4,7 +4,6 @@ import { render as litRender } from 'lit-html'
 // internal imports
 import hasOwnProp from '../internal/hasOwnProp'
 import checkComponentConfig from '../internal/checkComponentConfig'
-import createNotifier from '../internal/createNotifier'
 import registerCustomElement from '../internal/registerCustomElement'
 export default function component(componentName, config) {
   if (process.env.NODE_ENV === 'development') {
@@ -145,7 +144,10 @@ function generateCustomElementClass(componentName, config) {
           getRoot: () => root,
           isMounted: () => mounted,
           isRendering: () => isRendering,
-          update: () => update && update(),
+          update: runOnceBeforeUpdate => {
+            update && update(runOnceBeforeUpdate)
+          },
+
           afterMount: afterMountNotifier.subscribe,
           beforeUpdate: beforeUpdateNotifier.subscribe,
           afterUpdate: afterUpdateNotifier.subscribe,
@@ -164,8 +166,8 @@ function generateCustomElementClass(componentName, config) {
           const result = config.validate(this._props)
 
           if (result) {
-            const errorMsg = 'Incorrect props for component '
-              + `of type "${componentName}": ${result.message}`
+            throw new TypeError('Incorrect props for component '
+              + `of type "${componentName}": ${result.message}`)
           }
 
           return oldRender()
@@ -256,8 +258,7 @@ function addEventFeatures(CustomElement, config) {
     eventPropNames = propNames.filter(isEventPropName),
     eventNameMappings = getEventNameMappings(eventPropNames),
     origAddEventListenerFunc = proto.addEventListener,
-    origRemoveEventListenerFunc = proto.removeEventListener,
-    origDispatchEventFunc = proto.dispatchEvent
+    origRemoveEventListenerFunc = proto.removeEventListener
 
   proto.addEventListener = function (eventName, callback) {
     const normalizedEventName =
@@ -372,13 +373,38 @@ function mountComponent(
   doAfterUpdate, 
   doBeforeUnmount
 ) {
-  let mounted = false
+  let
+    mounted = false,
+    updateForced = false
 
   const
-    update = () => {
+    runOnceBeforeUpdateTasks = [],
+
+    updateSync = () => {
       mounted && doBeforeUpdate && doBeforeUpdate()
+      
+      if (mounted && runOnceBeforeUpdateTasks.length > 0) {
+        runOnceBeforeUpdateTasks.forEach(task => task())
+        runOnceBeforeUpdateTasks.length = 0 // TODO!!!!!
+      }
+
       litRender(getContent(), root)
       mounted && doAfterUpdate && doAfterUpdate()
+    },
+
+    updateAsync = runOnceBeforeUpdateTask => {
+      runOnceBeforeUpdateTask
+        && runOnceBeforeUpdateTasks.push(runOnceBeforeUpdateTask)
+
+      if (!updateForced) {
+        updateForced = true
+
+        requestAnimationFrame(() => {
+          updateForced = false
+
+          updateSync()
+        })
+      }
     },
 
     unmount = () => {
@@ -386,9 +412,23 @@ function mountComponent(
       root.innerHtml = ''
     }
 
-  update()
+  updateSync()
   mounted = true
   doAfterMount && doAfterMount()
 
-  return { update, unmount }
+  return { update: updateAsync, unmount }
+}
+
+function createNotifier() {
+  const subscribers = []
+
+  return {
+    subscribe(subscriber) {
+      subscribers.push(subscriber)
+    },
+
+    notify() {
+      subscribers.forEach(subscriber => subscriber())
+    }
+  }
 }

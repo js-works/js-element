@@ -15,16 +15,12 @@ export default function useState(c, initialState) {
         })
       } 
 
-      const unsubscribe = c.beforeUpdate(() => {
-        unsubscribe()
-
+      c.update(() => {
         Object.assign(state, typeof updater === 'function'
           ? updater(state)
           : updater
         )
       })
-
-      c.update()
     }
 
   return [state, setState]
