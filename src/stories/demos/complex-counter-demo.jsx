@@ -1,4 +1,4 @@
-import { html, component, prop, useEffect, useElementRef, useState } from '../../main/index'
+import { html, component, prop, useEffect, useElementRef, useMethods, useState } from '../../main/index'
 
 component('complex-counter', {
   props: {
@@ -7,56 +7,52 @@ component('complex-counter', {
   },
 
   methods: ['reset'],
+}, props => {
+  const 
+    [state, setState] = useState({
+      count: props.initialValue
+    }),
 
-  main(c, props, setMethods) {
-    const 
-      [state, setState] = useState(c, {
-        count: props.initialValue
-      }),
+    onIncrement = () => setState('count', it => it + 1),
+    onDecrement = () => setState('count', it => it - 1)
 
-      onIncrement = () => setState('count', it => it + 1),
-      onDecrement = () => setState('count', it => it - 1)
+  useMethods({
+    reset: (n = 0) => setState('count', n)
+  })
 
-    setMethods({
-      reset: (n = 0) => setState('count', n)
-    })
+  useEffect(() => {
+    console.log('Component has been mounted mounted')
+    
+    return () => console.log('Component will be umounted')
+  }, null)
 
-    useEffect(c, () => {
-      console.log('Component has been mounted mounted')
-      
-      return () => console.log('Component will be umounted')
-    }, null)
+  useEffect(() => {
+    console.log(`New value of counter "${props.label}": ${state.count}`)
+  }, () => [state.count])
 
-    useEffect(c, () => {
-      console.log(`New value of counter "${props.label}": ${state.count}`)
-    }, () => [state.count])
-
-    return () => html`
-      <div>
-        <label>${props.label}: </label>
-        <button @click=${onDecrement}>-</button>
-        <span>${state.count}</span>
-        <button @click=${onIncrement}>+</button>
-      </div>
-    `
-  }
+  return () => html`
+    <div>
+      <label>${props.label}: </label>
+      <button @click=${onDecrement}>-</button>
+      <span>${state.count}</span>
+      <button @click=${onIncrement}>+</button>
+    </div>
+  `
 })
 
-component('complex-counter-demo', {
-  main(c) {
-    const
-      counterRef = useElementRef(c),
-      onSetTo0 = () => counterRef.current.reset(0),
-      onSetTo100 = () => counterRef.current.reset(100)
+component('complex-counter-demo', () => {
+  const
+    counterRef = useElementRef(),
+    onSetTo0 = () => counterRef.current.reset(0),
+    onSetTo100 = () => counterRef.current.reset(100)
 
-    return () => html`
-      <div>
-        <h3>Complex counter demo</h3>
-        <complex-counter *ref=${counterRef.bind}></complex-counter>
-        <br/>
-        <button @click=${onSetTo0}>Set to 0</button>
-        <button @click=${onSetTo100}>Set to 100</button>
-      </div>
-    `
-  }
+  return () => html`
+    <div>
+      <h3>Complex counter demo</h3>
+      <complex-counter *ref=${counterRef.bind}></complex-counter>
+      <br/>
+      <button @click=${onSetTo0}>Set to 0</button>
+      <button @click=${onSetTo100}>Set to 100</button>
+    </div>
+  `
 })

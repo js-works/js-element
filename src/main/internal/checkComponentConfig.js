@@ -1,7 +1,7 @@
 import hasOwnProp from './hasOwnProp'
 
 const
-  ALLOWED_COMPONENT_CONFIG_KEYS = ['props', 'validate', 'methods', 'styles', 'shadow', 'render', 'main'],
+  ALLOWED_COMPONENT_CONFIG_KEYS = ['props', 'validate', 'methods', 'styles', 'shadow'],
   ALLOWED_PROPERTY_CONFIG_KEYS = ['type', 'nullable', 'required', 'defaultValue'],
   ALLOWED_PROPERTY_TYPES = [Boolean, Number, String, Object, Function, Array, Date],
   REGEX_PROPERTY_NAME = /^[a-z][a-zA-Z0-9]*$/
@@ -10,8 +10,6 @@ export default function checkComponentConfig(config) {
   const
     props = getParam(config, 'props', 'object'),
     shadow = getParam(config, 'shadow', 'string'),
-    render = getParam(config, 'render', 'function'),
-    main = getParam(config, 'main', 'function'),
     styles = getParam(config, 'styles') // TODO
 
   config.validate === null || getParam(config, 'validate', 'function')
@@ -20,14 +18,6 @@ export default function checkComponentConfig(config) {
     throw `Invalid component configuration parameter "${key}"`
   })
 
-  if (render && main) {
-    throw 'Component configuration must not have both parameters "render" and "main" at once'
-  }
-
-  if (!render && !main) {
-    throw 'Component configuration must either have a parameter "render" or a parameter "main"'
-  }
-  
   if (shadow && shadow !== 'none' && shadow !== 'open' && shadow !== 'closed') {
     throw 'Component configuration parameter "shadow" must either be "none", "open" or "closed"'
   }

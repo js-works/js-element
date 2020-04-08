@@ -1,5 +1,8 @@
-export default function useValue(c, initialValue) {
+import hook from './hook'
+import globals from '../internal/globals'
+export default hook('useValue', initialValue => {
   const
+    c = globals.currentCtrl,
     value = { value: initialValue },
 
     setValue = updater => {
@@ -11,4 +14,4 @@ export default function useValue(c, initialValue) {
     }
 
   return [value, setValue]
-}
+})

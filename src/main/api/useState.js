@@ -1,5 +1,9 @@
-export default function useState(c, initialState) {
+
+import hook from './hook'
+import globals from '../internal/globals'
+export default hook('useState', initialState => {
   const
+    c = globals.currentCtrl,
     state = { ...initialState },
 
     setState = (arg1, arg2) => {
@@ -24,4 +28,4 @@ export default function useState(c, initialState) {
     }
 
   return [state, setState]
-}
+})

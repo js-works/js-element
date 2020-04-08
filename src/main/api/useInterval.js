@@ -1,16 +1,14 @@
 import useEffect from './useEffect'
 import asRef from './asRef'
-
-function useInterval(c, callback, delay) {
+import hook from './hook'
+export default hook('useInterval', (callback, delay) => {
   const
     callbackRef = asRef(callback),
     delayRef = asRef(delay)
   
-  useEffect(c, () => {
+  useEffect(() => {
     const id = setInterval(callbackRef.current, delayRef.current)
 
     return () => clearInterval(id)
   }, () => [callbackRef.current, delayRef.current])
-}
-
-export default useInterval
+})

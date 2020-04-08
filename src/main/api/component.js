@@ -2,18 +2,19 @@
 import { render as litRender } from 'lit-html'
 
 // internal imports
+import globals from '../internal/globals'
 import hasOwnProp from '../internal/hasOwnProp'
 import checkComponentConfig from '../internal/checkComponentConfig'
 import registerCustomElement from '../internal/registerCustomElement'
-export default function component(componentName, config) {
+export default function component(componentName, a, b) {
+  const
+    config = typeof a === 'function' ? {} : a,
+    main = b ? b : a
+
   if (process.env.NODE_ENV === 'development') {
     try {
       if (typeof name !== 'string') {
         throw 'String expected as first argument'
-      }
-
-      if (typeof config !== 'object') {
-        throw 'Object expected as second argument'
       }
 
       checkComponentConfig(config)
@@ -39,10 +40,10 @@ export default function component(componentName, config) {
   }
 
   registerCustomElement(componentName,
-    generateCustomElementClass(componentName, config))
+    generateCustomElementClass(componentName, config, main))
 }
 
-function generateCustomElementClass(componentName, config) {
+function generateCustomElementClass(componentName, config, main) {
   const
     propNames = config.props ? Object.keys(config.props) : [],
     attrNames = [],
@@ -131,32 +132,52 @@ function generateCustomElementClass(componentName, config) {
         root = this
       }
 
-      if (config.render) {
-        this._adjustEventProps() 
-        render = () => config.render(this._props)
-      } else {
-        afterMountNotifier = createNotifier()
-        beforeUpdateNotifier = createNotifier()
-        afterUpdateNotifier = createNotifier()
-        beforeUnmountNotifier = createNotifier()
+      this._adjustEventProps() 
+      afterMountNotifier = createNotifier()
+      beforeUpdateNotifier = createNotifier()
+      afterUpdateNotifier = createNotifier()
+      beforeUnmountNotifier = createNotifier()
 
-        const ctrl = {
-          getRoot: () => root,
-          isMounted: () => mounted,
-          isRendering: () => isRendering,
-          update: runOnceBeforeUpdate => {
-            update && update(runOnceBeforeUpdate)
-          },
+      const ctrl = {
+        getRoot: () => root,
+        isMounted: () => mounted,
+        isRendering: () => isRendering,
+        
+        update: runOnceBeforeUpdate => {
+          update && update(runOnceBeforeUpdate)
+        },
 
-          afterMount: afterMountNotifier.subscribe,
-          beforeUpdate: beforeUpdateNotifier.subscribe,
-          afterUpdate: afterUpdateNotifier.subscribe,
-          beforeUnmount: beforeUnmountNotifier.subscribe
+        setMethods: methods => this._methods = methods,
+        afterMount: afterMountNotifier.subscribe,
+        beforeUpdate: beforeUpdateNotifier.subscribe,
+        afterUpdate: afterUpdateNotifier.subscribe,
+        beforeUnmount: beforeUnmountNotifier.subscribe
+      }
+
+      try {
+        let firstTime = true
+
+        render = () => {
+          if (firstTime) {
+            globals.currentCtrl = ctrl
+            firstTime = false
+            const result = main(this._props)
+
+            if (typeof result !== 'function') {
+              render = main
+
+              return result
+            } else {
+              render = result
+
+              return render() 
+            }
+          } else {
+            return render(this._props)
+          }
         }
-
-        render = config.main(ctrl, this._props, methods => {
-          this._methods = methods
-        })
+      } finally {
+        globals.currentCtrl = null
       }
 
       if (config.validate) {

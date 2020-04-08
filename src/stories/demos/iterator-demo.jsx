@@ -1,7 +1,7 @@
 import { html, component } from '../../main/index'
 
 const demoContent = {
-  [Symbol.iterator]: function * () {
+  *[Symbol.iterator]() {
     yield 'I'
     yield 't'
     yield 'e'
@@ -33,17 +33,15 @@ const demoContent = {
   }
 }
 
-component('iterator-demo', {
-  render () {
-    return html`
+component('iterator-demo', () => {
+  return html`
+    <div>
       <div>
-        <div>
-            If everything works fine then the following line shall be:
-            "<i>Iterators seem to work properly!</i>"
-        </div>
-        <br/>
-        <div>&gt;&gt; ${demoContent}</div>
+          If everything works fine then the following line should be:
+          "<i>Iterators seem to work properly!</i>"
       </div>
-    `
-  }
+      <br/>
+      <div>&gt;&gt; ${demoContent}</div>
+    </div>
+  `
 })

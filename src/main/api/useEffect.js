@@ -1,7 +1,11 @@
-export default function useEffect(c, action, getDeps) {
+import hook from './hook'
+import globals from '../internal/globals'
+export default hook('useEffect', (action, getDeps) => {
   let
     oldDeps = null,
     cleanup
+  
+  const c = globals.currentCtrl
 
   if (getDeps === null) {
     c.afterMount(() => { cleanup = action() })
@@ -29,7 +33,7 @@ export default function useEffect(c, action, getDeps) {
     throw new TypeError(
       '[useEffect] Third argument must either be undefined, null or a function')
   }
-}
+})
 
 // --- locals -------------------------------------------------------
 
