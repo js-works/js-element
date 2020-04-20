@@ -3,18 +3,18 @@ import toRef from './toRef'
 import hook from './hook'
 import globals from '../internal/globals'
 export default hook('useElementRef', () => {
-  let currentElement = null
+  let current = null
 
   const
-    c = globals.currentCtrl,
+    c = globals.currentComponent,
   
     ref = toRef(() => {
-      if (c.isRendering()) {
+      if (c._rendering) {
         throw Error('Property "current" of element refs '
           + 'is not readable while the component is rendering')
       }
 
-      return currentElement
+      return current
     })
 
   ref.bind = directive(() => part => {
@@ -27,11 +27,11 @@ export default hook('useElementRef', () => {
     }
 
     if (ref && typeof ref === 'object') {
-      currentElement = element
+      current = element
     }
 
-    c.beforeUpdate(() => {
-      currentElement = null
+    c._beforeUpdate(() => {
+      current = null
     })
   })()
 

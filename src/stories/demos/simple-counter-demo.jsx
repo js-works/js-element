@@ -11,9 +11,9 @@ component('simple-counter-demo', {
     onIncrement = () => setCount(it => it + 1)
 
   useEffect(() => {
-    console.log('Component has been mounted')
+    console.log('Component "simple-counter-demo" has been mounted')
     
-    return () => console.log('Component will be umounted')
+    return () => console.log('Component "simple-counter-demo" will be umounted')
   }, null)
   
   useEffect(() => {

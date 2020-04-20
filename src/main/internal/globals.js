@@ -1,4 +1,3 @@
 export default {
-  currentCtrl: null,
-  hasUsedHooks: false
+  currentComponent: null
 }

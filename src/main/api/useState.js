@@ -3,7 +3,7 @@ import hook from './hook'
 import globals from '../internal/globals'
 export default hook('useState', initialState => {
   const
-    c = globals.currentCtrl,
+    c = globals.currentComponent,
     state = { ...initialState },
 
     setState = (arg1, arg2) => {
@@ -19,7 +19,7 @@ export default hook('useState', initialState => {
         })
       } 
 
-      c.update(() => {
+      c._update(() => {
         Object.assign(state, typeof updater === 'function'
           ? updater(state)
           : updater

@@ -1,11 +1,9 @@
 import globals from '../internal/globals'
 export default function hook(name, fn) {
-  const ret = function () {
-    if (!globals.currentCtrl) {
+  function ret() {
+    if (!globals.currentComponent) {
       throw new Error(`Hook function "${name}" can only be invoked in component initialization phase`)
     }
-
-    globals.hasUsedHooks = true
 
     return fn.apply(null, arguments)
   }

@@ -21,9 +21,9 @@ component('complex-counter', {
   })
 
   useEffect(() => {
-    console.log('Component has been mounted mounted')
+    console.log('Component "complex-counter" has been mounted')
     
-    return () => console.log('Component will be umounted')
+    return () => console.log('Component "complex-counter" will be umounted')
   }, null)
 
   useEffect(() => {

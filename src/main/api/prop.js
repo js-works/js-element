@@ -19,7 +19,7 @@ const
     if (defaultValue !== undefined) {
       if (defaultPropIsGetter && typeof defaultProp === 'function') {
         Object.defineProp(ret, 'defaultValue', {
-            get: defaultValue
+          get: defaultValue
         })
       } else {
         ret.defaultValue = defaultValue

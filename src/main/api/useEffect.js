@@ -5,11 +5,11 @@ export default hook('useEffect', (action, getDeps) => {
     oldDeps = null,
     cleanup
   
-  const c = globals.currentCtrl
+  const c = globals.currentComponent
 
   if (getDeps === null) {
-    c.afterMount(() => { cleanup = action() })
-    c.beforeUnmount(() => { cleanup && cleanup() }) 
+    c._afterMount(() => { cleanup = action() })
+    c._beforeUnmount(() => { cleanup && cleanup() }) 
   } else if (getDeps === undefined || typeof getDeps === 'function'){
     const callback = () => {
       let needsAction = getDeps === undefined
@@ -27,8 +27,8 @@ export default hook('useEffect', (action, getDeps) => {
       }
     }
 
-    c.afterMount(callback)
-    c.afterUpdate(callback)
+    c._afterMount(callback)
+    c._afterUpdate(callback)
   } else {
     throw new TypeError(
       '[useEffect] Third argument must either be undefined, null or a function')

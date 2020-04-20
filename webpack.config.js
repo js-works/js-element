@@ -26,7 +26,10 @@ module.exports = [
 function createConfig(moduleType, mode, cleanup = false, zip = false) {
   const
     isProd = mode === 'production',
-    externals = { 'lit-html': 'litHTML'}
+
+    externals = {
+      //'lit-html': 'litHTML'
+    }
 
   return {
     entry: './src/main/index.js',

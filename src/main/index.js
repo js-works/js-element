@@ -1,7 +1,6 @@
 export { default as component } from './api/component'
 export { default as prop } from './api/prop'
 export { default as html } from './api/html'
-export { default as css } from './api/css'
 export { default as asRef } from './api/asRef'
 export { default as toRef } from './api/toRef'
 

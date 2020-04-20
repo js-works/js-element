@@ -12,16 +12,16 @@ and btw: It is currently not meant to be used in production.
 ```js
 import { component, html, prop, useEffect, useValue } from 'js-elements'
 
-// custom element will automatically be registered as 'simple-counter' 
+// custom element will be registered as 'simple-counter' 
 
 component('simple-counter', {
   props: {
-    initialValue: prop.num.opt(0),
+    initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
   }
 }, props => {
   const 
-    [count, setCount] = useValue(props.initialValue),
+    [count, setCount] = useValue(props.initialCount),
     onIncrement = () => setCount(it => it + 1)
 
   useEffect(() => {
@@ -31,7 +31,7 @@ component('simple-counter', {
   }, null)
 
   useEffect(() => {
-    console.log(`New value of "${props.label}": ${state.count}`)
+    console.log(`Value of "${props.label}": ${state.count}`)
   }, () => [count.value])
 
   return () => html`

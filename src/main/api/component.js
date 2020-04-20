@@ -3,9 +3,6 @@ import { render as litRender } from 'lit-html'
 
 // internal imports
 import globals from '../internal/globals'
-import hasOwnProp from '../internal/hasOwnProp'
-import checkComponentConfig from '../internal/checkComponentConfig'
-import registerCustomElement from '../internal/registerCustomElement'
 export default function component(componentName, a, b) {
   const
     config = typeof a === 'function' ? {} : a,
@@ -24,22 +21,7 @@ export default function component(componentName, a, b) {
     }
   }
 
-  if ((!config.shadow || config.shadow === 'none') && config.styles) {
-    const styles = Array.isArray(config.styles) ? config.styles : [config.styles]
-    
-    styles.forEach(item => {
-      const id = 'styles::' + item.id
-
-      if (!document.getElementById(id)) {
-        const styleElem = item.styleElement.cloneNode(true)
-
-        styleElem.setAttribute('id', id)
-        document.head.appendChild(styleElem)
-      }
-    })
-  }
-
-  registerCustomElement(componentName,
+  customElements.define(componentName,
     generateCustomElementClass(componentName, config, main))
 }
 
@@ -55,24 +37,9 @@ function generateCustomElementClass(componentName, config, main) {
     defaultProps = null 
 
   const CustomElement = class extends BaseElement {
-    static get observedAttributes() {
-      return attrNames
-    }
-
     constructor() {
       super()
       this._props = defaultProps ? Object.assign({}, defaultProps) : {}
-      this._unmount = null // will be set in method connectedCallback
-      this._methods = null
-      this._listenersByEventName
-
-      if (config.methods && config.methods.length > 0) {
-        this._methods = null
-
-        config.methods.forEach(method => {
-          this[method] = (...args) => this._methods[method](...args)
-        })
-      }
     }
 
     getAttribute(attrName) {
@@ -95,137 +62,56 @@ function generateCustomElementClass(componentName, config, main) {
     }
 
     connectedCallback() {
-      let
-        mounted = false,
-        isRendering = true,
-        root,
-        render,
-        update,
-        afterMountNotifier,
-        beforeUpdateNotifier,
-        afterUpdateNotifier,
-        beforeUnmountNotifier
+      let result 
 
-      
-      if (config.shadow === 'open' || config.shadow === 'closed') {
+      try {
+        globals.currentComponent = this
+        result = main(this._props)
+      } finally {
+        globals.currentComponent = null
+      }
+
+      this._render = typeof result === 'function'
+        ? result
+        : () => {
+          this._render = main
+          return result 
+        }
+
+      if (config.shadow !== 'open' && config.shadow !== 'closed') {
+        this._root = this
+      } else {
         this.attachShadow({ mode: config.shadow })
         this.shadowRoot.appendChild(document.createElement('span'))
         this.shadowRoot.appendChild(document.createElement('span'))
         this.shadowRoot.childNodes[0].setAttribute('data-role', 'styles')
         this.shadowRoot.childNodes[1].setAttribute('data-role', 'content')
-        root = this.shadowRoot.childNodes[1]
-
-        if (config.styles) {
-          const styles =
-            !config.styles
-              ? []
-              : Array.isArray(config.styles) 
-                ? config.styles
-                : [config.styles]
-        
-          styles.forEach(item => {
-            this.shadowRoot.firstChild.appendChild(
-              item.styleElement.cloneNode(true))
-          })
-        }
-      } else {
-        root = this
+        this._root = this.shadowRoot.childNodes[1]
       }
 
-      this._adjustEventProps() 
-      afterMountNotifier = createNotifier()
-      beforeUpdateNotifier = createNotifier()
-      afterUpdateNotifier = createNotifier()
-      beforeUnmountNotifier = createNotifier()
-
-      const ctrl = {
-        getRoot: () => root,
-        isMounted: () => mounted,
-        isRendering: () => isRendering,
-        
-        update: runOnceBeforeUpdate => {
-          update && update(runOnceBeforeUpdate)
-        },
-
-        setMethods: methods => this._methods = methods,
-        afterMount: afterMountNotifier.subscribe,
-        beforeUpdate: beforeUpdateNotifier.subscribe,
-        afterUpdate: afterUpdateNotifier.subscribe,
-        beforeUnmount: beforeUnmountNotifier.subscribe
-      }
-
-      try {
-        let firstTime = true
-
-        render = () => {
-          if (firstTime) {
-            globals.currentCtrl = ctrl
-            firstTime = false
-            const result = main(this._props)
-
-            if (typeof result !== 'function') {
-              render = main
-
-              return result
-            } else {
-              render = result
-
-              return render() 
-            }
-          } else {
-            return render(this._props)
-          }
-        }
-      } finally {
-        globals.currentCtrl = null
-      }
-
-      if (config.validate) {
-        const oldRender = render
-
-        render = () => {
-          const result = config.validate(this._props)
-
-          if (result) {
-            throw new TypeError('Incorrect props for component '
-              + `of type "${componentName}": ${result.message}`)
-          }
-
-          return oldRender()
-        }
-      }
-
-      const { update: forceUpdate, unmount } = mountComponent(
-        root,
-        render,
-
-        () => {
-          isRendering = false
-          afterMountNotifier && afterMountNotifier.notify()
-        },
-        
-        () => {
-          isRendering = true
-          this._adjustEventProps() 
-          beforeUpdateNotifier && beforeUpdateNotifier.notify()
-        },
-
-        () => {
-          isRendering = false
-          afterUpdateNotifier && afterUpdateNotifier.notify()
-        },
-
-        beforeUnmountNotifier && beforeUnmountNotifier.notify
-      )
-
-      mounted = true
-      update = forceUpdate
-      this._unmount = unmount
+      this._refresh()
     }
 
     disconnectedCallback() {
-      this._unmount()
+      this._beforeUnmountNotifier && this._beforeUnmountNotifier.notify()
+      this._root.innerHTML = ''
     }
+  }
+
+  CustomElement.observedAttributes = attrNames
+
+  if (config.methods && config.methods.length > 0) {
+    config.methods.forEach(methodName => {
+      CustomElement.prototype[methodName] = function () {
+        const fn = this._methods && this._methods[methodName]
+
+        if (!fn) {
+          throw new Error(`Handler for method "${methodName}" of component "${name}" has not been set`)
+        }
+
+        return fn.apply(null, arguments)
+      }
+    })
   }
 
   propNames.filter(it => !isEventPropName(it)).forEach(propName => {
@@ -363,6 +249,84 @@ function getEventNameMappings(eventPropNames) {
 }
 
 class BaseElement extends HTMLElement {
+  /*
+  _props = undefined
+  _root = undefined
+  _mounted = false
+  _rendering = false
+  _methods = null
+  _animationFrameId = 0
+  _runBeforeUpdateTasks = null
+  _afterMountNotifier = null
+  _beforeUpdateNotifier = null
+  _afterUpdateNotifier = null
+  _beforeUnmountNotifier = null
+  */
+
+  disconnectedCallback() {
+    this._beforeUnmountNotifier && this._beforeUnmountNotifier.notify()
+    this.innerHTML = ''
+  }
+
+  _refresh() {
+    this._mounted && this._beforeUpdateNotifier && this._beforeUpdateNotifier.notify()
+
+    if (this._mounted && this._runOnceBeforeUpdateTasks && this._runOnceBeforeUpdateTasks.length) {
+      this._runOnceBeforeUpdateTasks.forEach(task => task())
+      this._runOnceBeforeUpdateTasks.length = 0 // TODO
+    }
+
+    try {
+      this._rendering = true
+      this._adjustEventProps()
+      litRender(this._render(this._props), this) // TODO!!!!!
+    } finally {
+      this._rendering = false 
+    }
+
+    if (!this._mounted) {
+      this._mounted = true
+      this._afterMountNotifier && this._afterMountNotifier.notify()
+    } else {
+      this._afterUpdateNotifier && this._afterUpdateNotifier.notify()
+    }
+  }
+  _update(runOnceBeforeUpdate) {
+    runOnceBeforeUpdate
+      && (this._runOnceBeforeUpdateTasks || (this._runOnceBeforeUpdateTasks = []))
+      && this._runOnceBeforeUpdateTasks.push(runOnceBeforeUpdate)
+
+    if (this._mounted && !this._animationFrameId) {
+      this._animationFrameId = requestAnimationFrame(() => {
+        this._animationFrameId = 0
+        this._refresh()
+      })
+    }
+  }
+
+  _afterMount(callback) {
+    this._afterMountNotifier = createNotifier()
+    this._afterMount = this._afterMountNotifier.subscribe
+    this._afterMount(callback)
+  }
+
+  _beforeUpdate(callback) {
+    this._beforeUpdateNotifier = createNotifier()
+    this._beforeUpdate = this._beforeUpdateNotifier.subscribe
+    this._beforeUpdate(callback)
+  }
+  
+  _afterUpdate(callback) {
+    this._afterUpdateNotifier = createNotifier()
+    this._afterUpdate = this._afterUpdateNotifier.subscribe
+    this._afterUpdate(callback)
+  }
+
+  _beforeUnmount(callback) {
+    this._beforeUnmountNotifier = createNotifier()
+    this._beforeUnmount = this._beforeUnmountNotifier.subscribe
+    this._beforeUnmount(callback)
+  }
 }
 
 function isEventPropName(name) {
@@ -373,71 +337,6 @@ function propNameToAttrName(propName) {
   return propName.replace(/(.)([A-Z])([A-Z]+)([A-Z])/g, '$1-$2$3-$4')
     .replace(/([a-z0-0])([A-Z])/g, '$1-$2')
     .toLowerCase()
-}
-
-const
-  booleanConverter = {
-    toString: value => value === true ? '' : null,
-    fromString: value => typeof value === 'string' ? true : false
-  },
-
-  numberConverter = {
-    toString: String,
-    fromString: Number
-  }
-
-function mountComponent(
-  root,
-  getContent,
-  doAfterMount,
-  doBeforeUpdate,
-  doAfterUpdate, 
-  doBeforeUnmount
-) {
-  let
-    mounted = false,
-    updateForced = false
-
-  const
-    runOnceBeforeUpdateTasks = [],
-
-    updateSync = () => {
-      mounted && doBeforeUpdate && doBeforeUpdate()
-      
-      if (mounted && runOnceBeforeUpdateTasks.length > 0) {
-        runOnceBeforeUpdateTasks.forEach(task => task())
-        runOnceBeforeUpdateTasks.length = 0 // TODO!!!!!
-      }
-
-      litRender(getContent(), root)
-      mounted && doAfterUpdate && doAfterUpdate()
-    },
-
-    updateAsync = runOnceBeforeUpdateTask => {
-      runOnceBeforeUpdateTask
-        && runOnceBeforeUpdateTasks.push(runOnceBeforeUpdateTask)
-
-      if (!updateForced) {
-        updateForced = true
-
-        requestAnimationFrame(() => {
-          updateForced = false
-
-          updateSync()
-        })
-      }
-    },
-
-    unmount = () => {
-      doBeforeUnmount && doBeforeUnmount()
-      root.innerHtml = ''
-    }
-
-  updateSync()
-  mounted = true
-  doAfterMount && doAfterMount()
-
-  return { update: updateAsync, unmount }
 }
 
 function createNotifier() {
@@ -451,5 +350,111 @@ function createNotifier() {
     notify() {
       subscribers.forEach(subscriber => subscriber())
     }
+  }
+}
+
+function hasOwnProp(obj, propName) {
+  return Object.prototype.hasOwnProperty.call(obj, propName)
+}
+
+// --- converters ----------------------------------------------------
+
+const
+  booleanConverter = {
+    toString: value => value === true ? '' : null,
+    fromString: value => typeof value === 'string' ? true : false
+  },
+
+  numberConverter = {
+    toString: String,
+    fromString: Number
+  }
+
+
+// --- component config validation -----------------------------------
+
+const
+  ALLOWED_COMPONENT_CONFIG_KEYS = ['props', 'validate', 'methods', 'shadow'],
+  ALLOWED_PROPERTY_CONFIG_KEYS = ['type', 'nullable', 'required', 'defaultValue'],
+  ALLOWED_PROPERTY_TYPES = [Boolean, Number, String, Object, Function, Array, Date],
+  REGEX_PROPERTY_NAME = /^[a-z][a-zA-Z0-9]*$/
+
+function checkComponentConfig(config) {
+  const
+    props = getParam(config, 'props', 'object'),
+    shadow = getParam(config, 'shadow', 'string')
+
+  config.validate === null || getParam(config, 'validate', 'function')
+
+  ifInvalidKey(config, ALLOWED_COMPONENT_CONFIG_KEYS, key => {
+    throw `Invalid component configuration parameter "${key}"`
+  })
+
+  if (shadow && shadow !== 'none' && shadow !== 'open' && shadow !== 'closed') {
+    throw 'Component configuration parameter "shadow" must either be "none", "open" or "closed"'
+  }
+
+  if (props) {
+    checkProps(props)
+  }
+}
+
+function getParam(config, paramName, type) {
+  let ret
+
+  if (hasOwnProp(config, paramName)) {
+    ret = config[paramName]
+
+    if (type && typeof ret !== type) {console.log(111, config)
+      throw `Illegal value for parameter "${paramName}"`
+    }
+  }
+
+  return ret
+}
+
+function ifInvalidKey(obj, allowedKeys, fn) {
+  for (const key in obj) {
+    if (hasOwnProp(obj, key)) {
+      if (allowedKeys.indexOf(key) === -1) {
+        fn(key)
+        break
+      }
+    }
+  }
+}
+
+function checkProps(props) {
+  for (const key in props) {
+    if (hasOwnProp(props, key)) {
+      if (!REGEX_PROPERTY_NAME.test(key)) {
+        throw `Illegal property name "${key}"`
+      }
+
+      checkPropertyConfig(key, props[key])
+    }
+  }
+}
+
+function checkPropertyConfig(propName, propConfig) {
+  ifInvalidKey(propConfig, ALLOWED_PROPERTY_CONFIG_KEYS, key => {
+    throw `Invalid parameter "${key}" for property "${propName}"`
+  })
+
+  const
+    type = getParam(propConfig, 'type', 'function'),
+    nullable = getParam(propConfig, 'nullable', 'boolean'),
+    required = getParam(propConfig, 'required', 'boolean')
+
+  if (required === true && hasOwnProp(propConfig, 'defaultValue')) {
+    throw `Unexpected parameter "defaultValue" from property "${propName}"`
+  }
+
+  if (type && ALLOWED_PROPERTY_TYPES.indexOf(type) === -1) {
+    throw `Illegal parameter "type" for property "${propName}"`
+  }
+
+  if (nullable && !type) {
+    throw `Unexpected parameter "nullable" for property "${propName}"`
   }
 }
