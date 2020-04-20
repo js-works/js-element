@@ -33,68 +33,19 @@ function generateCustomElementClass(componentName, config, main) {
     propNameByAttrName = {},
     attrNameByPropName = {} 
 
-  let
-    defaultProps = null 
-
-  const CustomElement = class extends BaseElement {
+  const statics = {
+    name,
+    config,
+    main,
+    attrConverters,
+    propNameByAttrName,
+    attrNameByPropName,
+    defaultProps: null,
+  }
+  
+  class CustomElement extends BaseElement {
     constructor() {
-      super()
-      this._props = defaultProps ? Object.assign({}, defaultProps) : {}
-    }
-
-    getAttribute(attrName) {
-      const
-        propName = attrNameByPropName[attrName],
-        val = this._props[propName],
-        converter = attrConverters[attrName]
-
-      return (val === undefined || val === null)
-        ? val
-        : (converter ? converter.toString(val) : val.toString())
-    }
-
-    attributeChangedCallback(attrName, oldValue, newValue) {
-      const
-        propName = propNameByAttrName[attrName],
-        converter = attrConverters[attrName]
-
-      this[propName] = converter ? converter.fromString(newValue) : newValue
-    }
-
-    connectedCallback() {
-      let result 
-
-      try {
-        globals.currentComponent = this
-        result = main(this._props)
-      } finally {
-        globals.currentComponent = null
-      }
-
-      this._render = typeof result === 'function'
-        ? result
-        : () => {
-          this._render = main
-          return result 
-        }
-
-      if (config.shadow !== 'open' && config.shadow !== 'closed') {
-        this._root = this
-      } else {
-        this.attachShadow({ mode: config.shadow })
-        this.shadowRoot.appendChild(document.createElement('span'))
-        this.shadowRoot.appendChild(document.createElement('span'))
-        this.shadowRoot.childNodes[0].setAttribute('data-role', 'styles')
-        this.shadowRoot.childNodes[1].setAttribute('data-role', 'content')
-        this._root = this.shadowRoot.childNodes[1]
-      }
-
-      this._refresh()
-    }
-
-    disconnectedCallback() {
-      this._beforeUnmountNotifier && this._beforeUnmountNotifier.notify()
-      this._root.innerHTML = ''
+      super(statics)
     }
   }
 
@@ -134,8 +85,8 @@ function generateCustomElementClass(componentName, config, main) {
     }
 
     if (hasOwnProp(propConfig, 'defaultValue')) {
-      defaultProps = defaultProps || {}
-      defaultProps[propName] = propConfig.defaultValue // TODO!
+      statics.defaultProps || (statics.defaultProps = {})
+      statics.defaultProps[propName] = propConfig.defaultValue // TODO!
     }
 
     Object.defineProperty(CustomElement.prototype, propName, {
@@ -146,7 +97,7 @@ function generateCustomElementClass(componentName, config, main) {
       set(value) {
         this._props[propName] = value
         
-        if (this._initialized) {
+        if (this._mounted) {
           this._update()
         }
       }
@@ -263,9 +214,71 @@ class BaseElement extends HTMLElement {
   _beforeUnmountNotifier = null
   */
 
+  constructor(statics) {
+    super()
+    this._statics = statics
+    this._props = statics.defaultProps ? Object.assign({}, statics.defaultProps) : {}
+  }
+
+  connectedCallback() {
+    const { main, config } = this._statics
+    let result
+
+    try {
+      globals.currentComponent = this
+      result = main(this._props)
+    } finally {
+      globals.currentComponent = null
+    }
+
+    this._render = typeof result === 'function'
+      ? result
+      : () => {
+        this._render = main
+        return result 
+      }
+
+    if (config.shadow !== 'open' && config.shadow !== 'closed') {
+      this._root = this
+    } else {
+      this.attachShadow({ mode: config.shadow })
+      this.shadowRoot.appendChild(document.createElement('span'))
+      this.shadowRoot.appendChild(document.createElement('span'))
+      this.shadowRoot.childNodes[0].setAttribute('data-role', 'styles')
+      this.shadowRoot.childNodes[1].setAttribute('data-role', 'content')
+      this._root = this.shadowRoot.childNodes[1]
+    }
+
+    this._refresh()
+  }
+
   disconnectedCallback() {
     this._beforeUnmountNotifier && this._beforeUnmountNotifier.notify()
-    this.innerHTML = ''
+    this._root.innerHTML = ''
+  }
+  getAttribute(attrName) {
+    const
+      statics = this._statics,
+      attrNameByPropName = statics.attrNameByPropName,
+      attrConverters = statics.attrConverters,
+      propName = attrNameByPropName[attrName],
+      val = this._props[propName],
+      converter = attrConverters[attrName]
+
+    return (val === undefined || val === null)
+      ? val
+      : (converter ? converter.toString(val) : val.toString())
+  }
+
+  attributeChangedCallback(attrName, oldValue, newValue) {
+    const
+      statics = this._statics,
+      propNameByAttrName = statics.propNameByAttrName,
+      attrConverters = statics.attrConverters,
+      propName = propNameByAttrName[attrName],
+      converter = attrConverters[attrName]
+
+    this[propName] = converter ? converter.fromString(newValue) : newValue
   }
 
   _refresh() {
