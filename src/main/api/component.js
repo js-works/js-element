@@ -31,7 +31,9 @@ function generateCustomElementClass(componentName, config, main) {
     attrNames = [],
     attrConverters = {},
     propNameByAttrName = {},
-    attrNameByPropName = {} 
+    attrNameByPropName = {},
+    eventPropNames = propNames.filter(isEventPropName),
+    eventNameMappings = getEventNameMappings(eventPropNames)
 
   const statics = {
     name,
@@ -40,6 +42,8 @@ function generateCustomElementClass(componentName, config, main) {
     attrConverters,
     propNameByAttrName,
     attrNameByPropName,
+    eventPropNames,
+    eventNameMappings,
     defaultProps: null,
   }
   
@@ -104,74 +108,7 @@ function generateCustomElementClass(componentName, config, main) {
     })
   })
 
-  addEventFeatures(CustomElement, config)
-
   return CustomElement
-}
-
-function addEventFeatures(CustomElement, config) {
-  const
-    proto = CustomElement.prototype,
-    propNames = !config.props ? [] : Object.keys(config.props),
-    eventPropNames = propNames.filter(isEventPropName),
-    eventNameMappings = getEventNameMappings(eventPropNames),
-    origAddEventListenerFunc = proto.addEventListener,
-    origRemoveEventListenerFunc = proto.removeEventListener
-
-  proto.addEventListener = function (eventName, callback) {
-    const normalizedEventName =
-      hasOwnProp(eventNameMappings, eventName)
-        ? eventNameMappings[eventName]
-        : null
-
-    if (!normalizedEventName) {
-      origAddEventListenerFunc.call(this, eventName, callback)
-      return
-    }
-
-    this._listenersByEventName = this._listenersByEventName || {}
-    this._listenersByEventName[normalizedEventName] = this._listenersByEventName[normalizedEventName] || new Set()
-    this._listenersByEventName[normalizedEventName].add(callback)
-    origAddEventListenerFunc.call(this, normalizedEventName, callback)
-  }
-
-  proto.removeEventListener = function (eventName, callback) {
-    const normalizedEventName =
-      hasOwnProp(eventNameMappings, eventName)
-        ? eventNameMappings[eventName]
-        : null
-    
-    if (!normalizedEventName) {
-      origRemoveEventListenerFunc.call(this, eventName, callback)
-      return
-    }
-
-    if (!this._listenersByEventName[eventName]) {
-      return
-    }
-
-    this._listenersByEventName[eventName].remove(callback)
-    origRemoveEventListenerFunc.call(this, normalizedEventName, callback)
-  }
-
-  proto._adjustEventProps = function () {
-    eventPropNames.forEach(eventPropName => {
-      const
-        eventName = eventNameMappings[eventPropName.substr(2)],
-        listeners = this._listenersByEventName && this._listenersByEventName[eventName],
-        hasAnyListeners = listeners && listeners.size > 0
-
-      if (hasAnyListeners) {
-        if (!this._props[eventPropName]) {
-          this._props[eventPropName] = event => {
-            this.dispatchEvent(event)
-          }
-        }
-      } else {
-        delete this._props[eventPropName]
-      }
-    })
-  }
 }
 
 function toKebabCase(string) {
@@ -200,24 +137,20 @@ function getEventNameMappings(eventPropNames) {
 }
 
 class BaseElement extends HTMLElement {
-  /*
-  _props = undefined
-  _root = undefined
-  _mounted = false
-  _rendering = false
-  _methods = null
-  _animationFrameId = 0
-  _runBeforeUpdateTasks = null
-  _afterMountNotifier = null
-  _beforeUpdateNotifier = null
-  _afterUpdateNotifier = null
-  _beforeUnmountNotifier = null
-  */
-
   constructor(statics) {
     super()
     this._statics = statics
     this._props = statics.defaultProps ? Object.assign({}, statics.defaultProps) : {}
+    this._root = undefined
+    this._mounted = false
+    this._rendering = false
+    this._methods = null
+    this._animationFrameId = 0
+    this._runBeforeUpdateTasks = null
+    this._afterMountNotifier = null
+    this._beforeUpdateNotifier = null
+    this._afterUpdateNotifier = null
+    this._beforeUnmountNotifier = null
   }
 
   connectedCallback() {
@@ -280,6 +213,44 @@ class BaseElement extends HTMLElement {
 
     this[propName] = converter ? converter.fromString(newValue) : newValue
   }
+  addEventListener(eventName, callback) {
+    const
+      eventNameMappings = this._statics.eventNameMappings,
+      normalizedEventName =
+        hasOwnProp(eventNameMappings, eventName)
+          ? eventNameMappings[eventName]
+          : null
+
+    if (!normalizedEventName) {
+      HTMLElement.prototype.addEventListener.call(this, eventName, callback)
+      return
+    }
+
+    this._listenersByEventName = this._listenersByEventName || {}
+    this._listenersByEventName[normalizedEventName] = this._listenersByEventName[normalizedEventName] || new Set()
+    this._listenersByEventName[normalizedEventName].add(callback)
+    HTMLElement.prototype.addEventListener.call(this, normalizedEventName, callback)
+  }
+  removeEventListener(eventName, callback) {
+    const
+      eventNameMappings = this._statics.eventNameMappings,
+      normalizedEventName =
+        hasOwnProp(eventNameMappings, eventName)
+          ? eventNameMappings[eventName]
+          : null
+    
+    if (!normalizedEventName) {
+      HTMLElement.prototype.removeEventListener.call(this, eventName, callback)
+      return
+    }
+
+    if (!this._listenersByEventName[eventName]) {
+      return
+    }
+
+    this._listenersByEventName[eventName].remove(callback)
+    HTMLElement.prototype.removeEventListener.call(this, normalizedEventName, callback)
+  }
 
   _refresh() {
     this._mounted && this._beforeUpdateNotifier && this._beforeUpdateNotifier.notify()
@@ -339,6 +310,28 @@ class BaseElement extends HTMLElement {
     this._beforeUnmountNotifier = createNotifier()
     this._beforeUnmount = this._beforeUnmountNotifier.subscribe
     this._beforeUnmount(callback)
+  }
+  _adjustEventProps() {
+    const
+      eventPropNames = this._statics.eventPropNames,
+      eventNameMappings = this._statics.eventNameMappings
+
+    eventPropNames.forEach(eventPropName => {
+      const
+        eventName = eventNameMappings[eventPropName.substr(2)],
+        listeners = this._listenersByEventName && this._listenersByEventName[eventName],
+        hasAnyListeners = listeners && listeners.size > 0
+
+      if (hasAnyListeners) {
+        if (!this._props[eventPropName]) {
+          this._props[eventPropName] = event => {
+            this.dispatchEvent(event)
+          }
+        }
+      } else {
+        delete this._props[eventPropName]
+      }
+    })
   }
 }
 
