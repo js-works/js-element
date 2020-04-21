@@ -11,6 +11,7 @@ and btw: It is currently not meant to be used in production.
 
 ```js
 import { component, html, prop, useEffect, useValue } from 'js-elements'
+import simpleCounterStyles from './simple-counter.css'
 
 // custom element will be registered as 'simple-counter' 
 
@@ -18,7 +19,9 @@ component('simple-counter', {
   props: {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
-  }
+  },
+
+  styles: simpleCounterStyles
 }, props => {
   const 
     [count, setCount] = useValue(props.initialCount),
@@ -35,7 +38,7 @@ component('simple-counter', {
   }, () => [count.value])
 
   return () => html`
-    <div> 
+    <div class="simple-counter"> 
       <label>${props.label}: </label>
       <button @click=${onIncrement}>${count.value}</button>
     </div>
