@@ -11,7 +11,7 @@ and btw: It is currently not meant to be used in production.
 
 ```js
 import { component, html, prop, useEffect, useValue } from 'js-elements'
-import simpleCounterStyles from './simple-counter.css'
+import simpleCounterStyles from './simple-counter.css' // BEM conventions
 
 // custom element will be registered as 'simple-counter' 
 
