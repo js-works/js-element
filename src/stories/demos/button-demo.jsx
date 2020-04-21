@@ -4,14 +4,32 @@ component('demo-button', {
   props: {
     text: prop.str.opt(''),
     onAction: prop.func.opt()
-  }
+  },
+
+  styles: `
+    .demo-button {
+      border: none;
+      color: white;
+      background-color: black;
+      padding: 5px 8px;
+      outline: none;
+    }
+
+    .demo-button:hover {
+      background-color: #444;
+    }
+
+    .demo-button:active {
+      background-color: #555;
+    }
+  `
 }, props => {
   const onClick = () => {
     props.onAction && props.onAction(new CustomEvent('action'))
   }
 
   return html`
-    <button @click=${onClick}>${props.text}</button>
+    <button class="demo-button" @click=${onClick}>${props.text}</button>
   `
 })
 

@@ -36,7 +36,7 @@ function generateCustomElementClass(componentName, config, main) {
     eventNameMappings = getEventNameMappings(eventPropNames)
 
   const statics = {
-    name,
+    componentName,
     config,
     main,
     attrConverters,
@@ -44,7 +44,7 @@ function generateCustomElementClass(componentName, config, main) {
     attrNameByPropName,
     eventPropNames,
     eventNameMappings,
-    defaultProps: null,
+    defaultProps: null
   }
   
   class CustomElement extends BaseElement {
@@ -154,7 +154,7 @@ class BaseElement extends HTMLElement {
   }
 
   connectedCallback() {
-    const { main, config } = this._statics
+    const { main, config, componentName } = this._statics
     let result
 
     try {
@@ -180,6 +180,23 @@ class BaseElement extends HTMLElement {
       this.shadowRoot.childNodes[0].setAttribute('data-role', 'styles')
       this.shadowRoot.childNodes[1].setAttribute('data-role', 'content')
       this._root = this.shadowRoot.childNodes[1]
+    }
+
+    if (config.styles) {
+      if (config.shadow !== 'open' && config.shadow !== 'closed') {
+        const styleId = 'styles::' + componentName
+
+        if (!document.getElementById(styleId)) {
+          const styleElem = document.createElement('style')
+          styleElem.id = styleId
+          styleElem.appendChild(document.createTextNode(config.styles))
+          document.head.appendChild(styleElem)
+        }
+      } else {
+        const styleElem = document.createElement('style')
+        styleElem.appendChild(document.createTextNode(config.styles))
+        this.shadowRoot.childNodes[0].appendChild(styleElem)
+      }
     }
 
     this._refresh()
@@ -263,7 +280,7 @@ class BaseElement extends HTMLElement {
     try {
       this._rendering = true
       this._adjustEventProps()
-      litRender(this._render(this._props), this) // TODO!!!!!
+      litRender(this._render(this._props), this._root)
     } finally {
       this._rendering = false 
     }
@@ -380,7 +397,7 @@ const
 // --- component config validation -----------------------------------
 
 const
-  ALLOWED_COMPONENT_CONFIG_KEYS = ['props', 'validate', 'methods', 'shadow'],
+  ALLOWED_COMPONENT_CONFIG_KEYS = ['props', 'validate', 'methods', 'styles', 'shadow'],
   ALLOWED_PROPERTY_CONFIG_KEYS = ['type', 'nullable', 'required', 'defaultValue'],
   ALLOWED_PROPERTY_TYPES = [Boolean, Number, String, Object, Function, Array, Date],
   REGEX_PROPERTY_NAME = /^[a-z][a-zA-Z0-9]*$/
@@ -389,6 +406,9 @@ function checkComponentConfig(config) {
   const
     props = getParam(config, 'props', 'object'),
     shadow = getParam(config, 'shadow', 'string')
+  
+  // ignore return value - just check for type 'string'
+  getParam(config, 'styles', 'string')
 
   config.validate === null || getParam(config, 'validate', 'function')
 
@@ -411,7 +431,7 @@ function getParam(config, paramName, type) {
   if (hasOwnProp(config, paramName)) {
     ret = config[paramName]
 
-    if (type && typeof ret !== type) {console.log(111, config)
+    if (type && typeof ret !== type) {
       throw `Illegal value for parameter "${paramName}"`
     }
   }
