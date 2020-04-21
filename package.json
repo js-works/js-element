@@ -28,24 +28,24 @@
   },
   "homepage": "https://github.com/js-works/js-elements#readme",
   "dependencies": {
-    "@webcomponents/webcomponentsjs": "^2.4.0",
-    "lit-html": "^1.1.2"
+    "@webcomponents/webcomponentsjs": "^2.4.3",
+    "lit-html": "^1.2.1"
   },
   "devDependencies": {
-    "@babel/core": "^7.7.7",
-    "@babel/preset-env": "^7.7.7",
-    "@storybook/html": "^5.2.8",
+    "@babel/core": "^7.9.0",
+    "@babel/preset-env": "^7.9.5",
+    "@storybook/html": "^5.3.18",
     "babel-core": "^6.26.3",
-    "babel-loader": "^8.0.6",
+    "babel-loader": "^8.1.0",
     "babel-preset-es2015": "^6.24.1",
-    "compression-webpack-plugin": "^3.0.1",
+    "compression-webpack-plugin": "^3.1.0",
     "eslint": "^6.8.0",
-    "js-spec": "^0.1.78",
-    "terser-webpack-plugin": "^2.3.1",
+    "js-spec": "^0.1.79",
+    "terser-webpack-plugin": "^2.3.5",
     "uglifyjs-webpack-plugin": "^2.2.0",
-    "webpack": "^4.41.5",
+    "webpack": "^4.42.1",
     "webpack-cleanup-plugin": "^0.5.1",
-    "webpack-cli": "^3.3.10",
+    "webpack-cli": "^3.3.11",
     "zip-webpack-plugin": "^3.0.0"
   }
 }
