@@ -39,8 +39,8 @@ component('simple-counter', {
 
   return () => html`
     <div class="simple-counter"> 
-      <label>${props.label}: </label>
-      <button @click=${onIncrement}>${count.value}</button>
+      <label class="simple-counter__label">${props.label}: </label>
+      <button class="simple-counter__buttton" @click=${onIncrement}>${count.value}</button>
     </div>
   `
 })
