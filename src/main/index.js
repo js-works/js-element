@@ -5,6 +5,7 @@ export { default as asRef } from './api/asRef'
 export { default as toRef } from './api/toRef'
 
 // hooks
+export { default as hook } from './api/hook'
 export { default as useEffect } from './api/useEffect'
 export { default as useElementRef } from './api/useElementRef'
 export { default as useInterval } from './api/useInterval'
