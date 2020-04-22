@@ -1,6 +1,6 @@
 {
   "name": "js-elements",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "",
   "main": "index.js",
   "module": "dist/js-elements.esm.producion.js",
@@ -41,6 +41,7 @@
     "compression-webpack-plugin": "^3.1.0",
     "eslint": "^6.8.0",
     "js-spec": "^0.1.79",
+    "observable-slim": "^0.1.5",
     "terser-webpack-plugin": "^2.3.5",
     "uglifyjs-webpack-plugin": "^2.2.0",
     "webpack": "^4.42.1",
