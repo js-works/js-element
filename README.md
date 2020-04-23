@@ -10,7 +10,7 @@ and btw: It is currently not meant to be used in production.
 ## Example
 
 ```js
-import { component, html, prop, useEffect, useValue } from 'js-elements'
+import { component, html, prop, useEffect, useObservable } from 'js-elements'
 import simpleCounterStyles from './simple-counter.css' // BEM conventions
 
 // custom element will be registered as 'simple-counter' 
@@ -24,8 +24,8 @@ component('simple-counter', {
   styles: simpleCounterStyles
 }, props => {
   const 
-    [count, setCount] = useValue(props.initialCount),
-    onIncrement = () => setCount(it => it + 1)
+    state = useObservable({ count: props.initialCount }),
+    onIncrement = () => { ++state.count }
 
   useEffect(() => {
     console.log(`"${props.label}" has been mounted`)
@@ -35,12 +35,12 @@ component('simple-counter', {
 
   useEffect(() => {
     console.log(`Value of "${props.label}": ${state.count}`)
-  }, () => [count.value])
+  }, () => [state.count])
 
   return () => html`
     <div class="simple-counter"> 
       <label class="simple-counter__label">${props.label}: </label>
-      <button class="simple-counter__button" @click=${onIncrement}>${count.value}</button>
+      <button class="simple-counter__button" @click=${onIncrement}>${state.count}</button>
     </div>
   `
 })

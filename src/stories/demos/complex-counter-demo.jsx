@@ -1,4 +1,4 @@
-import { html, component, prop, useEffect, useElementRef, useMethods, useState } from '../../main/index'
+import { html, component, prop, useEffect, useElementRef, useMethods, useObservable } from '../../main/index'
 
 component('complex-counter', {
   props: {
@@ -9,15 +9,17 @@ component('complex-counter', {
   methods: ['reset'],
 }, props => {
   const 
-    [state, setState] = useState({
+    state = useObservable({
       count: props.initialValue
     }),
 
-    onIncrement = () => setState('count', it => it + 1),
-    onDecrement = () => setState('count', it => it - 1)
+    onIncrement = () => { ++state.count },
+    onDecrement = () => { --state.count }
 
   useMethods({
-    reset: (n = 0) => setState('count', n)
+    reset(n) {
+      state.count = n
+    }
   })
 
   useEffect(() => {
