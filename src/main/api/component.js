@@ -157,6 +157,17 @@ class BaseElement extends HTMLElement {
     const { main, config, componentName } = this._statics
     let result
 
+    if (config.shadow !== 'open' && config.shadow !== 'closed') {
+      this._root = this
+    } else {
+      this.attachShadow({ mode: config.shadow })
+      this.shadowRoot.appendChild(document.createElement('span'))
+      this.shadowRoot.appendChild(document.createElement('span'))
+      this.shadowRoot.childNodes[0].setAttribute('data-role', 'styles')
+      this.shadowRoot.childNodes[1].setAttribute('data-role', 'content')
+      this._root = this.shadowRoot.childNodes[1]
+    }
+  
     try {
       globals.currentComponent = this
 
@@ -185,17 +196,6 @@ class BaseElement extends HTMLElement {
         this._render = main
         return result 
       }
-
-    if (config.shadow !== 'open' && config.shadow !== 'closed') {
-      this._root = this
-    } else {
-      this.attachShadow({ mode: config.shadow })
-      this.shadowRoot.appendChild(document.createElement('span'))
-      this.shadowRoot.appendChild(document.createElement('span'))
-      this.shadowRoot.childNodes[0].setAttribute('data-role', 'styles')
-      this.shadowRoot.childNodes[1].setAttribute('data-role', 'content')
-      this._root = this.shadowRoot.childNodes[1]
-    }
 
     if (config.styles) {
       if (config.shadow !== 'open' && config.shadow !== 'closed') {

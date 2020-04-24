@@ -9,7 +9,7 @@ component('simple-counter-demo', {
   const
     state = useState({ count: props.initialCount }),
     onIncrement = () => ++state.count
-
+  
   useEffect(() => {
     console.log('Component "simple-counter-demo" has been mounted')
     
