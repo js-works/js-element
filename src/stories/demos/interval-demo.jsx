@@ -1,8 +1,8 @@
-import { html, component, toRef, useInterval, useState } from '../../main/index'
+import { html, component, toRef, useInterval, useValues } from '../../main/index'
 
 component('interval-demo', () => {
   const
-    [state, setState] = useState({
+    [state, setState] = useValues({
       count: 0,
       delay: 1000
     }),

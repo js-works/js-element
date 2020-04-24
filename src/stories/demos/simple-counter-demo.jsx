@@ -1,4 +1,4 @@
-import { html, component, prop, useEffect, useObservable } from '../../main/index'
+import { html, component, prop, useEffect, useState } from '../../main/index'
 
 component('simple-counter-demo', {
   props: {
@@ -7,7 +7,7 @@ component('simple-counter-demo', {
   }
 }, props => {
   const
-    state = useObservable({ count: props.initialCount }),
+    state = useState({ count: props.initialCount }),
     onIncrement = () => ++state.count
 
   useEffect(() => {

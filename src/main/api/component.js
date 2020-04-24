@@ -159,7 +159,22 @@ class BaseElement extends HTMLElement {
 
     try {
       globals.currentComponent = this
-      result = main(this._props)
+
+      if (config.methods) {
+        const setMethods = methods => { this._methods = methods }
+        
+        if (config.props) {
+          result = main(this._props, setMethods)
+        } else {
+          result = main(setMethods)
+        }
+      } else {
+        if (config.props) {
+          result = main(this._props)
+        } else {
+          result = main()
+        }
+      }
     } finally {
       globals.currentComponent = null
     }
