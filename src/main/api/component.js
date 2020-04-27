@@ -295,6 +295,7 @@ class BaseElement extends HTMLElement {
     try {
       this._rendering = true
       this._adjustEventProps()
+
       litRender(this._render(this._props), this._root)
     } finally {
       this._rendering = false 
