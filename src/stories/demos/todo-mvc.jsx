@@ -55,11 +55,11 @@ component('todo-item', {
       title: props.todo.title
     }),
 
-    onToggle = () => {
+    onToggle = ev => {
       root.dispatchEvent(
         new CustomEvent('todo.toggle', {
           bubbles: true,
-          detail: { id: props.todo.id, completed: !props.todo.completed },
+          detail: { id: props.todo.id, completed: ev.target.checked },
         })
       )
     },
@@ -233,17 +233,17 @@ component('todo-filters', {
   return () => html` 
     <ul class="filters">
       <li>
-        <a class=${props.filter === '' ? 'selected' : ''} @click=${onNoFilter} href="#">
+        <a class=${props.filter === '' ? 'selected' : ''} @click=${onNoFilter} href="#/">
           All
         </a>
       </li>
       <li>
-        <a class=${props.filter === 'active' ? 'selected' : ''} @click=${onActiveFilter} href="#">
+        <a class=${props.filter === 'active' ? 'selected' : ''} @click=${onActiveFilter} href="#/active">
           Active
         </a>
       </li>
       <li>
-        <a class=${props.filter === 'completed' ? 'selected' : ''} @click=${onCompletedFilter} href="#">
+        <a class=${props.filter === 'completed' ? 'selected' : ''} @click=${onCompletedFilter} href="#/completed">
           Completed
         </a>
       </li>
@@ -294,7 +294,6 @@ component('todo-mvc', () => {
       if (Array.isArray(storedTodos) && storedTodos.length) {
         setState({ todos: storedTodos })
         nextTodoId = Math.max(...storedTodos.map(todo => todo.id)) + 1
-        console.log(222222222, storedTodos)
       } else {
         localStorage.removeItem(STORAGE_KEY)
       }
@@ -306,9 +305,7 @@ component('todo-mvc', () => {
       const newTodos = [...state.todos]
       newTodos.push({ id: nextTodoId++, title: ev.detail.title, completed: false })
       setState({ todos: newTodos })
-      console.log(newTodos)
       save(state.todos)
-      console.log(ev)
     })
 
     root.addEventListener('todo.edit', ev => {
