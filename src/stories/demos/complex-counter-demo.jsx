@@ -9,16 +9,16 @@ component('complex-counter', {
   methods: ['reset'],
 }, (props, setMethods) => {
   const 
-    state = useState({
+    [state, setState] = useState({
       count: props.initialValue
     }),
 
-    onIncrement = () => { ++state.count },
-    onDecrement = () => { --state.count }
+    onIncrement = () => setState({ count: state.count + 1 }),
+    onDecrement = () => setState({ count: state.count - 1 })
 
   setMethods({
     reset(n) {
-      state.count = n
+      setState({ count: n })
     }
   })
 

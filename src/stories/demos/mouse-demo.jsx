@@ -1,4 +1,4 @@
-import { html, component, useValues, useEffect } from '../../main/index'
+import { html, component, useState, useEffect } from '../../main/index'
 
 component('mouse-demo', () =>  {
   const mousePos = useMousePosition()
@@ -15,7 +15,7 @@ component('mouse-demo', () =>  {
 })
 
 function useMousePosition() {
-  const [mousePos, setMousePos] = useValues({ x: -1, y: -1 })
+  const [mousePos, setMousePos] = useState({ x: -1, y: -1 })
 
   useEffect(() => {
     const listener = ev => {

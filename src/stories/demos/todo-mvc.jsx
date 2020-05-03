@@ -1,4 +1,4 @@
-import { component, html, prop, useEffect, useRoot, useValues, useUpdate } from '../../main/index'
+import { component, html, prop, useEffect, useRoot, useState } from '../../main/index'
 
 const ENTER_KEY = 13
 const ESC_KEY = 27
@@ -6,7 +6,7 @@ const ESC_KEY = 27
 component('todo-header', () => {
   const
     root = useRoot(),
-    [state, setState] = useValues({ title: '' }),
+    [state, setState] = useState({ title: '' }),
 
     onInput = ev => setState({ title: ev.target.value }),
 
@@ -50,7 +50,7 @@ component('todo-item', {
   const
     root = useRoot(),
 
-    [state, setState] = useValues({
+    [state, setState] = useState({
       active: false,
       title: props.todo.title
     }),
@@ -214,26 +214,42 @@ component('todo-filters', {
   props: {
     filter: prop.str.req()
   }
-}, props => html` 
+}, props => {
+  const
+    root = useRoot(),
+    onActiveFilter = ev => setFilter('active', ev),
+    onCompletedFilter = ev => setFilter('completed', ev),
+    onNoFilter = ev => setFilter('', ev),
+    
+    setFilter = (filter, ev) => {
+      ev.preventDefault()
+      root.dispatchEvent(
+        new CustomEvent('todo.setFilter', {
+          bubbles: true,
+          detail: { filter }
+        }))
+    }
+
+  return () => html` 
     <ul class="filters">
       <li>
-        <a class=${props.filter === '' ? 'selected' : ''} href='#/'>
+        <a class=${props.filter === '' ? 'selected' : ''} @click=${onNoFilter} href="#">
           All
         </a>
       </li>
       <li>
-        <a class=${props.filter === 'active' ? 'selected' : ''} href="#/active">
+        <a class=${props.filter === 'active' ? 'selected' : ''} @click=${onActiveFilter} href="#">
           Active
         </a>
       </li>
       <li>
-        <a class=${props.filter === 'completed' ? 'selected' : ''} href="#/completed">
+        <a class=${props.filter === 'completed' ? 'selected' : ''} @click=${onCompletedFilter} href="#">
           Completed
         </a>
       </li>
     </ul>
   `
-)
+})
 
 component('todo-footer', {
   props: {
@@ -264,8 +280,10 @@ component('todo-footer', {
 component('todo-mvc', () => {
   const
     root = useRoot(),
-    update = useUpdate(),
-    [state, setState] = useValues({ todos: [], filter: '' })
+    [state, setState] = useState({
+      todos: [],
+      filter: ''
+    })
   
   let nextTodoId = 0
 
@@ -283,6 +301,7 @@ component('todo-mvc', () => {
     } catch (err) {
       localStorage.removeItem(STORAGE_KEY)
     }
+
     root.addEventListener('todo.create', ev => {
       const newTodos = [...state.todos]
       newTodos.push({ id: nextTodoId++, title: ev.detail.title, completed: false })
@@ -323,36 +342,9 @@ component('todo-mvc', () => {
       save(state.todos)
     })
 
-    const route = ev => {
-      switch (window.location.hash) {
-      case '#/active':
-        setState({ filter: 'active' })
-        break
-
-      case '#/completed':
-        setState({ filter: 'completed' })
-        break
-
-      case '#/':
-        setState({ filter: '' })
-        break
-
-      default:
-        setState({ filter: '' })
-        window.location.hash = '#/'
-      }
-
-      if (ev != null) {
-        update()
-      }
-    }
-
-    route()
-
-    window.addEventListener('hashchange', route)
-
-    return () => 
-      window.removeEventListener('hashchange', route)
+    root.addEventListener('todo.setFilter', ev => {
+      setState({ filter: ev.detail.filter })
+    })
   }, null)
 
   return () => {

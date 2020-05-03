@@ -24,8 +24,11 @@ component('simple-counter', {
   styles: simpleCounterStyles
 }, props => {
   const 
-    state = useState({ count: props.initialCount }),
-    onIncrement = () => { ++state.count }
+    [state, setState] = useState({
+      count: props.initialCount
+    }),
+
+    onIncrement = () => setState('count', it => it + 1)
 
   useEffect(() => {
     console.log(`"${props.label}" has been mounted`)
