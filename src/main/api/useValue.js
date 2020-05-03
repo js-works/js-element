@@ -7,15 +7,15 @@ export default hook('useValue', initialValue => {
     c = globals.currentComponent,
     value = { value: initialValue },
   
-/*
-    setValue = updater => {
-      c._update(() => {
-        value.value = typeof updater === 'function'
-          ? updater(value.value)
-          : updater
-      })
-    }
-*/
+    /*
+        setValue = updater => {
+          c._update(() => {
+            value.value = typeof updater === 'function'
+              ? updater(value.value)
+              : updater
+          })
+        }
+    */
 
     setValue = updater => {
       nextValue = typeof updater === 'function'
