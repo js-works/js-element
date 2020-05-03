@@ -1,12 +1,12 @@
-import { component, html, prop, useEffect, useRoot, useState } from '../../main/index'
+import { component, getRoot, html, prop, useEffect, useState } from '../../main/index'
 
 const ENTER_KEY = 13
 const ESC_KEY = 27
 
-component('todo-header', () => {
+component('todo-header', c => {
   const
-    root = useRoot(),
-    [state, setState] = useState({ title: '' }),
+    root = getRoot(c),
+    [state, setState] = useState(c, { title: '' }),
 
     onInput = ev => setState({ title: ev.target.value }),
 
@@ -46,11 +46,11 @@ component('todo-item', {
   props: {
     todo: prop.obj.req()
   }
-}, props => {
+}, (c, props) => {
   const
-    root = useRoot(),
+    root = getRoot(c),
 
-    [state, setState] = useState({
+    [state, setState] = useState(c, {
       active: false,
       title: props.todo.title
     }),
@@ -172,9 +172,9 @@ component('todo-main', {
     todos: prop.obj.req(),
     filter: prop.str.req()
   }
-}, props => {
+}, (c, props) => {
   const
-    root = useRoot(),
+    root = getRoot(c),
     completed = props.todos.every(todo => todo.completed),
 
     onToggleAll = () => {
@@ -214,9 +214,9 @@ component('todo-filters', {
   props: {
     filter: prop.str.req()
   }
-}, props => {
+}, (c, props) => {
   const
-    root = useRoot(),
+    root = getRoot(c),
     onActiveFilter = ev => setFilter('active', ev),
     onCompletedFilter = ev => setFilter('completed', ev),
     onNoFilter = ev => setFilter('', ev),
@@ -256,9 +256,9 @@ component('todo-footer', {
     todos: prop.obj.req(),
     filter: prop.str.req()
   }
-}, props => {
+}, (c, props) => {
   const
-    root = useRoot(),
+    root = getRoot(c),
     completed = props.todos.filter(todo => todo.completed).length,
     remaining = props.todos.length - completed,
 
@@ -277,17 +277,17 @@ component('todo-footer', {
   `
 })
 
-component('todo-mvc', () => {
+component('todo-mvc', c => {
   const
-    root = useRoot(),
-    [state, setState] = useState({
+    root = getRoot(c),
+    [state, setState] = useState(c, {
       todos: [],
       filter: ''
     })
   
   let nextTodoId = 0
 
-  useEffect(() => {
+  useEffect(c, () => {
     try {
       const storedTodos = JSON.parse(localStorage.getItem(STORAGE_KEY))
 

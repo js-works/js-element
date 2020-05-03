@@ -1,8 +1,6 @@
 // external import
 import { render as litRender } from 'lit-html'
 
-// internal imports
-import globals from '../internal/globals'
 export default function component(componentName, a, b) {
   const
     config = typeof a === 'function' ? {} : a,
@@ -143,6 +141,7 @@ class BaseElement extends HTMLElement {
     this._props = statics.defaultProps ? Object.assign({}, statics.defaultProps) : {}
     this._root = undefined
     this._mounted = false
+    this._initializing = false
     this._rendering = false
     this._methods = null
     this._animationFrameId = 0
@@ -151,6 +150,52 @@ class BaseElement extends HTMLElement {
     this._beforeUpdateNotifier = null
     this._afterUpdateNotifier = null
     this._beforeUnmountNotifier = null
+
+    this._ctrl = {
+      getName: () => {
+        return this._statics.componentName
+      },
+
+      update: runOnceBeforeUpdate => {
+        this._update(runOnceBeforeUpdate)
+      },
+
+      isRendering: () => {
+        return this._rendering
+      },
+      
+      isInitialized: () => {
+        return !this._initializing
+      },
+
+      isMounted: () => {
+        return this._mounted
+      },
+
+      getRoot: () => {
+        return this._root
+      },
+
+      setMethods: methods => {
+        this._methods = methods
+      },
+
+      afterMount: callback => {
+        this._afterMount(callback)
+      },
+
+      beforeUpdate: callback => {
+        this._beforeUpdate(callback)
+      },
+
+      afterUpdate: callback => {
+        this._afterUpdate(callback)
+      },
+
+      beforeUnmount: callback => {
+        this._beforeUnmount(callback)
+      }
+    }
   }
 
   connectedCallback() {
@@ -169,25 +214,23 @@ class BaseElement extends HTMLElement {
     }
   
     try {
-      globals.currentComponent = this
-
-      if (config.methods) {
-        const setMethods = methods => { this._methods = methods }
-        
-        if (config.props) {
-          result = main(this._props, setMethods)
+      if (config.props) {
+        if (main.length > 1) {
+          this._initializing = true
+          result = main(this._ctrl, this._props)
         } else {
-          result = main(setMethods)
+          result = main(this._props)
         }
       } else {
-        if (config.props) {
-          result = main(this._props)
+        if (main.length > 0) {
+          this._initializing = true
+          result = main(this._ctrl)
         } else {
           result = main()
         }
       }
     } finally {
-      globals.currentComponent = null
+      this._initializing = false
     }
 
     this._render = typeof result === 'function'

@@ -1,19 +1,19 @@
 import { html, component, toRef, useInterval, useState } from '../../main/index'
 
-component('interval-demo', () => {
+component('interval-demo', c => {
   const
-    [state, setState] = useState({
+    [state, setState] = useState(c, {
       count: 0,
       delay: 1000
     }),
 
     onReset = () => setState('delay', 1000)
 
-  useInterval(() => {
+  useInterval(c, () => {
     setState('count', it => it + 1)
   }, toRef(() => state.delay))
 
-  useInterval(() => {
+  useInterval(c, () => {
     if (state.delay > 10) {
       setState('delay', it => it / 2)
     }

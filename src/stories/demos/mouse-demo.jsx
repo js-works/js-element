@@ -1,7 +1,7 @@
 import { html, component, useState, useEffect } from '../../main/index'
 
-component('mouse-demo', () =>  {
-  const mousePos = useMousePosition()
+component('mouse-demo', c =>  {
+  const mousePos = useMousePosition(c)
 
   return () => {
     return mousePos.x === -1
@@ -14,10 +14,10 @@ component('mouse-demo', () =>  {
   }
 })
 
-function useMousePosition() {
-  const [mousePos, setMousePos] = useState({ x: -1, y: -1 })
+function useMousePosition(c) {
+  const [mousePos, setMousePos] = useState(c, { x: -1, y: -1 })
 
-  useEffect(() => {
+  useEffect(c, () => {
     const listener = ev => {
       setMousePos({ x: ev.pageX, y: ev.pageY })
     }

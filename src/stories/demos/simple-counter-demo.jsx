@@ -5,18 +5,18 @@ component('simple-counter-demo', {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
   }
-}, props => {
+}, (c, props) => {
   const
-    [state, setState] = useState({ count: props.initialCount }),
+    [state, setState] = useState(c, { count: props.initialCount }),
     onIncrement = () => setState({ count: state.count + 1 })
-  
-  useEffect(() => {
+
+  useEffect(c, () => {
     console.log('Component "simple-counter-demo" has been mounted')
     
     return () => console.log('Component "simple-counter-demo" will be umounted')
   }, null)
   
-  useEffect(() => {
+  useEffect(c, () => {
     console.log(`New value of counter "${props.label}": ${state.count}`)
   }, () => [state.count])
 

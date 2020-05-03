@@ -1,13 +1,11 @@
 
 import hook from './hook'
-import globals from '../internal/globals'
-export default hook('useState', initialState => {
+export default hook('useState', (c, initialState) => {
   let
     nextState,
     mergeNecessary = false
 
   const
-    c = globals.currentComponent,
     state = { ...initialState },
 
     setState = (arg1, arg2) => {
@@ -24,7 +22,7 @@ export default hook('useState', initialState => {
         Object.assign(nextState, arg1)
       }
 
-      c._update(() => {
+      c.update(() => {
         if (mergeNecessary) {
           Object.assign(state, nextState)
           mergeNecessary = false

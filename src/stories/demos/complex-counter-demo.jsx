@@ -1,4 +1,4 @@
-import { html, component, prop, useEffect, useElementRef, useState } from '../../main/index'
+import { html, component, prop, setMethods, useEffect, useElementRef, useState } from '../../main/index'
 
 component('complex-counter', {
   props: {
@@ -7,28 +7,28 @@ component('complex-counter', {
   },
 
   methods: ['reset'],
-}, (props, setMethods) => {
+}, (c, props) => {
   const 
-    [state, setState] = useState({
+    [state, setState] = useState(c, {
       count: props.initialValue
     }),
 
     onIncrement = () => setState({ count: state.count + 1 }),
     onDecrement = () => setState({ count: state.count - 1 })
 
-  setMethods({
+  setMethods(c, {
     reset(n) {
       setState({ count: n })
     }
   })
 
-  useEffect(() => {
+  useEffect(c, () => {
     console.log('Component "complex-counter" has been mounted')
     
     return () => console.log('Component "complex-counter" will be umounted')
   }, null)
 
-  useEffect(() => {
+  useEffect(c, () => {
     console.log(`New value of counter "${props.label}": ${state.count}`)
   }, () => [state.count])
 
@@ -42,9 +42,9 @@ component('complex-counter', {
   `
 })
 
-component('complex-counter-demo', () => {
+component('complex-counter-demo', c => {
   const
-    counterRef = useElementRef(),
+    counterRef = useElementRef(c),
     onSetTo0 = () => counterRef.current.reset(0),
     onSetTo100 = () => counterRef.current.reset(100)
 

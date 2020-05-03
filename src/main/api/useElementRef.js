@@ -1,15 +1,12 @@
 import { directive, AttributePart } from 'lit-html'
 import toRef from './toRef'
 import hook from './hook'
-import globals from '../internal/globals'
-export default hook('useElementRef', () => {
+export default hook('useElementRef', c => {
   let current = null
 
   const
-    c = globals.currentComponent,
-  
     ref = toRef(() => {
-      if (c._rendering) {
+      if (c.isRendering()) {
         throw Error('Property "current" of element refs '
           + 'is not readable while the component is rendering')
       }
@@ -30,7 +27,7 @@ export default hook('useElementRef', () => {
       current = element
     }
 
-    c._beforeUpdate(() => {
+    c.beforeUpdate(() => {
       current = null
     })
   })()

@@ -1,10 +1,8 @@
 import hook from './hook'
-import globals from '../internal/globals'
-export default hook('useValue', initialValue => {
+export default hook('useValue', (c, initialValue) => {
   let nextValue = initialValue
   
   const
-    c = globals.currentComponent,
     value = { value: initialValue },
   
     /*
@@ -22,7 +20,7 @@ export default hook('useValue', initialValue => {
         ? updater(nextValue)
         : updater
 
-      c._update(() => {
+      c.update(() => {
         value.value = nextValue
       })
     }

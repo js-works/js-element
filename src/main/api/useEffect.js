@@ -1,15 +1,12 @@
 import hook from './hook'
-import globals from '../internal/globals'
-export default hook('useEffect', (action, getDeps) => {
+export default hook('useEffect', (c, action, getDeps) => {
   let
     oldDeps = null,
     cleanup
   
-  const c = globals.currentComponent
-
   if (getDeps === null) {
-    c._afterMount(() => { cleanup = action() })
-    c._beforeUnmount(() => { cleanup && cleanup() }) 
+    c.afterMount(() => { cleanup = action() })
+    c.beforeUnmount(() => { cleanup && cleanup() }) 
   } else if (getDeps === undefined || typeof getDeps === 'function'){
     const callback = () => {
       let needsAction = getDeps === undefined
@@ -27,8 +24,8 @@ export default hook('useEffect', (action, getDeps) => {
       }
     }
 
-    c._afterMount(callback)
-    c._afterUpdate(callback)
+    c.afterMount(callback)
+    c.afterUpdate(callback)
   } else {
     throw new TypeError(
       '[useEffect] Third argument must either be undefined, null or a function')
