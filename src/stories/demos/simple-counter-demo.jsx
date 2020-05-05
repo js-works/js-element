@@ -1,4 +1,5 @@
-import { html, component, prop, useEffect, useState } from '../../main/index'
+/** @jsx h */
+import { h, html, component, prop, useEffect, useState } from '../../main/index'
 
 component({
   name: 'simple-counter-demo',
@@ -21,6 +22,15 @@ component({
   useEffect(c, () => {
     console.log(`New value of counter "${props.label}": ${state.count}`)
   }, () => [state.count])
+
+  return () =>
+    <div>
+      <h3>Counter demo</h3>
+      <label>{props.label}: </label>
+      <button onClick={onIncrement}>
+        {state.count}
+      </button>
+    </div>
 
   return () => html`
     <div>

@@ -1,6 +1,6 @@
 // external import
 import { render as litRender } from 'lit-html'
-
+import { patch } from '../internal/vdom'
 export default function component(a, b, c) {
   let
     componentName,
@@ -367,8 +367,18 @@ class BaseElement extends HTMLElement {
     try {
       this._rendering = true
       this._adjustEventProps()
+      
+      const content = this._render(this._props)
 
-      litRender(this._render(this._props), this._root)
+      if (content && content.processor) {
+        litRender(this._render(this._props), this._root)
+
+      } else if (content && content.name)  {
+        this._root = patch(this._root, content) // TODO!!!!!!
+      } else {
+        console.log(1111, content)
+        throw new TypeError('Illegal return value of render function')
+      }
     } finally {
       this._rendering = false 
     }

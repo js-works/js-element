@@ -7,6 +7,8 @@ export { default as update } from './api/update'
 export { default as getRoot } from './api/getRoot'
 export { default as isMounted } from './api/isMounted'
 
+export { h } from './internal/vdom'
+
 // hooks
 export { default as hook } from './api/hook'
 export { default as useEffect } from './api/useEffect'
