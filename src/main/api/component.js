@@ -1,6 +1,8 @@
 // external import
 import { render as litRender } from 'lit-html'
 import { patch } from '../internal/vdom'
+
+import h from './h'
 export default function component(a, b, c) {
   let
     componentName,
@@ -39,6 +41,13 @@ export default function component(a, b, c) {
 
   customElements.define(componentName,
     generateCustomElementClass(componentName, options, main))
+  const ret = (...args) => h(componentName, ...args)
+
+  Object.defineProperty(ret, 'type', {
+    value: componentName
+  })
+
+  return ret
 }
 
 function generateCustomElementClass(componentName, options, main) {
