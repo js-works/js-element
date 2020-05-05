@@ -374,7 +374,13 @@ class BaseElement extends HTMLElement {
         litRender(this._render(this._props), this._root)
 
       } else if (content && content.name)  {
-        this._root = patch(this._root, content) // TODO!!!!!!
+        // TODO!!!!!!
+        if (!this._root2) {
+          this._root2 = document.createElement('span')
+          this._root.appendChild(this._root2)
+        }
+
+        this._root2 = patch(this._root2, content) // TODO!!!!!!
       } else {
         console.log(1111, content)
         throw new TypeError('Illegal return value of render function')

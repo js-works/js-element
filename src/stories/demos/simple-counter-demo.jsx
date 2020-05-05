@@ -32,6 +32,7 @@ component({
       </button>
     </div>
 
+/*
   return () => html`
     <div>
       <h3>Counter demo</h3>
@@ -39,4 +40,5 @@ component({
       <button @click=${onIncrement}>${state.count}</button>
     </div>
   `
+*/
 })
