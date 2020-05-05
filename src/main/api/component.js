@@ -1,10 +1,28 @@
 // external import
 import { render as litRender } from 'lit-html'
 
-export default function component(componentName, a, b) {
-  const
-    config = typeof a === 'function' ? {} : a,
-    main = b ? b : a
+export default function component(a, b, c) {
+  let
+    componentName,
+    options,
+    main
+
+  if (typeof a === 'string') {
+    componentName = a
+
+    if (typeof b === 'function') {
+      options = {}
+      main = b
+    } else {
+      options = { ...b }
+      main = c
+    }
+  } else {
+    componentName = a.name
+    options = { ...a }
+    delete options.name
+    main = b
+  }
 
   if (process.env.NODE_ENV === 'development') {
     try {
@@ -12,7 +30,7 @@ export default function component(componentName, a, b) {
         throw 'String expected as first argument'
       }
 
-      checkComponentConfig(config)
+      checkComponentConfig(options)
     } catch (e) {
       throw new TypeError(
         `[component] Invalid configuration for component type "${componentName}": ${e}`)
@@ -20,12 +38,12 @@ export default function component(componentName, a, b) {
   }
 
   customElements.define(componentName,
-    generateCustomElementClass(componentName, config, main))
+    generateCustomElementClass(componentName, options, main))
 }
 
-function generateCustomElementClass(componentName, config, main) {
+function generateCustomElementClass(componentName, options, main) {
   const
-    propNames = config.props ? Object.keys(config.props) : [],
+    propNames = options.props ? Object.keys(options.props) : [],
     attrNames = [],
     attrConverters = {},
     propNameByAttrName = {},
@@ -35,7 +53,7 @@ function generateCustomElementClass(componentName, config, main) {
 
   const statics = {
     componentName,
-    config,
+    options,
     main,
     attrConverters,
     propNameByAttrName,
@@ -53,8 +71,8 @@ function generateCustomElementClass(componentName, config, main) {
 
   CustomElement.observedAttributes = attrNames
 
-  if (config.methods && config.methods.length > 0) {
-    config.methods.forEach(methodName => {
+  if (options.methods && options.methods.length > 0) {
+    options.methods.forEach(methodName => {
       CustomElement.prototype[methodName] = function () {
         const fn = this._methods && this._methods[methodName]
 
@@ -69,7 +87,7 @@ function generateCustomElementClass(componentName, config, main) {
 
   propNames.filter(it => !isEventPropName(it)).forEach(propName => {
     const
-      propConfig = config.props[propName],
+      propConfig = options.props[propName],
       type = propConfig.type
 
     if (type === Boolean || type === Number || type === String) {
@@ -199,13 +217,19 @@ class BaseElement extends HTMLElement {
   }
 
   connectedCallback() {
-    const { main, config, componentName } = this._statics
+    const { main, options, componentName } = this._statics
     let result
 
-    if (config.shadow !== 'open' && config.shadow !== 'closed') {
+    const shadow = options.shadow
+      ? options.shadow
+      : options.slots && options.slots.length > 0
+        ? 'opened'
+        : 'none'
+
+    if (shadow !== 'open' && shadow !== 'closed') {
       this._root = this
     } else {
-      this.attachShadow({ mode: config.shadow })
+      this.attachShadow({ mode: shadow })
       this.shadowRoot.appendChild(document.createElement('span'))
       this.shadowRoot.appendChild(document.createElement('span'))
       this.shadowRoot.childNodes[0].setAttribute('data-role', 'styles')
@@ -214,7 +238,7 @@ class BaseElement extends HTMLElement {
     }
   
     try {
-      if (config.props) {
+      if (options.props) {
         if (main.length > 1) {
           this._initializing = true
           result = main(this._ctrl, this._props)
@@ -240,19 +264,24 @@ class BaseElement extends HTMLElement {
         return result 
       }
 
-    if (config.styles) {
-      if (config.shadow !== 'open' && config.shadow !== 'closed') {
+    if (options.styles) {
+      const css =
+        typeof options.styles === 'string'
+          ? options.styles
+          : options.styles.join('\n\n/* =============== */\n\n')
+
+      if (shadow !== 'open' && shadow !== 'closed') {
         const styleId = 'styles::' + componentName
 
         if (!document.getElementById(styleId)) {
           const styleElem = document.createElement('style')
           styleElem.id = styleId
-          styleElem.appendChild(document.createTextNode(config.styles))
+          styleElem.appendChild(document.createTextNode(css))
           document.head.appendChild(styleElem)
         }
       } else {
         const styleElem = document.createElement('style')
-        styleElem.appendChild(document.createTextNode(config.styles))
+        styleElem.appendChild(document.createTextNode(css))
         this.shadowRoot.childNodes[0].appendChild(styleElem)
       }
     }
@@ -453,25 +482,26 @@ const
   }
 
 
-// --- component config validation -----------------------------------
+// --- component options validation -----------------------------------
 
 const
-  ALLOWED_COMPONENT_CONFIG_KEYS = ['props', 'validate', 'methods', 'styles', 'shadow'],
+  ALLOWED_COMPONENT_CONFIG_KEYS = ['props', 'validate', 'methods', 'styles', 'slots', 'shadow'],
   ALLOWED_PROPERTY_CONFIG_KEYS = ['type', 'nullable', 'required', 'defaultValue'],
   ALLOWED_PROPERTY_TYPES = [Boolean, Number, String, Object, Function, Array, Date],
   REGEX_PROPERTY_NAME = /^[a-z][a-zA-Z0-9]*$/
 
-function checkComponentConfig(config) {
+function checkComponentConfig(options) {
   const
-    props = getParam(config, 'props', 'object'),
-    shadow = getParam(config, 'shadow', 'string')
+    props = getParam(options, 'props', 'object'),
+    shadow = getParam(options, 'shadow', 'string'),
+    slots = getParam(options, 'slots', 'array')
   
-  // ignore return value - just check for type 'string'
-  getParam(config, 'styles', 'string')
+  // ignore return value - just check for type
+  getParam(options, 'styles', 'array')
 
-  config.validate === null || getParam(config, 'validate', 'function')
+  options.validate === null || getParam(options, 'validate', 'function')
 
-  ifInvalidKey(config, ALLOWED_COMPONENT_CONFIG_KEYS, key => {
+  ifInvalidKey(options, ALLOWED_COMPONENT_CONFIG_KEYS, key => {
     throw `Invalid component configuration parameter "${key}"`
   })
 
@@ -479,19 +509,27 @@ function checkComponentConfig(config) {
     throw 'Component configuration parameter "shadow" must either be "none", "open" or "closed"'
   }
 
+  if (shadow === 'none' && slots && slots.length > 0) {
+    throw 'It\'s not allowed to set parameter "shadow" to "none", while the component uses slots'
+  }
+
   if (props) {
     checkProps(props)
   }
 }
 
-function getParam(config, paramName, type) {
+function getParam(options, paramName, type) {
   let ret
 
-  if (hasOwnProp(config, paramName)) {
-    ret = config[paramName]
+  if (hasOwnProp(options, paramName)) {
+    ret = options[paramName]
 
-    if (type && typeof ret !== type) {
-      throw `Illegal value for parameter "${paramName}"`
+    if (type === 'array') {
+      if (!Array.isArray(ret)) {
+        throw `Parameter "${paramName}" must be an array`
+      }
+    } else if (type && typeof ret !== type) {
+      throw `Parameter "${paramName}" must be of type ${type}`
     }
   }
 

@@ -6,7 +6,7 @@ component('demo-button', {
     onAction: prop.func.opt()
   },
 
-  styles: `
+  styles: [`
     .demo-button {
       border: none;
       color: white;
@@ -22,7 +22,7 @@ component('demo-button', {
     .demo-button:active {
       background-color: #555;
     }
-  `
+  `]
 }, props => {
   const onClick = () => {
     props.onAction && props.onAction(new CustomEvent('action'))

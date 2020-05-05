@@ -1,6 +1,8 @@
 import { html, component, prop, useEffect, useState } from '../../main/index'
 
-component('simple-counter-demo', {
+component({
+  name: 'simple-counter-demo',
+
   props: {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
