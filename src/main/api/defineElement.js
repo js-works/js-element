@@ -351,7 +351,6 @@ class BaseElement extends HTMLElement {
 
         this._root2 = patch(this._root2, content) // TODO!!!!!!
       } else {
-        console.log(1111, content)
         throw new TypeError('Illegal return value of render function')
       }
     } finally {
@@ -559,14 +558,14 @@ function checkPropConfig(propName, propConfig) {
       break
 
     case 'nullable':
-      if (typeof nullable !== 'boolean') {
+      if (typeof propConfig.nullable !== 'boolean') {
         throw `Illegal parameter "nullable" for property "${propName}"`
       }
       break
   
     case 'required':
-      if (typeof nullable !== 'boolean') {
-        throw `Illegal parameter "nullable" for property ${propName}`
+      if (typeof propConfig.required !== 'boolean') {
+        throw `Illegal parameter "required" for property ${propName}`
       }
       break
 

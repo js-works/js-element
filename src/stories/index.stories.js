@@ -10,7 +10,7 @@ import './demos/clock-demo'
 import './demos/iterator-demo'
 import './demos/mouse-demo'
 import './demos/interval-demo'
-//import './demos/todo-mvc'
+import './demos/todo-mvc'
 import './styles.css'
 
 export default {

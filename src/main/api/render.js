@@ -24,6 +24,6 @@ export default function render(content, container) {
   target.innerHTML = ''
 
   if (content !== null) {
-    target.appendChild(patch(target, content))
+    patch(target, content)
   }
 }
