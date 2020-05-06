@@ -1,7 +1,9 @@
 /** @jsx h */
 import { defineElement, h, prop } from '../../main/index'
 
-defineElement('demo-button', {
+defineElement({
+  name: 'demo-button',
+
   props: {
     text: prop.str.opt(''),
     onAction: prop.func.opt()

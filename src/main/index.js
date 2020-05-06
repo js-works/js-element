@@ -7,7 +7,7 @@ export { default as asRef } from './api/asRef'
 export { default as toRef } from './api/toRef'
 export { default as update } from './api/update'
 export { default as getRoot } from './api/getRoot'
-export { default as isMounted } from './api/isMounted'
+export { default as render } from './api/render'
 
 // hooks
 export { default as hook } from './api/hook'
