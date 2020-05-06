@@ -7,7 +7,7 @@ export default function h(type, ...rest) {
     type = type.type
   }
 
-  if (second !== undefined &&  second !== null && (typeof second !== 'object' || second.name)) {
+  if (second !== undefined &&  second !== null && (typeof second !== 'object' || second.kind === 'virtual-element' )) {
     rest.unshift(null)
   }
 

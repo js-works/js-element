@@ -245,7 +245,8 @@ var createVNode = function(name, props, children, node, key, type) {
     children: children,
     node: node,
     type: type,
-    key: key
+    key: key,
+    kind: 'virtual-element'
   }
 }
 

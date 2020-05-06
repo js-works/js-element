@@ -232,7 +232,7 @@ class BaseElement extends HTMLElement {
     const shadow = options.shadow
       ? options.shadow
       : options.slots && options.slots.length > 0
-        ? 'opened'
+        ? 'open'
         : 'none'
 
     if (shadow !== 'open' && shadow !== 'closed') {
