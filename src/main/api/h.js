@@ -4,7 +4,7 @@ export default function h(type, ...rest) {
   const second = rest[0]
 
   if (typeof type === 'function') {
-    type = type.type
+    type = type['js-elements:type']
   }
 
   if (second !== undefined &&  second !== null && (typeof second !== 'object' || second.kind === 'virtual-element' )) {

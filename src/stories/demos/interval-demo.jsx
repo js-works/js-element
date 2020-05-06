@@ -1,6 +1,7 @@
-import { html, component, toRef, useInterval, useState } from '../../main/index'
+/** @jsx h */
+import { defineElement, h, toRef, useInterval, useState } from '../../main/index'
 
-component('interval-demo', c => {
+defineElement('interval-demo', c => {
   const
     [state, setState] = useState(c, {
       count: 0,
@@ -19,13 +20,12 @@ component('interval-demo', c => {
     }
   }, 1000)
 
-  return () => html`
+  return () =>
     <div>
-      <h1>Counter: ${state.count}</h1>
-      <h4>Delay: ${state.delay}</h4>
-      <button @click=${onReset}>
+      <h1>Counter: {state.count}</h1>
+      <h4>Delay: {state.delay}</h4>
+      <button onClick={onReset}>
         Reset delay
       </button>
     </div>
-  `
 })

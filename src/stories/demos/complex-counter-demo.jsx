@@ -1,6 +1,7 @@
-import { html, component, prop, useEffect, useElementRef, useMethods, useState } from '../../main/index'
+/** @jsx h */
+import { defineElement, h, prop, asRef, useEffect, useMethods, useState } from '../../main/index'
 
-component('complex-counter', {
+defineElement('complex-counter', {
   props: {
     initialValue: prop.num.opt(0),
     label: prop.str.opt('Counter')
@@ -32,29 +33,27 @@ component('complex-counter', {
     console.log(`New value of counter "${props.label}": ${state.count}`)
   }, () => [state.count])
 
-  return () => html`
+  return () =>
     <div>
-      <label>${props.label}: </label>
-      <button @click=${onDecrement}>-</button>
-      <span>${state.count}</span>
-      <button @click=${onIncrement}>+</button>
+      <label>{props.label}: </label>
+      <button onClick={onDecrement}>-</button>
+      <span> {state.count} </span>
+      <button onClick={onIncrement}>+</button>
     </div>
-  `
 })
 
-component('complex-counter-demo', c => {
+defineElement('complex-counter-demo', () => {
   const
-    counterRef = useElementRef(c),
+    counterRef = asRef(null),
     onSetTo0 = () => counterRef.current.reset(0),
     onSetTo100 = () => counterRef.current.reset(100)
 
-  return () => html`
+  return () =>
     <div>
       <h3>Complex counter demo</h3>
-      <complex-counter *ref=${counterRef.bind}></complex-counter>
+      <complex-counter ref={counterRef.bind}></complex-counter>
       <br/>
-      <button @click=${onSetTo0}>Set to 0</button>
-      <button @click=${onSetTo100}>Set to 100</button>
+      <button onClick={onSetTo0}>Set to 0</button>
+      <button onClick={onSetTo100}>Set to 100</button>
     </div>
-  `
 })

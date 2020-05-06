@@ -1,9 +1,10 @@
-import { component, getRoot, html, prop, useEffect, useState } from '../../main/index'
+/** @jsx */
+import { defineElement, getRoot, html, prop, useEffect, useState } from '../../main/index'
 
 const ENTER_KEY = 13
 const ESC_KEY = 27
 
-component('todo-header', c => {
+defineElement('todo-header', c => {
   const
     root = getRoot(c),
     [state, setState] = useState(c, { title: '' }),
@@ -42,7 +43,7 @@ component('todo-header', c => {
   `
 })
 
-component('todo-item', {
+defineElement('todo-item', {
   props: {
     todo: prop.obj.req()
   }
@@ -167,7 +168,7 @@ component('todo-item', {
   }
 })
 
-component('todo-main', {
+defineElement('todo-main', {
   props: {
     todos: prop.obj.req(),
     filter: prop.str.req()
@@ -210,7 +211,7 @@ component('todo-main', {
   `
 })
 
-component('todo-filters', {
+defineElement('todo-filters', {
   props: {
     filter: prop.str.req()
   }
@@ -251,7 +252,7 @@ component('todo-filters', {
   `
 })
 
-component('todo-footer', {
+defineElement('todo-footer', {
   props: {
     todos: prop.obj.req(),
     filter: prop.str.req()
@@ -277,7 +278,7 @@ component('todo-footer', {
   `
 })
 
-component('todo-mvc', c => {
+defineElement('todo-mvc', c => {
   const
     root = getRoot(c),
     [state, setState] = useState(c, {

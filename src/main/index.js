@@ -1,8 +1,7 @@
 import h from './api/h'
 
-export { default as component } from './api/component'
+export { default as defineElement } from './api/defineElement'
 export { default as h } from './api/h'
-export { default as html } from './api/html'
 export { default as prop } from './api/prop'
 export { default as asRef } from './api/asRef'
 export { default as toRef } from './api/toRef'
@@ -13,7 +12,6 @@ export { default as isMounted } from './api/isMounted'
 // hooks
 export { default as hook } from './api/hook'
 export { default as useEffect } from './api/useEffect'
-export { default as useElementRef } from './api/useElementRef'
 export { default as useInterval } from './api/useInterval'
 export { default as useMethods } from './api/useMethods'
 export { default as usePromise } from './api/usePromise'

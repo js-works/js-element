@@ -1,4 +1,5 @@
-import { html, component } from '../../main/index'
+/** @jsx h */
+import { defineElement, h } from '../../main/index'
 
 const demoContent = {
   *[Symbol.iterator]() {
@@ -33,15 +34,15 @@ const demoContent = {
   }
 }
 
-component('iterator-demo', () => {
-  return html`
+defineElement('iterator-demo', () => {
+  return (
     <div>
       <div>
           If everything works fine then the following line should be:
           "<i>Iterators seem to work properly!</i>"
       </div>
       <br/>
-      <div>&gt;&gt; ${demoContent}</div>
+      <div>&gt;&gt; {demoContent}</div>
     </div>
-  `
+  )
 })

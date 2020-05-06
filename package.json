@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "module": "dist/js-elements.esm.producion.js",
-  "unpkg": "dist/js-elements.umd.poduction.js",
+  "unpkg": "dist/js-elements.umd.production.js",
   "files": [
     "index.js",
     "dist"
@@ -28,8 +28,7 @@
   },
   "homepage": "https://github.com/js-works/js-elements#readme",
   "dependencies": {
-    "@webcomponents/webcomponentsjs": "^2.4.3",
-    "lit-html": "^1.2.1"
+    "@webcomponents/webcomponentsjs": "^2.4.3"
   },
   "devDependencies": {
     "@babel/core": "^7.9.0",

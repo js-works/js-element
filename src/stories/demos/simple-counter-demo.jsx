@@ -1,10 +1,10 @@
 /** @jsx h */
-import { h, html, component, prop, useEffect, useState, Html } from '../../main/index'
+import { defineElement, h, prop, useEffect, useState, Html } from '../../main/index'
 
 // needed for non-JSX example
 const { div, h3 } = Html
 
-const Counter = component({
+const Counter = defineElement({
   name: 'simple-counter',
 
   props: {
@@ -35,31 +35,11 @@ const Counter = component({
     </div>
 })
 
-const CounterDemo = component('simple-counter-demo', () => {
-
+defineElement('simple-counter-demo', () => {
   return (
     div(
       h3('Counter demo'),
       div(Counter())
     )
   )
-/*
-  return (
-    <div>
-      <h3>Counter demo</h3>
-      <div>
-        <Counter/>
-      </div>
-    </div>
-  )
-*/
-/*
-  return () => html`
-    <div>
-      <h3>Counter demo</h3>
-      <label>${props.label}: </label>
-      <button @click=${onIncrement}>${state.count}</button>
-    </div>
-  `
-*/
 })

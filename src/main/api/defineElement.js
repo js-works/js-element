@@ -1,16 +1,11 @@
-// external import
-import { render as litRender } from 'lit-html'
 import { patch } from '../internal/vdom'
 
 import h from './h'
-export default function component(a, b, c) {
-  let
-    componentName,
-    options,
-    main
+export default function defineElement(a, b, c) {
+  let tagName, options, main
 
   if (typeof a === 'string') {
-    componentName = a
+    tagName = a
 
     if (typeof b === 'function') {
       options = {}
@@ -20,7 +15,7 @@ export default function component(a, b, c) {
       main = c
     }
   } else {
-    componentName = a.name
+    tagName = a.name
     options = { ...a }
     delete options.name
     main = b
@@ -28,31 +23,28 @@ export default function component(a, b, c) {
 
   if (process.env.NODE_ENV === 'development') {
     try {
-      if (typeof name !== 'string') {
-        throw 'String expected as first argument'
-      }
-
-      checkComponentConfig(options)
-    } catch (e) {
+      checkCustomElementConfig(tagName, options)
+    } catch (errorMsg) {
       throw new TypeError(
-        `[component] Invalid configuration for component type "${componentName}": ${e}`)
+        'Invalid configuration for custom element '
+          + `"${tagName}": ${errorMsg}`)
     }
   }
 
-  customElements.define(componentName,
-    generateCustomElementClass(componentName, options, main))
-  const ret = (...args) => h(componentName, ...args)
+  customElements.define(tagName,
+    generateCustomElementClass(tagName, options, main))
+  const ret = h.bind(null, tagName)
 
-  Object.defineProperty(ret, 'type', {
-    value: componentName
+  Object.defineProperty(ret, 'js-elements:type', {
+    value: tagName
   })
 
   return ret
 }
 
-function generateCustomElementClass(componentName, options, main) {
+function generateCustomElementClass(tagName, options, main) {
   const
-    propNames = options.props ? Object.keys(options.props) : [],
+    propNames = options.props ? keysOf(options.props) : [],
     attrNames = [],
     attrConverters = {},
     propNameByAttrName = {},
@@ -61,7 +53,7 @@ function generateCustomElementClass(componentName, options, main) {
     eventNameMappings = getEventNameMappings(eventPropNames)
 
   const statics = {
-    componentName,
+    tagName,
     options,
     main,
     attrConverters,
@@ -180,7 +172,7 @@ class BaseElement extends HTMLElement {
 
     this._ctrl = {
       getName: () => {
-        return this._statics.componentName
+        return this._statics.tagName
       },
 
       update: runOnceBeforeUpdate => {
@@ -226,7 +218,7 @@ class BaseElement extends HTMLElement {
   }
 
   connectedCallback() {
-    const { main, options, componentName } = this._statics
+    const { main, options, tagName } = this._statics
     let result
 
     const shadow = options.shadow
@@ -280,7 +272,7 @@ class BaseElement extends HTMLElement {
           : options.styles.join('\n\n/* =============== */\n\n')
 
       if (shadow !== 'open' && shadow !== 'closed') {
-        const styleId = 'styles::' + componentName
+        const styleId = 'styles::' + tagName
 
         if (!document.getElementById(styleId)) {
           const styleElem = document.createElement('style')
@@ -379,10 +371,7 @@ class BaseElement extends HTMLElement {
       
       const content = this._render(this._props)
 
-      if (content && content.processor) {
-        litRender(this._render(this._props), this._root)
-
-      } else if (content && content.name)  {
+      if (content && content.kind === 'virtual-element')  {
         // TODO!!!!!!
         if (!this._root2) {
           this._root2 = document.createElement('span')
@@ -489,8 +478,18 @@ function createNotifier() {
   }
 }
 
+// --- utility functions ---------------------------------------------
+
 function hasOwnProp(obj, propName) {
   return Object.prototype.hasOwnProperty.call(obj, propName)
+}
+
+function isArray(obj) {
+  return obj instanceof Array
+}
+
+function keysOf(obj) {
+  return Object.keys(obj)
 }
 
 // --- converters ----------------------------------------------------
@@ -510,99 +509,139 @@ const
 // --- component options validation -----------------------------------
 
 const
-  ALLOWED_COMPONENT_CONFIG_KEYS = ['props', 'validate', 'methods', 'styles', 'slots', 'shadow'],
-  ALLOWED_PROPERTY_CONFIG_KEYS = ['type', 'nullable', 'required', 'defaultValue'],
-  ALLOWED_PROPERTY_TYPES = [Boolean, Number, String, Object, Function, Array, Date],
-  REGEX_PROPERTY_NAME = /^[a-z][a-zA-Z0-9]*$/
+  ALLOWED_PROPERTY_TYPES = new Set([Boolean, Number, String, Object, Function, Array, Date]),
+  REGEX_TAG_NAME = /^[a-z][a-z0-9]*(-[a-z][a-z0-9]*)+$/,
+  REGEX_PROP_NAME = /^[a-z][a-zA-Z0-9]*$/,
+  REGEX_METHOD_NAME = /^[a-z][a-z0-9]*$/,
+  REGEX_SLOT_NAME = /^[a-z][a-z0-9]*$/
 
-function checkComponentConfig(options) {
-  const
-    props = getParam(options, 'props', 'object'),
-    shadow = getParam(options, 'shadow', 'string'),
-    slots = getParam(options, 'slots', 'array')
+function checkCustomElementConfig(name, options) {
+  if (typeof name !== 'string' || !name.match(REGEX_TAG_NAME)) {
+    throw 'Illegal tag name'
+  }
   
-  // ignore return value - just check for type
-  getParam(options, 'styles', 'array')
-
-  options.validate === null || getParam(options, 'validate', 'function')
-
-  ifInvalidKey(options, ALLOWED_COMPONENT_CONFIG_KEYS, key => {
-    throw `Invalid component configuration parameter "${key}"`
-  })
-
-  if (shadow && shadow !== 'none' && shadow !== 'open' && shadow !== 'closed') {
-    throw 'Component configuration parameter "shadow" must either be "none", "open" or "closed"'
+  if (options === null) {
+    return
   }
-
-  if (shadow === 'none' && slots && slots.length > 0) {
-    throw 'It\'s not allowed to set parameter "shadow" to "none", while the component uses slots'
-  }
-
-  if (props) {
-    checkProps(props)
-  }
-}
-
-function getParam(options, paramName, type) {
-  let ret
-
-  if (hasOwnProp(options, paramName)) {
-    ret = options[paramName]
-
-    if (type === 'array') {
-      if (!Array.isArray(ret)) {
-        throw `Parameter "${paramName}" must be an array`
-      }
-    } else if (type && typeof ret !== type) {
-      throw `Parameter "${paramName}" must be of type ${type}`
+  
+  const checkParam = (key, pred) => {
+    if (!pred(options[key])) {
+      throw `Invalid option parameter "${key}"`
     }
   }
 
-  return ret
-}
-
-function ifInvalidKey(obj, allowedKeys, fn) {
-  for (const key in obj) {
-    if (hasOwnProp(obj, key)) {
-      if (allowedKeys.indexOf(key) === -1) {
-        fn(key)
-        break
+  for (const key of keysOf(options)) {
+    switch (key) {
+    case 'props': {
+      const propNames = keysOf(options.props)
+      
+      if (propNames.length === 0) {
+        throw 'Option parameter "props" must not be empty'
       }
+
+      for (const propName of propNames) {
+        checkPropConfig(propName, options.props[propName])
+      }
+      break
+    }
+    case 'methods':
+      checkParam('methods', it => validateStringArray(it, true, REGEX_METHOD_NAME))
+      break
+
+    case 'styles':
+      checkParam('styles', validateStringArray)
+      break
+
+    case 'slots':
+      checkParam('slots', it => validateStringArray(it, true, REGEX_SLOT_NAME)
+        && it.length === 0 || options.shadow !== 'none')
+      break
+
+    case 'shadow':
+      checkParam('shadow', it => it !== 'none' && it !== 'close' && it !== 'closed')
+      break
+
+    default:
+      throw new TypeError(`Illegal option "${key}"`)
     }
   }
 }
 
-function checkProps(props) {
-  for (const key in props) {
-    if (hasOwnProp(props, key)) {
-      if (!REGEX_PROPERTY_NAME.test(key)) {
-        throw `Illegal property name "${key}"`
-      }
+function checkPropConfig(propName, propConfig) {
+  if (!propName.match(REGEX_PROP_NAME)) {
+    throw `Illegal prop name "${propName}"`
+  }
 
-      checkPropertyConfig(key, props[key])
+  const type = propConfig.type
+
+  if (!ALLOWED_PROPERTY_TYPES.has(type)) {
+    throw `Illegal parameter "type" for property ${propName}`
+  }
+
+  for (const key of keysOf(propConfig)) {
+    switch(key) {
+    case 'type':
+      // already checked
+      break
+
+    case 'nullable':
+      if (typeof nullable !== 'boolean') {
+        throw `Illegal parameter "nullable" for property "${propName}"`
+      }
+      break
+  
+    case 'required':
+      if (typeof nullable !== 'boolean') {
+        throw `Illegal parameter "nullable" for property ${propName}`
+      }
+      break
+
+    case 'defaultValue': {
+      const
+        defaultValue = propConfig.defaultValue,
+        typeOfDefault = typeof defaultValue
+
+      if (type &&
+        (type === Boolean && typeOfDefault !== 'boolean'
+          || type === Number && typeOfDefault !== 'number'
+          || type === String && typeOfDefault !== 'string'
+          || type === Object && typeOfDefault !== 'object'
+          || type === Function && typeOfDefault !== 'function'
+          || type === Array && !(typeOfDefault instanceof Array)
+          || type === Date && !(typeOfDefault instanceof Date))) {
+        // TODO!!!
+        throw `Illegal parameter "defaultValue" for property ${propName}`
+      }
+      break
+    }
+    default:
+      throw `Illegal parameter "${key}" for prop "${propName}"`
     }
   }
 }
 
-function checkPropertyConfig(propName, propConfig) {
-  ifInvalidKey(propConfig, ALLOWED_PROPERTY_CONFIG_KEYS, key => {
-    throw `Invalid parameter "${key}" for property "${propName}"`
-  })
+function validateStringArray(arr, unique = false, regex = null) {
+  const alreadyUsedValues = {}
 
-  const
-    type = getParam(propConfig, 'type', 'function'),
-    nullable = getParam(propConfig, 'nullable', 'boolean'),
-    required = getParam(propConfig, 'required', 'boolean')
-
-  if (required === true && hasOwnProp(propConfig, 'defaultValue')) {
-    throw `Unexpected parameter "defaultValue" from property "${propName}"`
+  if (!isArray(arr)) {
+    return false
   }
 
-  if (type && ALLOWED_PROPERTY_TYPES.indexOf(type) === -1) {
-    throw `Illegal parameter "type" for property "${propName}"`
+  for (let i = 0; i < arr.length; ++i) {
+    const value = arr[i]
+
+    if (typeof value !== 'string' || (regex && !value.match(regex))) {
+      return false
+    }
+
+    if (unique) {
+      if (hasOwnProp(alreadyUsedValues, value)) {
+        return false
+      }
+
+      alreadyUsedValues[value] = true
+    }
   }
 
-  if (nullable && !type) {
-    throw `Unexpected parameter "nullable" for property "${propName}"`
-  }
+  return true
 }

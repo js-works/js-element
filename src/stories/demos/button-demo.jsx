@@ -1,6 +1,7 @@
-import { html, component, prop } from '../../main/index'
+/** @jsx h */
+import { defineElement, h, prop } from '../../main/index'
 
-component('demo-button', {
+defineElement('demo-button', {
   props: {
     text: prop.str.opt(''),
     onAction: prop.func.opt()
@@ -28,18 +29,18 @@ component('demo-button', {
     props.onAction && props.onAction(new CustomEvent('action'))
   }
 
-  return html`
-    <button class="demo-button" @click=${onClick}>${props.text}</button>
-  `
+  return (
+    <button class="demo-button" onClick={onClick}>{props.text}</button>
+  )
 })
 
-component('button-demo', () => {
+defineElement('button-demo', () => {
   const onAction = e => alert(e.type)
 
-  return html`
+  return ( 
     <div>
       <h3>Button demo</h3>
-      <demo-button @action=${onAction} text="Click me"></demo-button>
+      <demo-button onAction={onAction} text="Click me"></demo-button>
     </div>
-  `
+  )
 })
