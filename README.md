@@ -10,18 +10,20 @@ and btw: It is currently not meant to be used in production.
 ## Example
 
 ```js
-import { component, html, prop, useEffect, useState } from 'js-elements'
+import { defineElement, h, prop, useEffect, useState } from 'js-elements'
 import simpleCounterStyles from './simple-counter.css' // BEM conventions
 
 // custom element will be registered as 'simple-counter' 
 
-component('simple-counter', {
+defineElement({
+  name: 'simple-counter',
+
   props: {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
   },
 
-  styles: simpleCounterStyles
+  styles: [simpleCounterStyles]
 }, (c, props) => {
   const 
     [state, setState] = useState(c, {
@@ -40,11 +42,10 @@ component('simple-counter', {
     console.log(`Value of "${props.label}": ${state.count}`)
   }, () => [state.count])
 
-  return () => html`
+  return () =>
     <div class="simple-counter"> 
-      <label class="simple-counter__label">${props.label}: </label>
-      <button class="simple-counter__button" @click=${onIncrement}>${state.count}</button>
+      <label class="simple-counter__label">{props.label}: </label>
+      <button class="simple-counter__button" onClick={onIncrement}>{state.count}</button>
     </div>
-  `
 })
 ```

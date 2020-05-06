@@ -45,12 +45,12 @@ export default function defineElement(a, b, c) {
 function generateCustomElementClass(tagName, options, main) {
   const
     propNames = options.props ? keysOf(options.props) : [],
-    attrNames = [],
-    attrConverters = {},
-    propNameByAttrName = {},
-    attrNameByPropName = {},
+    attrNames = [], // will be filled below
+    attrConverters = {}, // dito
+    propNameByAttrName = {}, // dito
+    attrNameByPropName = {}, // dito
     eventPropNames = propNames.filter(isEventPropName),
-    eventNameMappings = getEventNameMappings(eventPropNames)
+    eventNameMappings = getEventNameMappings(eventPropNames) // TODO: this is just an ugly workaround
 
   const statics = {
     tagName,
@@ -169,52 +169,6 @@ class BaseElement extends HTMLElement {
     this._beforeUpdateNotifier = null
     this._afterUpdateNotifier = null
     this._beforeUnmountNotifier = null
-
-    this._ctrl = {
-      getName: () => {
-        return this._statics.tagName
-      },
-
-      update: runOnceBeforeUpdate => {
-        this._update(runOnceBeforeUpdate)
-      },
-
-      isRendering: () => {
-        return this._rendering
-      },
-      
-      isInitialized: () => {
-        return !this._initializing
-      },
-
-      isMounted: () => {
-        return this._mounted
-      },
-
-      getRoot: () => {
-        return this._root
-      },
-
-      setMethods: methods => {
-        this._methods = methods
-      },
-
-      afterMount: callback => {
-        this._afterMount(callback)
-      },
-
-      beforeUpdate: callback => {
-        this._beforeUpdate(callback)
-      },
-
-      afterUpdate: callback => {
-        this._afterUpdate(callback)
-      },
-
-      beforeUnmount: callback => {
-        this._beforeUnmount(callback)
-      }
-    }
   }
 
   connectedCallback() {
@@ -237,19 +191,36 @@ class BaseElement extends HTMLElement {
       this.shadowRoot.childNodes[1].setAttribute('data-role', 'content')
       this._root = this.shadowRoot.childNodes[1]
     }
-  
+ 
     try {
+      const ctrl = options.props && main.length < 2
+        || !options.props && main.length === 0
+        ? null
+        : {
+          getName: () => this._statics.tagName,
+          update: runOnceBeforeUpdate => this._update(runOnceBeforeUpdate),
+          isRendering: () => this._rendering,
+          isInitialized: () => !this._initializing,
+          isMounted: () => this._mounted,
+          getRoot: () => this._root,
+          setMethods: methods => { this._methods = methods },
+          afterMount: callback => this._afterMount(callback),
+          beforeUpdate: callback => this._beforeUpdate(callback),
+          afterUpdate: callback => this._afterUpdate(callback),
+          beforeUnmount: callback => this._beforeUnmount(callback)
+        }
+
       if (options.props) {
         if (main.length > 1) {
           this._initializing = true
-          result = main(this._ctrl, this._props)
+          result = main(ctrl, this._props)
         } else {
           result = main(this._props)
         }
       } else {
         if (main.length > 0) {
           this._initializing = true
-          result = main(this._ctrl)
+          result = main(ctrl)
         } else {
           result = main()
         }
@@ -454,6 +425,8 @@ class BaseElement extends HTMLElement {
   }
 }
 
+// --- tools ---------------------------------------------------------
+
 function isEventPropName(name) {
   return name.match(/^on[A-Z]/)
 }
@@ -462,6 +435,20 @@ function propNameToAttrName(propName) {
   return propName.replace(/(.)([A-Z])([A-Z]+)([A-Z])/g, '$1-$2$3-$4')
     .replace(/([a-z0-0])([A-Z])/g, '$1-$2')
     .toLowerCase()
+}
+
+// --- utility functions ---------------------------------------------
+
+function hasOwnProp(obj, propName) {
+  return Object.prototype.hasOwnProperty.call(obj, propName)
+}
+
+function isArray(obj) {
+  return obj instanceof Array
+}
+
+function keysOf(obj) {
+  return Object.keys(obj)
 }
 
 function createNotifier() {
@@ -478,19 +465,6 @@ function createNotifier() {
   }
 }
 
-// --- utility functions ---------------------------------------------
-
-function hasOwnProp(obj, propName) {
-  return Object.prototype.hasOwnProperty.call(obj, propName)
-}
-
-function isArray(obj) {
-  return obj instanceof Array
-}
-
-function keysOf(obj) {
-  return Object.keys(obj)
-}
 
 // --- converters ----------------------------------------------------
 
