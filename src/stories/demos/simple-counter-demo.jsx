@@ -1,4 +1,3 @@
-/** @jsx h */
 import { defineElement, h, prop, useEffect, useState, Html } from '../../main/index'
 
 // needed for non-JSX example

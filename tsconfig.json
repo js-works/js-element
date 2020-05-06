@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "target": "ES2020",
+    "strict": true,
+    "strictNullChecks": true,
+    "jsx": "react",
+    "jsxFactory": "h",
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "downlevelIteration": true,
+    "sourceMap": true, 
+    "lib": ["es7", "dom"],
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "skipLibCheck": true,
+    
+    "paths": {
+    },
+    
+    "typeRoots": [
+      "node_modules/@types"
+    ],
+
+    "types": [
+      "node", "mocha", "chai"
+    ]
+  },
+  "files": [
+  ],
+
+  "include": [
+    "./src/**/*"
+  ],
+
+  "exclude": [
+    "node_modules"
+  ]
+}
