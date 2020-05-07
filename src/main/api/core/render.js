@@ -1,4 +1,4 @@
-import { patch } from '../internal/vdom'
+import { patch } from '../../internal/vdom'
 
 export default function render(content, container) {
   if (content !== null && (!content || content.kind !== 'virtual-element')) {

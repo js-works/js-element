@@ -1,5 +1,5 @@
 import useEffect from './useEffect'
-import asRef from './asRef'
+import asRef from '../util/asRef'
 import hook from './hook'
 export default hook('useInterval', (c, callback, delay) => {
   const

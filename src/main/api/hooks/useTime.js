@@ -1,4 +1,4 @@
-import asRef from './asRef'
+import asRef from '../util/asRef'
 import useValue from './useValue'
 import useInterval from './useInterval'
 import hook from './hook'

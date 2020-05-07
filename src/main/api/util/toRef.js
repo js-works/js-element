@@ -1,4 +1,4 @@
-import Ref from '../internal/Ref'
+import Ref from '../../internal/Ref'
 
 export default function toRef(getter) {
   const ref = Object.create(Ref.prototype)

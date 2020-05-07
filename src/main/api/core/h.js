@@ -1,4 +1,4 @@
-import { h as h2 } from '../internal/vdom'
+import { h as h2 } from '../../internal/vdom'
 
 export default function h(type, ...rest) {
   const second = rest[0]

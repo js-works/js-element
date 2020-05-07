@@ -1,4 +1,4 @@
-import { patch } from '../internal/vdom'
+import { patch } from '../../internal/vdom'
 
 import h from './h'
 export default function defineElement(a, b, c) {
