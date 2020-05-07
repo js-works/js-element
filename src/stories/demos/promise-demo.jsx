@@ -1,17 +1,21 @@
 /** @jsx h */
 import { defineElement, h, prop, update, usePromise, useState } from '../../main/index'
 
-const Loader = defineElement('data-loader', {
+const Loader = defineElement({
+  name: 'data-loader',
+
   props: {
     loadingText: prop.str.opt('Loading...'),
     finishText: prop.str.opt('Finished!')
-  }
-}, (c, props) => {
-  const res = usePromise(c, () => wait(4000))
+  },
 
-  return () => res.state === 'pending'
-    ? <div>{props.loadingText}</div>
-    : <div>{props.finishText}</div>
+  init(c, props) {
+    const res = usePromise(c, () => wait(4000))
+
+    return () => res.state === 'pending'
+      ? <div>{props.loadingText}</div>
+      : <div>{props.finishText}</div>
+  }
 })
 
 defineElement('promise-demo', c => {

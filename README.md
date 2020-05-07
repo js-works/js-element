@@ -23,29 +23,31 @@ defineElement({
     label: prop.str.opt('Counter')
   },
 
-  styles: [simpleCounterStyles]
-}, (c, props) => {
-  const 
-    [state, setState] = useState(c, {
-      count: props.initialCount
-    }),
+  styles: [simpleCounterStyles],
 
-    onIncrement = () => setState('count', it => it + 1)
+  init(c, props) {
+    const 
+      [state, setState] = useState(c, {
+        count: props.initialCount
+      }),
 
-  useEffect(c, () => {
-    console.log(`"${props.label}" has been mounted`)
+      onIncrement = () => setState('count', it => it + 1)
 
-    return () => console.log(`Unmounting "${props.label}"`)
-  }, null)
+    useEffect(c, () => {
+      console.log(`"${props.label}" has been mounted`)
 
-  useEffect(c, () => {
-    console.log(`Value of "${props.label}": ${state.count}`)
-  }, () => [state.count])
+      return () => console.log(`Unmounting "${props.label}"`)
+    }, null)
 
-  return () =>
-    <div class="simple-counter"> 
-      <label class="simple-counter__label">{props.label}: </label>
-      <button class="simple-counter__button" onClick={onIncrement}>{state.count}</button>
-    </div>
+    useEffect(c, () => {
+      console.log(`Value of "${props.label}": ${state.count}`)
+    }, () => [state.count])
+
+    return () =>
+      <div class="simple-counter"> 
+        <label class="simple-counter__label">{props.label}: </label>
+        <button class="simple-counter__button" onClick={onIncrement}>{state.count}</button>
+      </div>
+  }
 })
 ```

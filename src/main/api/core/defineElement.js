@@ -4,7 +4,13 @@ import h from './h'
 export default function defineElement(a, b, c) {
   let tagName, options, main
 
-  if (typeof a === 'string') {
+  if (a && typeof a === 'object' && !b) {
+    const { name, init, render, ...rest } = a
+    
+    tagName = name
+    options = rest
+    main = render || init
+  } else if (typeof a === 'string') {
     tagName = a
 
     if (typeof b === 'function') {
