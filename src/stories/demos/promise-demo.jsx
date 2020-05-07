@@ -1,9 +1,7 @@
 /** @jsx h */
 import { defineElement, h, prop, update, usePromise, useState } from '../../main/index'
 
-const Loader = defineElement({
-  name: 'data-loader',
-
+const Loader = defineElement('data-loader', {
   props: {
     loadingText: prop.str.opt('Loading...'),
     finishText: prop.str.opt('Finished!')
