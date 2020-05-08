@@ -1,10 +1,11 @@
 import { h as h2 } from '../../internal/vdom'
+import Component from '../#types/Component'
 
-export default function h(type: any, ...rest: any[]) { // TODO
+export default function h(type: string  | Component, ...rest: any[]): Element { // TODO
   const second = rest[0]
 
   if (typeof type === 'function') {
-    type = type['js-elements:type']
+    type = (type as any)['js-elements:type']
   }
 
   if (second !== undefined &&  second !== null && (typeof second !== 'object' || second.kind === 'virtual-element' )) {
