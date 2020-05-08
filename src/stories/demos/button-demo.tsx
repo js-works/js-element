@@ -3,7 +3,7 @@ import { defineElement, h, prop, Component } from '../../main/index'
 
 type DemoProps = {
   text?: string,
-  onAction?: () => void
+  onAction?: (event: CustomEvent<'action'>) => void
 }
 
 const Demo: Component<DemoProps> = defineElement({
@@ -31,12 +31,12 @@ const Demo: Component<DemoProps> = defineElement({
       background-color: #555;
     }
   `]
-}, (props: any) => { // TODO
+}, (c, props) => {
   const onClick = () => {
     props.onAction && props.onAction(new CustomEvent('action'))
   }
 
-  return (
+  return () => (
     <button class="demo-button" onClick={onClick}>{props.text}</button>
   )
 })

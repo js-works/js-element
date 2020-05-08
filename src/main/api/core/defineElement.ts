@@ -1,8 +1,106 @@
 import { patch } from '../../internal/vdom'
 
+import Props from '../#types/Props'
+import Methods from '../#types/Methods'
+import Ctrl from '../#types/Ctrl'
+import VNode from '../#types/VNode'
+import Component from '../#types/Component'
+
 import h from './h'
 
-export default function defineElement(a: any, b?: any, c?: any) { // TODO
+export default defineElement
+
+type PropsConfig<P extends Props> = {
+ [key: string]: any // TODO 
+}
+
+type ConfigStateless<P extends Props = {}> = {
+  name: string,
+  props?: PropsConfig<P>,
+  styles?: string[],
+  methods?: string[],
+  slots?: string[],
+  render: (props: P) => VNode
+}
+
+type ConfigStateful<P extends Props = {}> = {
+  name: string,
+  props?: PropsConfig<P>,
+  styles?: string[],
+  slots?: string[],
+  init: (c: Ctrl<P>, props: P) => (props: P) => VNode
+}
+
+type ConfigStatefulWithMethods<P extends Props = {}, M extends Methods = never> = {
+  name: string,
+  props?: PropsConfig<P>,
+  styles?: string[],
+  methods?: (keyof M)[],
+  slots?: string[],
+  init: (c: Ctrl<P, M>, props: P) => (props: P) => VNode
+}
+
+function defineElement<P extends Props>(
+  config: ConfigStateful<P>
+): Component<P>
+
+function defineElement<P extends Props>(
+  config: Omit<ConfigStateful<P>, 'init'>,
+  init: ConfigStateful<P>['init']
+): Component<P>
+
+function defineElement<P extends Props>(
+  name: string,
+  config: Omit<ConfigStateful<P>, 'name' | 'init'>,
+  init: ConfigStateful<P>['init']
+): Component<P>
+
+function defineElement<P extends Props, M extends Methods>(
+  config: ConfigStatefulWithMethods<P, M>
+): Component<P>
+
+function defineElement<P extends Props, M extends Methods>(
+  config: Omit<ConfigStatefulWithMethods<P, M>, 'init'>,
+  init: ConfigStatefulWithMethods<P, M>['init']
+): Component<P>
+
+function defineElement<P extends Props, M extends Methods>(
+  name: string,
+  options: Omit<ConfigStatefulWithMethods<P, M>, 'name' | 'init'>,
+  init: ConfigStatefulWithMethods<P, M>['init']
+): Component<P>
+
+function defineElement<P extends Props, M extends Methods>(
+  name: string,
+  init: ConfigStatefulWithMethods<P, M>['init']
+): Component<P>
+
+
+
+function defineElement<P extends Props>(
+  config: ConfigStateless<P>
+): Component<P>
+
+function defineElement<P extends Props>(
+  config: Omit<ConfigStateless<P>, 'render'>,
+  render: ConfigStateless<P>['render']
+): Component<P>
+
+function defineElement<P extends Props>(
+  name: string,
+  options: Omit<ConfigStateless<P>, 'name' | 'render'>,
+  render: ConfigStateless<P>['render']
+): Component<P>
+
+function defineElement<P extends Props>(
+  name: string,
+  render: ConfigStateless<P>['render']
+): Component<P>
+
+function defineElement<P extends Props>(config: ConfigStateful<Props>): Component<P>
+
+
+function defineElement(a: any, b?: any, c?: any) { // TODO
   let tagName, options, main
 
   if (a && typeof a === 'object' && !b) {
