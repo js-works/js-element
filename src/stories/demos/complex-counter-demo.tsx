@@ -44,14 +44,14 @@ defineElement('complex-counter', {
 
 defineElement('complex-counter-demo', () => {
   const
-    counterRef = asRef(null),
-    onSetTo0 = () => counterRef.current!.reset(0),
+    counterRef = asRef(null as any), // TODO
+    onSetTo0 = () => counterRef.current.reset(0),
     onSetTo100 = () => counterRef.current.reset(100)
 
   return () =>
     <div>
       <h3>Complex counter demo</h3>
-      <complex-counter ref={counterRef.bind}></complex-counter>
+      <complex-counter ref={counterRef}></complex-counter>
       <br/>
       <button onClick={onSetTo0}>Set to 0</button>
       <button onClick={onSetTo100}>Set to 100</button>

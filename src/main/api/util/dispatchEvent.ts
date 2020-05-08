@@ -2,7 +2,7 @@ import Ctrl from '../#types/Ctrl'
 
 export default function dispatchEvent(
   c: Ctrl,
-  event: any // TODO
+  event: Event
 ) {
-  return c.getRoot().addEventListener(event)
+  return c.getRoot().dispatchEvent(event)
 }

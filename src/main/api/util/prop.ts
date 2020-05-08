@@ -1,16 +1,27 @@
+import Class from '../../internal/#types/Class'
+import PropConfig from '../../internal/#types/PropConfig'
+
 const
-  reqAndOpt = (type: any, nullable: any) => ({ // TODO
-    req: () => propConfig(type, nullable, true),
-    opt: (defaultValue?: any, isGetter: boolean = false) => propConfig(type, nullable, false, defaultValue, isGetter) // TODO
+  reqAndOpt = <T>(type: Class<T> | null, nullable: boolean) => ({
+    req: () => propConfig(type, nullable, true, undefined, false),
+
+    opt: (defaultValue?: T, isGetter: boolean = false) =>
+      propConfig(type, nullable, false, defaultValue, isGetter)
   }),
 
-  typedProp = (type: any) => ({ // TODO
+  typedProp = <T extends Class<any>>(type: T) => ({
     nul: reqAndOpt(type, true),
     ...reqAndOpt(type, false)
   }),
   
-  propConfig = (type: any, nullable: any, required: any, defaultValue: any = undefined, defaultValueIsGetter: any = false) => { // TODO
-    const ret: any = {} // TODO
+  propConfig = <T>(
+    type: Class<T> | null,
+    nullable: boolean,
+    required: boolean,
+    defaultValue: T | undefined,
+    defaultValueIsGetter: boolean
+  ): PropConfig<T> => {
+    const ret: PropConfig<T> = {}
 
     type && (ret.type = type)
     nullable && (ret.nullable = true)
@@ -19,7 +30,7 @@ const
     if (defaultValue !== undefined) {
       if (defaultValueIsGetter && typeof defaultValue === 'function') {
         Object.defineProperty(ret, 'defaultValue', {
-          get: defaultValue
+          get: defaultValue as any // TODO
         })
       } else {
         ret.defaultValue = defaultValue

@@ -3,7 +3,7 @@ import Props from './Props'
 type Ctrl<P extends Props = {}> = {
   getName(): string,
   getProps(): P,
-  getRoot(): any, // TODO!!!
+  getRoot(): Element, // TODO!!!
   isInitialized(): boolean,
   isMounted(): boolean,
   update(runOnceBeforeUpdate?: () => void): void,

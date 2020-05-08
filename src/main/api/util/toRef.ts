@@ -1,4 +1,4 @@
-import RefClass from '../../internal/Ref'
+import RefClass from '../../internal/RefClass'
 import Ref from '../#types/Ref'
 
 export default function toRef<T>(getter: () => T): Ref<T> {
