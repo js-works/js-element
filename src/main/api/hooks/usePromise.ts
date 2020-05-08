@@ -3,23 +3,33 @@ import useEffect from './useEffect'
 import hook from './hook'
 import Ctrl from '../#types/Ctrl'
 
-const initialState: any = {
+export default hook('usePromise', usePromise)
+
+type Res<T> = {
+  result: undefined,
+  error: undefined,
+  state: 'pending'
+} | {
+  result: T,
+  error: undefined,
+  state: 'resolved'
+} | {
+  result: undefined,
+  error: Error,
+  state: 'rejected'
+}
+
+const initialState: Res<any> = {
   result: undefined,
   error: undefined,
   state: 'pending'
 }
 
-export default hook('usePromise', usePromise)
-
 function usePromise<T>(
   c: Ctrl,
   getPromise: () => Promise<T>,
   getDeps?: () => any[]
-): {
-  result: undefined | T,
-  error: undefined | Error,
-  state: 'pending' | 'resolved' | 'rejected'
-} {
+): Res<T> {
   const [state, setState] = useState(c, initialState)
 
   let promiseIdx = -1

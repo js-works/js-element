@@ -2,9 +2,15 @@ import asRef from '../util/asRef'
 import useValue from './useValue'
 import useInterval from './useInterval'
 import hook from './hook'
+import Ctrl from '../#types/Ctrl'
 import R from '../#types/R'
 
-export default hook('useTime', (c, delay: R<number>, getter: R<() => any> = getDate) => {
+export default hook('useTime', useTime)
+
+function useTime<T>(c: Ctrl, delay: R<number>, getter: R<() => T>): { value: T }
+function useTime(c: Ctrl, delay: R<number>): { value: Date }
+
+function useTime(c: Ctrl, delay: R<number>, getter: R<() => any> = getDate): { value: any } {
   const
     delayRef = asRef(delay),
     getterRef = asRef(getter),
@@ -17,7 +23,7 @@ export default hook('useTime', (c, delay: R<number>, getter: R<() => any> = getD
   }, delayRef.current)
 
   return value
-})
+}
 
 function getDate() {
   return new Date()

@@ -1,14 +1,15 @@
 import hook from './hook'
 import Ctrl from '../#types/Ctrl'
+import Action from '../../internal/#types/Action'
 
 export default hook('useEffect', (
   c: Ctrl,
-  action: () => (void | (() => void)),
+  action: Action | Action<[], Action | null | undefined>,
   getDeps?: null | (() => any[])
 ): void => {
   let
     oldDeps: (any[] | null) = null,
-    cleanup: void | (() => void)
+    cleanup: Action | null | undefined | void
   
   if (getDeps === null) {
     c.afterMount(() => { cleanup = action() })
@@ -38,10 +39,11 @@ export default hook('useEffect', (
   }
 })
 
-// --- locals -------------------------------------------------------
+// --- locals --------------------------------------------------------
 
 function isEqual(arr1: any[], arr2: any[]) {
-  let ret = Array.isArray(arr1) && Array.isArray(arr2) && arr1.length === arr2.length
+  let ret =
+    Array.isArray(arr1) && Array.isArray(arr2) && arr1.length === arr2.length
 
   if (ret) {
     for (let i = 0; i < arr1.length; ++i) {

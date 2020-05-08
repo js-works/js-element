@@ -1,6 +1,6 @@
+import hook from './hook'
 import useEffect from './useEffect'
 import asRef from '../util/asRef'
-import hook from './hook'
 import R from '../#types/R'
 
 export default hook('useInterval', (

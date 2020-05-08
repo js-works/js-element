@@ -3,15 +3,17 @@ import Ctrl from '../#types/Ctrl'
 
 export default hook('useState', useState)
 
+type Updater<T extends Record<string, any>> = {
+  (newState: Partial<T>): void,
+  (stateUpdate: (oldState: T) => Partial<T>): void,
+  (key: keyof T, newValue: T[typeof key]): void,
+  (key: keyof T, valueUpdate: (oldValue: T[typeof key]) => T[typeof key]): void
+}
+
 function useState<T extends Record<string, any>>(
   c: Ctrl,
   initialState: T
-): any // TODO 
-
-//[T, ((key: keyof T, value: T[typeof key]) => void)
-// | ((key: keyof T, mapper: (value: T[typeof key]) => T[typeof key]) => void)
-// | ((updater: (Partial<T> | ((state: T) => Partial<T>))) => void)]
-{
+): [T, Updater<T>] {
   let
     nextState: any, // TODO
     mergeNecessary = false

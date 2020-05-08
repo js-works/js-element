@@ -3,22 +3,14 @@ import Ctrl from '../#types/Ctrl'
 
 export default hook('useValue', useValue)
 
-function useValue<T>(c: Ctrl, initialValue: T) {
+function useValue<T>(c: Ctrl, initialValue: T):
+  [{ value: T }, (updater: (T | ((value: T) => T))) => void]
+{
   let nextValue = initialValue
   
   const
     value = { value: initialValue },
   
-    /*
-        setValue = updater => {
-          c._update(() => {
-            value.value = typeof updater === 'function'
-              ? updater(value.value)
-              : updater
-          })
-        }
-    */
-
     setValue = (updater: any) => { // TODO
       nextValue = typeof updater === 'function'
         ? updater(nextValue)
