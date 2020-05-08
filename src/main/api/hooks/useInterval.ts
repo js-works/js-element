@@ -1,12 +1,12 @@
 import hook from './hook'
 import useEffect from './useEffect'
 import asRef from '../util/asRef'
-import R from '../#types/R'
+import ValueOrRef from '../#types/ValueOrRef'
 
 export default hook('useInterval', (
   c,
-  callback: R<() => void>,
-  delay: R<number>
+  callback: ValueOrRef<() => void>,
+  delay: ValueOrRef<number>
 ) => {
   const
     callbackRef = asRef(callback),
