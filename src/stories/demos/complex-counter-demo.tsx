@@ -1,14 +1,25 @@
 /** @jsx h */
-import { defineElement, h, prop, asRef, useEffect, useMethods, useState } from '../../main/index'
+import { defineElement, h, prop, asRef, useEffect, useMethods, useState, Component } from '../../main/index'
 
-defineElement('complex-counter', {
+type CounterProps = {
+  initialValue?: number,
+  label?: string
+}
+
+type CounterMethods = {
+  reset(n: number): void
+}
+
+const Counter: Component<CounterProps, CounterMethods>  = defineElement({
+  name: 'complex-counter',
+
   props: {
     initialValue: prop.num.opt(0),
     label: prop.str.opt('Counter')
   },
 
   methods: ['reset'],
-}, (c: any, props: any) => { // TODO
+}, (c, props) => { // TODO
   const 
     [state, setState] = useState(c, {
       count: props.initialValue

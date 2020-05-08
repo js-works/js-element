@@ -10,95 +10,116 @@ import h from './h'
 
 export default defineElement
 
-type PropsConfig<P extends Props> = {
- [key: string]: any // TODO 
+type PickOptionals<P> = Partial<P> // TODO
+
+/*
+type PropsConfig<P extends Props = {}, D extends PickOptionals<P> = {}> = {
+ [K in keyof P]: keyof D extends K ? PropConfigWithDefault<Required<P[K]>> : PropConfig<Required<P[K]>>
 }
 
-type ConfigStateless<P extends Props = {}> = {
+type PropConfig<T> = {
+  type?: any,
+  nullable?: T extends null ? true : false,
+  required?: T extends undefined ? false : true
+}
+
+type PropConfigWithDefault<T> = {
+  type?: any,
+  nullable?: T extends null ? true : false,
+  defaultValue: T,
+  required?: never // TODO
+}
+*/
+
+type PropsConfig<P> = {
+  [K in keyof P]: {
+    type?: any,
+    nullable?: P[K] extends null ? true : false,
+    required?: P[K] extends undefined ? true : false,
+    defaultValue?: P[K]
+  }
+}
+
+type ConfigStateless<P extends Props = {}, D extends PickOptionals<P> = {}> = {
   name: string,
-  props?: PropsConfig<P>,
+  props?: PropsConfig<P, D>,
   styles?: string[],
-  methods?: string[],
   slots?: string[],
-  render: (props: P) => VNode
+  render: (props: P & D) => VNode
 }
 
-type ConfigStateful<P extends Props = {}> = {
+type ConfigStateful<P extends Props = {}, D extends PickOptionals<P> = {}> = {
   name: string,
-  props?: PropsConfig<P>,
+  props?: PropsConfig<P, D>,
   styles?: string[],
   slots?: string[],
-  init: (c: Ctrl<P>, props: P) => (props: P) => VNode
+  init: (c: Ctrl<P & D>, props: P) => (props: P) => VNode
 }
 
-type ConfigStatefulWithMethods<P extends Props = {}, M extends Methods = never> = {
+type ConfigStatefulWithMethods<P extends Props = {}, D extends PickOptionals<P> = {}, M extends Methods = {}> = {
   name: string,
-  props?: PropsConfig<P>,
+  props?: PropsConfig<P, D>,
   styles?: string[],
   methods?: (keyof M)[],
   slots?: string[],
-  init: (c: Ctrl<P, M>, props: P) => (props: P) => VNode
+  init: (c: Ctrl<P & D, M>, props: P & D) => (props: P) => VNode
 }
 
-function defineElement<P extends Props>(
-  config: ConfigStateful<P>
+function defineElement<P extends Props = {}, D extends PickOptionals<P> = {}>(
+  config: ConfigStateful<P, D>
 ): Component<P>
 
-function defineElement<P extends Props>(
-  config: Omit<ConfigStateful<P>, 'init'>,
+function defineElement<P extends Props = {}, D extends PickOptionals<P> = {}>(
+  config: Omit<ConfigStateful<P, D>, 'init'>,
+  init: ConfigStateful<P, D>['init']
+): Component<P>
+
+function defineElement<P extends Props = {}, D extends PickOptionals<P> = {}>(
+  name: string,
+  config: Omit<ConfigStateful<P, D>, 'name' | 'init'>,
+  init: ConfigStateful<P, D>['init']
+): Component<P>
+
+function defineElement<P extends Props = {}>(
+  name: string,
   init: ConfigStateful<P>['init']
 ): Component<P>
 
-function defineElement<P extends Props>(
+function defineElement<P extends Props = {},  D extends PickOptionals<P> = {}, M extends Methods = {}>(
+  config: ConfigStatefulWithMethods<P, D, M>
+): Component<P, M>
+
+function defineElement<P extends Props = {}, D extends PickOptionals<P> = {}, M extends Methods = {}>(
+  config: Omit<ConfigStatefulWithMethods<P, D, M>, 'init'>,
+  init: ConfigStatefulWithMethods<P, D, M>['init']
+): Component<P, M>
+
+function defineElement<P extends Props = {}, D extends PickOptionals<P> = {}, M extends Methods = {}>(
   name: string,
-  config: Omit<ConfigStateful<P>, 'name' | 'init'>,
-  init: ConfigStateful<P>['init']
+  options: Omit<ConfigStatefulWithMethods<P, D, M>, 'name' | 'init'>,
+  init: ConfigStatefulWithMethods<P, D, M>['init']
+): Component<P, M>
+
+
+function defineElement<P extends Props = {}, D extends PickOptionals<P> = {}>(
+  config: ConfigStateless<P, D>
 ): Component<P>
 
-function defineElement<P extends Props, M extends Methods>(
-  config: ConfigStatefulWithMethods<P, M>
+function defineElement<P extends Props = {}, D extends PickOptionals<P> = {}>(
+  config: Omit<ConfigStateless<P, D>, 'render'>,
+  render: ConfigStateless<P, D>['render']
 ): Component<P>
 
-function defineElement<P extends Props, M extends Methods>(
-  config: Omit<ConfigStatefulWithMethods<P, M>, 'init'>,
-  init: ConfigStatefulWithMethods<P, M>['init']
-): Component<P>
-
-function defineElement<P extends Props, M extends Methods>(
+function defineElement<P extends Props = {}, D extends PickOptionals<P> = {}>(
   name: string,
-  options: Omit<ConfigStatefulWithMethods<P, M>, 'name' | 'init'>,
-  init: ConfigStatefulWithMethods<P, M>['init']
+  options: Omit<ConfigStateless<P, D>, 'name' | 'render'>,
+  render: ConfigStateless<P, D>['render']
 ): Component<P>
 
-function defineElement<P extends Props, M extends Methods>(
-  name: string,
-  init: ConfigStatefulWithMethods<P, M>['init']
-): Component<P>
-
-
-
-function defineElement<P extends Props>(
-  config: ConfigStateless<P>
-): Component<P>
-
-function defineElement<P extends Props>(
-  config: Omit<ConfigStateless<P>, 'render'>,
-  render: ConfigStateless<P>['render']
-): Component<P>
-
-function defineElement<P extends Props>(
-  name: string,
-  options: Omit<ConfigStateless<P>, 'name' | 'render'>,
-  render: ConfigStateless<P>['render']
-): Component<P>
-
-function defineElement<P extends Props>(
+function defineElement<P extends Props = {}>(
   name: string,
   render: ConfigStateless<P>['render']
 ): Component<P>
-
-function defineElement<P extends Props>(config: ConfigStateful<Props>): Component<P>
-
 
 function defineElement(a: any, b?: any, c?: any) { // TODO
   let tagName, options, main

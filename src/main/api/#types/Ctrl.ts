@@ -1,7 +1,7 @@
 import Props from './Props'
 import Methods from './Methods'
 
-type Ctrl<P extends Props = {}, M extends Methods = never> = {
+type Ctrl<P extends Props = {}, M extends Methods = {}> = {
   getName(): string,
   getProps(): P,
   getRoot(): Element, // TODO!!!
