@@ -1,6 +1,6 @@
 module.exports = ({ config }) => {
   config.module.rules.push({
-    test: /\.(jsx|ts|tsx)$/,
+    test: /\.(ts|tsx)$/,
 
     use: [
       {
@@ -10,7 +10,7 @@ module.exports = ({ config }) => {
   })
 
   //config.resolve.alias.preact = 'preact/debug'
-  //config.resolve.extensions.push('.ts', '.tsx')
+  config.resolve.extensions.push('.ts', '.tsx')
 
   return config
 }
