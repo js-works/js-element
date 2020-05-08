@@ -17,6 +17,8 @@ const Counter: Component<CounterProps> = defineElement({
 
     
     initialCount: {
+      required: false,
+      nullabelxxxxxx: true,
       defaultValue: 0
     },
 

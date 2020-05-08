@@ -3,15 +3,22 @@ import { defineElement, h, prop, Component } from '../../main/index'
 
 type DemoProps = {
   text?: string,
-  onAction?: (event: CustomEvent<'action'>) => void
+  onAction?: ((event: CustomEvent<'action'>) => void
 }
 
 const Demo: Component<DemoProps> = defineElement({
   name: 'demo-button',
 
   props: {
-    text: prop.str.opt(''),
-    onAction: prop.func.opt()
+    text: {
+      defaultValue: ''
+    },
+
+    onAction: {
+    }
+
+    //text: prop.str.opt(''),
+    //onAction: prop.func.opt()
   },
 
   styles: [`
