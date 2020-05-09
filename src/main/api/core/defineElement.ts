@@ -21,13 +21,23 @@ type PropsConfig<P extends Props> = {
   [K in keyof P]: PropConfig<P[K]>
 }
 
-type DefaultedProps<P, PC extends PropsConfig<P>> = P & {
+type ValidPropsConfig<P extends Props, PC extends PropsConfig<P>> =
+  keyof PC extends keyof P
+    ? (keyof P) extends (keyof PC)
+    ?  1 extends { [K in keyof PC]: {} extends Omit<PC[K], keyof PropConfig<any>> ? 0 : 1 }[keyof PC]
+    ?  never
+    : PC
+    : never
+    : never
+
+
+type DefaultedProps<P extends Props, PC extends PropsConfig<P>> = P & {
   [K in keyof PC]: PC[K] extends { defaultValue: infer D } ? D : unknown
 }
 
 type ConfigStateless<P extends Props, PC extends PropsConfig<P>> = {
   name: string,
-  props?: (keyof PC) extends (keyof P) ? (keyof P) extends (keyof PC) ? PC : never : never,
+  props?: ValidPropsConfig<P, PC>,
   styles?: string[],
   slots?: string[],
   render(props: DefaultedProps<P, PC>): VNode,
@@ -35,15 +45,7 @@ type ConfigStateless<P extends Props, PC extends PropsConfig<P>> = {
 
 type ConfigStateful<P extends Props, PC extends PropsConfig<P>> = {
   name: string,
-  props?:
-    keyof PC extends keyof P
-      ? (keyof P) extends (keyof PC)
-      ?  1 extends { [K in keyof PC]: {} extends Omit<PC[K], keyof PropConfig<any>> ? 0 : 1 }[keyof PC]
-      ?  never
-      : PC
-      : never
-      : never,
-
+  props?: ValidPropsConfig<P, PC>,
   styles?: string[],
   slots?: string[],
   
@@ -56,7 +58,7 @@ type ConfigStateful<P extends Props, PC extends PropsConfig<P>> = {
 type ConfigStatefulWithMethods<P extends Props, M extends Methods, PC extends PropsConfig<P>> = {
   name: string,
   methods: (keyof M)[],
-  props?: (keyof PC) extends (keyof P) ? (keyof P) extends (keyof PC) ? PC : never : never,
+  props?: ValidPropsConfig<P, PC>,
   styles?: string[],
   slots?: string[],
 
