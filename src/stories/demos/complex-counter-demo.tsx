@@ -10,7 +10,7 @@ type CounterMethods = {
   reset(n: number): void
 }
 
-const Counter = defineElement<CounterProps, CounterMethods>({
+const Counter: Component<CounterProps, CounterMethods> = defineElement({
   name: 'complex-counter',
 
   props: {
@@ -19,38 +19,40 @@ const Counter = defineElement<CounterProps, CounterMethods>({
   },
 
   methods: ['reset'],
-}, (c, props) => {
-  const 
-    [state, setState] = useState(c, {
-      count: props.initialValue
-    }),
+ 
+  init(c, props) {
+    const 
+      [state, setState] = useState(c, {
+        count: props.initialValue
+      }),
 
-    onIncrement = () => setState({ count: state.count + 1 }),
-    onDecrement = () => setState({ count: state.count - 1 })
+      onIncrement = () => setState({ count: state.count + 1 }),
+      onDecrement = () => setState({ count: state.count - 1 })
 
-  useMethods(c, {
-    reset(n: number) {
-      setState({ count: n })
-    }
-  })
+    useMethods(c, {
+      reset(n: number) {
+        setState({ count: n })
+      }
+    })
 
-  useEffect(c, () => {
-    console.log('Component "complex-counter" has been mounted')
+    useEffect(c, () => {
+      console.log('Component "complex-counter" has been mounted')
     
-    return () => console.log('Component "complex-counter" will be umounted')
-  }, null)
+      return () => console.log('Component "complex-counter" will be umounted')
+    }, null)
 
-  useEffect(c, () => {
-    console.log(`New value of counter "${props.label}": ${state.count}`)
-  }, () => [state.count])
+    useEffect(c, () => {
+      console.log(`New value of counter "${props.label}": ${state.count}`)
+    }, () => [state.count])
 
-  return () =>
-    <div>
-      <label>{props.label}: </label>
-      <button onClick={onDecrement}>-</button>
-      <span> {state.count} </span>
-      <button onClick={onIncrement}>+</button>
-    </div>
+    return () =>
+     <div>
+        <label>{props.label}: </label>
+        <button onClick={onDecrement}>-</button>
+        <span> {state.count} </span>
+        <button onClick={onIncrement}>+</button>
+     </div>
+  }
 })
 
 defineElement('complex-counter-demo', () => {
@@ -68,3 +70,5 @@ defineElement('complex-counter-demo', () => {
       <button onClick={onSetTo100}>Set to 100</button>
     </div>
 })
+
+console.log(Counter)

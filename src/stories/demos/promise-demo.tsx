@@ -1,12 +1,12 @@
 /** @jsx h */
-import { defineElement, h, prop, update, usePromise, useState } from '../../main/index'
+import { defineElement, h, prop, update, usePromise, useState, Component } from '../../main/index'
 
 type LoaderProps = {
   loadingText?: string,
   finishText?: string
 }
 
-const Loader = defineElement<LoaderProps>({
+const Loader: Component<LoaderProps> = defineElement({
   name: 'data-loader',
 
   props: {
@@ -14,7 +14,7 @@ const Loader = defineElement<LoaderProps>({
     finishText: prop.str.opt('Finished!')
   },
 
-  init(c: any, props: any) { // TODO
+  init(c, props) {
     const res = usePromise(c, () => wait(4000))
 
     return () => res.state === 'pending'
@@ -23,7 +23,7 @@ const Loader = defineElement<LoaderProps>({
   }
 })
 
-defineElement('promise-demo', (c: any) => { // TODO
+defineElement('promise-demo', c => {
   const
     [state, setState] = useState(c, {
       key: 0,

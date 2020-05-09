@@ -16,7 +16,7 @@ type PropsConfig<P extends Props> = {
     nullable?: null extends P[K] ? true : never,
     required?: undefined extends P[K] ? never : true,
     defaultValue?: undefined extends P[K] ? Required<P>[K] : never
-  }
+  } 
 }
 
 type DefaultedProps<P, PC extends PropsConfig<P>> = P & {
@@ -25,7 +25,7 @@ type DefaultedProps<P, PC extends PropsConfig<P>> = P & {
 
 type ConfigStateless<P extends Props, PC extends PropsConfig<P>> = {
   name: string,
-  props?: PC,
+  props?: (keyof PC) extends (keyof P) ? (keyof P) extends (keyof PC) ? PC : never : never,
   styles?: string[],
   slots?: string[],
   render(props: DefaultedProps<P, PC>): VNode,
@@ -33,7 +33,7 @@ type ConfigStateless<P extends Props, PC extends PropsConfig<P>> = {
 
 type ConfigStateful<P extends Props, PC extends PropsConfig<P>> = {
   name: string,
-  props?: PC,
+  props?: (keyof PC) extends (keyof P) ? (keyof P) extends (keyof PC) ? PC : never : never,
   styles?: string[],
   slots?: string[],
   
@@ -43,11 +43,11 @@ type ConfigStateful<P extends Props, PC extends PropsConfig<P>> = {
   ): (props: DefaultedProps<P, PC>) => VNode
 }
 
-type ConfigStatefulWithMethods<P extends Props, M extends Methods , PC extends PropsConfig<P>> = {
+type ConfigStatefulWithMethods<P extends Props, M extends Methods, PC extends PropsConfig<P>> = {
   name: string,
-  props?: PC,
+  methods: (keyof M)[],
+  props?: (keyof PC) extends (keyof P) ? (keyof P) extends (keyof PC) ? PC : never : never,
   styles?: string[],
-  methods?: (keyof M)[],
   slots?: string[],
 
   init(
@@ -56,8 +56,28 @@ type ConfigStatefulWithMethods<P extends Props, M extends Methods , PC extends P
   ): (props: DefaultedProps<P, PC>) => VNode
 }
 
+function defineElement<P extends Props, M extends Methods, PC extends PropsConfig<P>>(
+  config: ConfigStatefulWithMethods<P, M, PC>
+): Component<P, M>
+
+function defineElement<P extends Props, M extends Methods, PC extends PropsConfig<P>>(
+  config: Omit<ConfigStatefulWithMethods<P, M, PC>, 'init'>,
+  init: ConfigStatefulWithMethods<P, M, PC>['init']
+): Component<P, M>
+
+function defineElement<P extends Props, M extends Methods, PC extends PropsConfig<P>>(
+  name: string,
+  options: Omit<ConfigStatefulWithMethods<P, M, PC>, 'name' | 'init'>,
+  init: ConfigStatefulWithMethods<P, M, PC>['init']
+): Component<P, M>
+
 function defineElement<P extends Props, PC extends PropsConfig<P>>(
   config: ConfigStateful<P, PC>
+): Component<P>
+
+function defineElement<P extends Props>(
+  name: string,
+  init: ConfigStateful<P, never>['init']
 ): Component<P>
 
 function defineElement<P extends Props, PC extends PropsConfig<P>>(
@@ -75,21 +95,6 @@ function defineElement<P extends Props>(
   name: string,
   init: ConfigStateful<P, never>['init']
 ): Component<P>
-
-function defineElement<P extends Props, M extends Methods, PC extends PropsConfig<P>>(
-  config: ConfigStatefulWithMethods<P, M, PC>
-): Component<P>
-
-function defineElement<P extends Props, M extends Methods, PC extends PropsConfig<P>>(
-  config: Omit<ConfigStatefulWithMethods<P, M, PC>, 'init'>,
-  init: ConfigStatefulWithMethods<P, M, PC>['init']
-): Component<P, M>
-
-function defineElement<P extends Props, M extends Methods, PC extends PropsConfig<P>>(
-  name: string,
-  options: Omit<ConfigStatefulWithMethods<P, M, PC>, 'name' | 'init'>,
-  init: ConfigStatefulWithMethods<P, M, PC>['init']
-): Component<P, M>
 
 function defineElement<P extends Props, PC extends PropsConfig<P>> (
   config: ConfigStateless<P, PC>

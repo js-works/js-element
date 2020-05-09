@@ -6,7 +6,7 @@ type DemoProps = {
   onAction?: (event: CustomEvent<'action'>) => void
 }
 
-const Demo = defineElement<DemoProps>({
+const Demo: Component<DemoProps> = defineElement({
   name: 'demo-button',
 
   props: {
