@@ -1,12 +1,38 @@
 import Class from '../../internal/#types/Class'
-//import PropConfig from '../../internal/#types/PropConfig'
+import PropConfig from '../../internal/#types/PropConfig'
 
-type PropConfig<T> = {
-  type?: any, // TODO
-  nullable?: null extends T ? true : never,
-  required?: undefined extends T ? never : true,
-  defaultValue?: undefined extends T ? T : never
-}
+type F<C, T> = Readonly<{
+  nul: Readonly<{
+    req(): { type: C, nullable: true, required: true }
+
+    opt: {
+      (): { type: C, nullable: true },
+      (defaultValue: T): { type: C, nullable: true, defaultValue: T }
+    }
+  }>,
+
+  req(): { type: C, required: true }
+
+  opt: {
+    (): { type: T },
+    (defaultValue: T): { type: C, defaultValue: T }
+  }
+}>
+
+type G = Readonly<{
+  bool: F<Boolean, boolean>,
+  num: F<Number, number>,
+  str: F<String, string>,
+  obj: F<Object, object>,
+  func: F<Function, (...args: any[]) => any>,
+  
+  req(): {  required: true }
+
+  opt: {
+    (): {},
+    (defaultValue: any): { defaultValue: any }
+  }
+}>
 
 const
   reqAndOpt = <T>(type: Class<T> | null, nullable: boolean) => ({
@@ -31,8 +57,8 @@ const
     const ret: PropConfig<T> = {}
 
     type && (ret.type = type)
-    nullable && ((ret as any).nullable = true) // TODO
-    required && ((ret as any).required = true) // TODO
+    nullable && (ret.nullable = true)
+    required && (ret.required = true)
 
     if (defaultValue !== undefined) {
       if (defaultValueIsGetter && typeof defaultValue === 'function') {
@@ -40,7 +66,7 @@ const
           get: defaultValue as any // TODO
         })
       } else {
-        (ret as any).defaultValue = defaultValue // TODO
+        ret.defaultValue = defaultValue
       }
     }
 
@@ -53,7 +79,6 @@ export default Object.freeze({
   str: typedProp(String),
   obj: typedProp(Object),
   func: typedProp(Function),
-  arr: typedProp(Array),
-  date: typedProp(Date),
   ...reqAndOpt(null, false)
-})
+}) as any as G
+

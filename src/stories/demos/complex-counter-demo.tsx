@@ -10,7 +10,7 @@ type CounterMethods = {
   reset(n: number): void
 }
 
-const Counter: Component<CounterProps, CounterMethods>  = defineElement({
+const Counter = defineElement<CounterProps, CounterMethods>({
   name: 'complex-counter',
 
   props: {
@@ -19,7 +19,7 @@ const Counter: Component<CounterProps, CounterMethods>  = defineElement({
   },
 
   methods: ['reset'],
-}, (c, props) => { // TODO
+}, (c, props) => {
   const 
     [state, setState] = useState(c, {
       count: props.initialValue

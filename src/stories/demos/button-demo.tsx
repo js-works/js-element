@@ -10,19 +10,10 @@ const Demo = defineElement<DemoProps>({
   name: 'demo-button',
 
   props: {
-//x: 3,
-    text: {
-  //    x: 3,
-      defaultValue: ''
-    },
-
-    onAction: {
-    }
-    
-    //text: prop.str.opt(''),
-    //onAction: prop.func.opt()
+    text: prop.str.opt(''),
+    onAction: prop.func.opt() 
   },
-/*
+
   styles: [`
     .demo-button {
       border: none;
@@ -40,7 +31,7 @@ const Demo = defineElement<DemoProps>({
       background-color: #555;
     }
   `],
-*/
+
   init(c, props) {
     const onClick = () => {
       props.onAction && props.onAction(new CustomEvent('action'))

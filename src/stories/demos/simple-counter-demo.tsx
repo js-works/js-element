@@ -12,16 +12,8 @@ const Counter = defineElement<CounterProps>({
   name: 'simple-counter',
 
   props: {
-    //initialCount: prop.num.opt(0),
-    //label: prop.str.opt('Counter')
-    
-    initialCount: {
-      defaultValue: 0
-    },
-
-    label: {
-      defaultValue: 'Counter'
-    }
+    initialCount: prop.num.opt(0),
+    label: prop.str.opt('Counter')
   },
 
   init(c, props) {

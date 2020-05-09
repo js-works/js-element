@@ -1,7 +1,12 @@
 /** @jsx h */
 import { defineElement, h, prop, update, usePromise, useState } from '../../main/index'
 
-const Loader = defineElement({
+type LoaderProps = {
+  loadingText?: string,
+  finishText?: string
+}
+
+const Loader = defineElement<LoaderProps>({
   name: 'data-loader',
 
   props: {
@@ -39,7 +44,7 @@ defineElement('promise-demo', (c: any) => { // TODO
     <div>
       <h3>Demo (last update {getTime()})</h3>
       <section>
-        <Loader key={state.key} loadingText={state.loadingText} finishText={state.finishText} />
+        <Loader key={state.key} loadingText={state.loadingText} finishText={state.finishText}/>
       </section>
       <br />
       <button onClick={onRefresh}>Refresh</button>
