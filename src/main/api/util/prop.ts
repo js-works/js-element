@@ -1,5 +1,12 @@
 import Class from '../../internal/#types/Class'
-import PropConfig from '../../internal/#types/PropConfig'
+//import PropConfig from '../../internal/#types/PropConfig'
+
+type PropConfig<T> = {
+  type?: any, // TODO
+  nullable?: null extends T ? true : never,
+  required?: undefined extends T ? never : true,
+  defaultValue?: undefined extends T ? T : never
+}
 
 const
   reqAndOpt = <T>(type: Class<T> | null, nullable: boolean) => ({
@@ -24,8 +31,8 @@ const
     const ret: PropConfig<T> = {}
 
     type && (ret.type = type)
-    nullable && (ret.nullable = true)
-    required && (ret.required = true)
+    nullable && ((ret as any).nullable = true) // TODO
+    required && ((ret as any).required = true) // TODO
 
     if (defaultValue !== undefined) {
       if (defaultValueIsGetter && typeof defaultValue === 'function') {
@@ -33,7 +40,7 @@ const
           get: defaultValue as any // TODO
         })
       } else {
-        ret.defaultValue = defaultValue
+        (ret as any).defaultValue = defaultValue // TODO
       }
     }
 

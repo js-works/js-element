@@ -3,24 +3,26 @@ import { defineElement, h, prop, Component } from '../../main/index'
 
 type DemoProps = {
   text?: string,
-  onAction?: ((event: CustomEvent<'action'>) => void
+  onAction?: (event: CustomEvent<'action'>) => void
 }
 
-const Demo: Component<DemoProps> = defineElement({
+const Demo = defineElement<DemoProps>({
   name: 'demo-button',
 
   props: {
+//x: 3,
     text: {
+  //    x: 3,
       defaultValue: ''
     },
 
     onAction: {
     }
-
+    
     //text: prop.str.opt(''),
     //onAction: prop.func.opt()
   },
-
+/*
   styles: [`
     .demo-button {
       border: none;
@@ -37,15 +39,16 @@ const Demo: Component<DemoProps> = defineElement({
     .demo-button:active {
       background-color: #555;
     }
-  `]
-}, (c, props) => {
-  const onClick = () => {
-    props.onAction && props.onAction(new CustomEvent('action'))
-  }
+  `],
+*/
+  init(c, props) {
+    const onClick = () => {
+      props.onAction && props.onAction(new CustomEvent('action'))
+    }
 
-  return () => (
-    <button class="demo-button" onClick={onClick}>{props.text}</button>
-  )
+    return () =>
+      <button class="demo-button" onClick={onClick}>{props.text}</button>
+  }
 })
 
 defineElement('button-demo', () => {

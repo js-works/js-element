@@ -8,17 +8,14 @@ type CounterProps = {
   label?: string
 }
 
-const Counter: Component<CounterProps> = defineElement({
+const Counter = defineElement<CounterProps>({
   name: 'simple-counter',
 
   props: {
     //initialCount: prop.num.opt(0),
     //label: prop.str.opt('Counter')
-
     
     initialCount: {
-      required: false,
-      nullabelxxxxxx: true,
       defaultValue: 0
     },
 
