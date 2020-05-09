@@ -10,13 +10,15 @@ import h from './h'
 
 export default defineElement
 
+type PropConfig<T> = {
+  type?: any,
+  nullable?: null extends T ? true : never,
+  required?: undefined extends T ? never : true,
+  defaultValue?: undefined extends T ? Exclude<T, undefined> : never
+}
+
 type PropsConfig<P extends Props> = {
-  [K in keyof P]: {
-    type?: any,
-    nullable?: null extends P[K] ? true : never,
-    required?: undefined extends P[K] ? never : true,
-    defaultValue?: undefined extends P[K] ? Required<P>[K] : never
-  } 
+  [K in keyof P]: PropConfig<P[K]>
 }
 
 type DefaultedProps<P, PC extends PropsConfig<P>> = P & {
@@ -33,7 +35,15 @@ type ConfigStateless<P extends Props, PC extends PropsConfig<P>> = {
 
 type ConfigStateful<P extends Props, PC extends PropsConfig<P>> = {
   name: string,
-  props?: (keyof PC) extends (keyof P) ? (keyof P) extends (keyof PC) ? PC : never : never,
+  props?:
+    keyof PC extends keyof P
+      ? (keyof P) extends (keyof PC)
+      ?  1 extends { [K in keyof PC]: {} extends Omit<PC[K], keyof PropConfig<any>> ? 0 : 1 }[keyof PC]
+      ?  never
+      : PC
+      : never
+      : never,
+
   styles?: string[],
   slots?: string[],
   

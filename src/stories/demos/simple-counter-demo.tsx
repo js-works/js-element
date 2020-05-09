@@ -12,7 +12,11 @@ const Counter: Component<CounterProps> = defineElement({
   name: 'simple-counter',
 
   props: {
-    initialCount: prop.num.opt(0),
+    initialCount: {
+      //x: 3,
+      defaultValue: 0,
+    },
+    //initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
   },
 
