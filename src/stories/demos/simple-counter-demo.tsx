@@ -8,7 +8,7 @@ type CounterProps = {
   label?: string
 }
 
-const Counter = defineElement<CounterProps>({
+const Counter: Component<CounterProps> = defineElement({
   name: 'simple-counter',
 
   props: {

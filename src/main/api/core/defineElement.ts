@@ -10,106 +10,103 @@ import h from './h'
 
 export default defineElement
 
-type KeysOfOptionalProps<T extends Props> = Exclude<{
-  [K in keyof T]: undefined extends T[K] ? K : never
-}[keyof T], undefined>
-
-type DefaultedProps<P extends Props, D extends KeysOfOptionalProps<P>> =
-  P & Required<Pick<P, D>>
-
-type PropsConfig<P extends Props, D extends KeysOfOptionalProps<P> = KeysOfOptionalProps<P>> = {
+type PropsConfig<P extends Props> = {
   [K in keyof P]: {
     type?: any,
     nullable?: null extends P[K] ? true : never,
     required?: undefined extends P[K] ? never : true,
-    defaultValue?: K extends D ? Required<P>[K] : never,
+    defaultValue?: undefined extends P[K] ? Required<P>[K] : never
   }
 }
 
-type ConfigStateless<P extends Props = {}, D extends KeysOfOptionalProps<P> = KeysOfOptionalProps<P>> = {
-  name: string,
-  props?: PropsConfig<P, D>,
-  styles?: string[],
-  slots?: string[],
-  render(props: DefaultedProps<P, D>): VNode,
+type DefaultedProps<P, PC extends PropsConfig<P>> = P & {
+  [K in keyof PC]: PC[K] extends { defaultValue: infer D } ? D : unknown
 }
 
-type ConfigStateful<P extends Props = {}, D extends KeysOfOptionalProps<P> = KeysOfOptionalProps<P>> = {
+type ConfigStateless<P extends Props, PC extends PropsConfig<P>> = {
   name: string,
-  props?: PropsConfig<P, D>,
+  props?: PC,
+  styles?: string[],
+  slots?: string[],
+  render(props: DefaultedProps<P, PC>): VNode,
+}
+
+type ConfigStateful<P extends Props, PC extends PropsConfig<P>> = {
+  name: string,
+  props?: PC,
   styles?: string[],
   slots?: string[],
   
   init(
-    c: Ctrl<DefaultedProps<P, D>>,
-    props: DefaultedProps<P, D>
-  ): (props: DefaultedProps<P, D>) => VNode
+    c: Ctrl<DefaultedProps<P, PC>>,
+    props: DefaultedProps<P, PC>
+  ): (props: DefaultedProps<P, PC>) => VNode
 }
 
-type ConfigStatefulWithMethods<P extends Props = {}, M extends Methods = {}, D extends KeysOfOptionalProps<P> = KeysOfOptionalProps<P>> = {
+type ConfigStatefulWithMethods<P extends Props, M extends Methods , PC extends PropsConfig<P>> = {
   name: string,
-  props?: PropsConfig<P, D>,
+  props?: PC,
   styles?: string[],
   methods?: (keyof M)[],
   slots?: string[],
 
   init(
-    c: Ctrl<DefaultedProps<P, D>, M>,
-    props: DefaultedProps<P, D>
-  ): (props: DefaultedProps<P, D>) => VNode
+    c: Ctrl<DefaultedProps<P, PC>, M>,
+    props: DefaultedProps<P, PC>
+  ): (props: DefaultedProps<P, PC>) => VNode
 }
 
-function defineElement<P extends Props = {}, D extends KeysOfOptionalProps<P> = KeysOfOptionalProps<P>>(
-  config: ConfigStateful<P, D>
+function defineElement<P extends Props, PC extends PropsConfig<P>>(
+  config: ConfigStateful<P, PC>
 ): Component<P>
 
-function defineElement<P extends Props = {}, D extends KeysOfOptionalProps<P> = KeysOfOptionalProps<P>>(
-  config: Omit<ConfigStateful<P, D>, 'init'>,
-  init: ConfigStateful<P, D>['init']
+function defineElement<P extends Props, PC extends PropsConfig<P>>(
+  config: Omit<ConfigStateful<P, PC>, 'init'>,
+  init: ConfigStateful<P, PC>['init']
 ): Component<P>
 
-function defineElement<P extends Props = {}, D extends KeysOfOptionalProps<P> = KeysOfOptionalProps<P>>(
+function defineElement<P extends Props, PC extends PropsConfig<P>>(
   name: string,
-  config: Omit<ConfigStateful<P, D>, 'name' | 'init'>,
-  init: ConfigStateful<P, D>['init']
+  config: Omit<ConfigStateful<P, PC>, 'name' | 'init'>,
+  init: ConfigStateful<P, PC>['init']
 ): Component<P>
 
-function defineElement<P extends Props = {}>(
+function defineElement<P extends Props>(
   name: string,
   init: ConfigStateful<P, never>['init']
 ): Component<P>
 
-function defineElement<P extends Props = {}, M extends Methods = {}, D extends KeysOfOptionalProps<P> = KeysOfOptionalProps<P>>(
-  config: ConfigStatefulWithMethods<P, M, D>
+function defineElement<P extends Props, M extends Methods, PC extends PropsConfig<P>>(
+  config: ConfigStatefulWithMethods<P, M, PC>
 ): Component<P>
 
-function defineElement<P extends Props = {}, M extends Methods = {}, D extends KeysOfOptionalProps<P> = KeysOfOptionalProps<P>>(
-  config: Omit<ConfigStatefulWithMethods<P, M, D>, 'init'>,
-  init: ConfigStatefulWithMethods<P, M, D>['init']
+function defineElement<P extends Props, M extends Methods, PC extends PropsConfig<P>>(
+  config: Omit<ConfigStatefulWithMethods<P, M, PC>, 'init'>,
+  init: ConfigStatefulWithMethods<P, M, PC>['init']
 ): Component<P, M>
 
-function defineElement<P extends Props = {}, M extends Methods = {}, D extends KeysOfOptionalProps<P> = KeysOfOptionalProps<P>>(
+function defineElement<P extends Props, M extends Methods, PC extends PropsConfig<P>>(
   name: string,
-  options: Omit<ConfigStatefulWithMethods<P, M, D>, 'name' | 'init'>,
-  init: ConfigStatefulWithMethods<P, M, D>['init']
+  options: Omit<ConfigStatefulWithMethods<P, M, PC>, 'name' | 'init'>,
+  init: ConfigStatefulWithMethods<P, M, PC>['init']
 ): Component<P, M>
 
-function defineElement<P extends Props = {}, D extends KeysOfOptionalProps<P> = KeysOfOptionalProps<P>> (
-  config: ConfigStateless<P, D>
+function defineElement<P extends Props, PC extends PropsConfig<P>> (
+  config: ConfigStateless<P, PC>
 ): Component<P>
 
-function defineElement<P extends Props = {}, D extends KeysOfOptionalProps<P> = KeysOfOptionalProps<P>>(
-  config: Omit<ConfigStateless<P, D>, 'render'>,
-  render: ConfigStateless<P, D>['render']
+function defineElement<P extends Props, PC extends PropsConfig<P>>(
+  config: Omit<ConfigStateless<P, PC>, 'render'>,
+  render: ConfigStateless<P, PC>['render']
 ): Component<P>
 
-function defineElement<P extends Props = {}, D extends KeysOfOptionalProps<P> = KeysOfOptionalProps<P>>(
+function defineElement<P extends Props, PC extends PropsConfig<P>>(
   name: string,
-  options: Omit<ConfigStateless<P, D>, 'name' | 'render'>,
-  render: ConfigStateless<P, D>['render']
+  options: Omit<ConfigStateless<P, PC>, 'name' | 'render'>,
+  render: ConfigStateless<P, PC>['render']
 ): Component<P>
 
-function defineElement<P extends Props = {}>(
+function defineElement<P extends Props>(
   name: string,
   render: ConfigStateless<P, never>['render']
 ): Component<P>
