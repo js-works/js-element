@@ -1,5 +1,3 @@
-import h from './api/core/h'
-
 // core
 export { default as defineElement } from './api/core/defineElement'
 export { default as render } from './api/core/render'

@@ -3,7 +3,6 @@ import resolve from 'rollup-plugin-node-resolve'
 import replace from 'rollup-plugin-replace'
 import commonjs from 'rollup-plugin-commonjs'
 import typescript from 'rollup-plugin-typescript2'
-import { uglify as uglify } from 'rollup-plugin-uglify'
 import { terser } from 'rollup-plugin-terser'
 import gzip from 'rollup-plugin-gzip'
 
@@ -55,7 +54,7 @@ function createConfig(moduleFormat, productive) {
       typescript({
         exclude: 'node_modules/**',
       }),
-      productive && (moduleFormat === 'esm' ? terser() : uglify()),
+      productive && terser(),
       productive && gzip()
     ],
   }

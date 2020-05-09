@@ -1,7 +1,7 @@
 import { patch } from '../../internal/vdom'
 import VElement from '../#types/VElement'
 
-export default function render(content: VElement, container: Element) {
+export default function render(content: VElement, container: Element | string) {
   if (content !== null && (!content || content.kind !== 'virtual-element')) {
     throw new TypeError(
       'First argument "content" of function "render" must be a virtual element or null')
