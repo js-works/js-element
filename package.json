@@ -18,7 +18,7 @@
     "build-storybook": "build-storybook",
     "build": "npm run clean && rollup --c rollup.config.js && tsc -d --emitDeclarationOnly --declarationDir dist/types && shx cp ./src/main/jsx.d.ts dist/types",
     "dist": "npm run build && npm run zipsource",
-    "zipsource": "shx rm -rf ./build/source && shx mkdir -p ./build/source && copyfiles -a ./* ./build/source && shx cp -r ./src ./build/source && shx mkdir -p ./dist/source && cd build/source && bestzip ../../dist/source/source.zip . && cd ../.."
+    "zipsource": "shx rm -rf ./build/source && shx mkdir -p ./build/source && copyfiles -a ./* ./build/source && shx cp -r ./src ./build/source && shx mkdir -p ./dist/source && cd build && bestzip --force node ../dist/source/source.zip source && cd .."
   },
   "repository": {
     "type": "git",
