@@ -71,5 +71,3 @@ defineElement('complex-counter-demo', () => {
       <button onClick={onSetTo100}>Set to 100</button>
     </div>
 })
-
-console.log(Counter)

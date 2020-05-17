@@ -1,12 +1,11 @@
 import { patch } from '../../internal/vdom'
-
+import h from './h'
+import isElement from './isElement'
 import Props from '../#types/Props'
 import Methods from '../#types/Methods'
 import Ctrl from '../#types/Ctrl'
 import VNode from '../#types/VNode'
 import Component from '../#types/Component'
-
-import h from './h'
 
 export default defineElement
 
@@ -477,7 +476,7 @@ class BaseElement extends HTMLElement {
       
       const content = this._render(this._props)
 
-      if (content && content.kind === 'virtual-element')  {
+      if (isElement(content))  {
         // TODO!!!!!!
         if (!this._root2) {
           this._root2 = document.createElement('span')

@@ -1,6 +1,6 @@
 {
   "name": "js-elements",
-  "version": "0.0.35",
+  "version": "0.0.36",
   "description": "",
   "main": "index.js",
   "module": "dist/js-elements.esm.producion.js",
@@ -53,6 +53,7 @@
     "copyfiles": "^2.2.0",
     "eslint": "^7.0.0",
     "js-spec": "^0.1.79",
+    "preact": "^10.4.1",
     "rollup": "^2.8.2",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-gzip": "^2.5.0",

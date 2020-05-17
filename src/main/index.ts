@@ -2,6 +2,7 @@
 export { default as defineElement } from './api/core/defineElement'
 export { default as render } from './api/core/render'
 export { default as h } from './api/core/h'
+export { default as isElement } from './api/core/isElement'
 
 // utils
 export { default as prop } from './api/util/prop'
@@ -20,6 +21,7 @@ export { default as StoreProvider } from './api/util/StoreProvider'
 export { default as hook } from './api/hooks/hook'
 export { default as useEffect } from './api/hooks/useEffect'
 export { default as useInterval } from './api/hooks/useInterval'
+export { default as useLocation } from './api/hooks/useLocation'
 export { default as useMethods } from './api/hooks/useMethods'
 export { default as usePromise } from './api/hooks/usePromise'
 export { default as useTime } from './api/hooks/useTime'
