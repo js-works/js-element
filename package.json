@@ -1,6 +1,6 @@
 {
   "name": "js-elements",
-  "version": "0.0.34",
+  "version": "0.0.35",
   "description": "",
   "main": "index.js",
   "module": "dist/js-elements.esm.producion.js",
@@ -16,7 +16,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
-    "build": "npm run clean && rollup --c rollup.config.js && tsc -d --emitDeclarationOnly --declarationDir dist/types && shx cp ./src/main/jsx.d.ts dist/types",
+    "build": "npm run clean && rollup --c rollup.config.js && tsc -d --emitDeclarationOnly --declarationDir dist/types",
     "dist": "npm run build && npm run zipsource",
     "zipsource": "shx rm -rf ./build/source && shx mkdir -p ./build/source && copyfiles -a ./* ./build/source && shx cp -r ./src ./build/source && shx mkdir -p ./dist/source && cd build && bestzip --force node ../dist/source/source.zip source && cd .."
   },
@@ -43,6 +43,7 @@
     "@storybook/html": "^5.3.18",
     "@types/chai": "^4.2.11",
     "@types/mocha": "^7.0.2",
+    "@types/react": "^16.9.35",
     "awesome-typescript-loader": "^5.2.1",
     "babel-core": "^6.26.3",
     "babel-loader": "^8.1.0",

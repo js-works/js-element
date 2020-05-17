@@ -38,7 +38,7 @@ const Demo: Component<DemoProps> = defineElement({
     }
 
     return () =>
-      <button class="demo-button" onClick={onClick}>{props.text}</button>
+      <button className="demo-button" onClick={onClick}>{props.text}</button>
   }
 })
 
@@ -48,7 +48,7 @@ defineElement('button-demo', () => {
   return ( 
     <div>
       <h3>Button demo</h3>
-      <demo-button onAction={onAction} text="Click me"></demo-button>
+      <Demo onAction={onAction} text="Click me"></Demo>
     </div>
   )
 })

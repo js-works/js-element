@@ -1,9 +1,10 @@
 /** @jsx h */
-import { defineElement, h, prop, asRef, useEffect, useMethods, useState, Component } from '../../main/index'
+import { defineElement, h, prop, asRef, useEffect, useMethods, useState, Component, Ref } from '../../main/index'
 
 type CounterProps = {
   initialValue?: number,
-  label?: string
+  label?: string,
+  //ref?: Ref<CounterMethods> // TODO
 }
 
 type CounterMethods = {
@@ -64,7 +65,7 @@ defineElement('complex-counter-demo', () => {
   return () =>
     <div>
       <h3>Complex counter demo</h3>
-      <complex-counter ref={counterRef}></complex-counter>
+      <Counter /* ref={counterRef} // TODO */></Counter>
       <br/>
       <button onClick={onSetTo0}>Set to 0</button>
       <button onClick={onSetTo100}>Set to 100</button>
