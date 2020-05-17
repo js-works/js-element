@@ -1,4 +1,5 @@
-import { h as h2 } from '../../internal/vdom'
+//import { h as h2 } from '../../internal/vdom'
+import { h as h2 } from '../../internal/platform'
 import Component from '../#types/Component'
 
 export default function h(type: string  | Component, ...rest: any[]): Element { // TODO

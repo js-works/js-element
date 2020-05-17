@@ -1,0 +1,1 @@
+export { h, isValidElement, render } from 'preact'

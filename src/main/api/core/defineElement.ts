@@ -1,4 +1,5 @@
-import { patch } from '../../internal/vdom'
+//import { patch } from '../../internal/vdom'
+import { render } from '../../internal/platform'
 import h from './h'
 import isElement from './isElement'
 import Props from '../#types/Props'
@@ -217,7 +218,7 @@ function generateCustomElementClass(tagName: any, options: any, main: any) { // 
       }
     })
   }
-
+  
   propNames.filter(it => !isEventPropName(it)).forEach(propName => {
     const
       propConfig = options.props[propName],
@@ -331,6 +332,7 @@ class BaseElement extends HTMLElement {
         ? null
         : {
           getName: () => this._statics.tagName,
+          getProps: () => this._props,
           update: (runOnceBeforeUpdate: () => void) => this._update(runOnceBeforeUpdate),
           isRendering: () => this._rendering,
           isInitialized: () => !this._initializing,
@@ -483,7 +485,8 @@ class BaseElement extends HTMLElement {
           this._root.appendChild(this._root2)
         }
 
-        this._root2 = patch(this._root2, content) // TODO!!!!!!
+        //this._root2 = patch(this._root2, content) // TODO!!!!!!
+        render(content, this._root2) // TODO!!!!!!
       } else {
         throw new TypeError('Illegal return value of render function')
       }
@@ -561,7 +564,7 @@ class BaseElement extends HTMLElement {
 // --- tools ---------------------------------------------------------
 
 function isEventPropName(name: string) {
-  return name.match(/^on[A-Z]/)
+  return name.match(/^on[A-Z][a-z0-9_-]*/)
 }
 
 function propNameToAttrName(propName: string) {
@@ -681,8 +684,8 @@ function checkPropConfig(propName: string, propConfig: any) { // TODO
 
   const type = propConfig.type
 
-  if (!ALLOWED_PROPERTY_TYPES.has(type)) {
-    throw `Illegal parameter "type" for property ${propName}`
+  if (hasOwnProp(propConfig, 'type') && !ALLOWED_PROPERTY_TYPES.has(type)) {
+    throw `Illegal parameter "type" for property "${propName}"`
   }
 
   for (const key of keysOf(propConfig)) {

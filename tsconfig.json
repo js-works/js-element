@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "allowJs": true,
     "target": "ES2015",
     "strict": true,
     "strictNullChecks": true,
@@ -32,7 +33,7 @@
   ],
 
   "include": [
-    "./src/**/*.ts", "jsx.d.ts"
+    "./src/**/*.*"
   ],
 
   "exclude": [

@@ -4,7 +4,7 @@ import { defineElement, h, prop, asRef, useEffect, useMethods, useState, Compone
 type CounterProps = {
   initialValue?: number,
   label?: string,
-  //ref?: Ref<CounterMethods> // TODO
+  ref?: Ref<CounterMethods>
 }
 
 type CounterMethods = {
@@ -16,7 +16,8 @@ const Counter: Component<CounterProps, CounterMethods> = defineElement({
 
   props: {
     initialValue: prop.num.opt(0),
-    label: prop.str.opt('Counter')
+    label: prop.str.opt('Counter'),
+    ref: prop.obj.opt()
   },
 
   methods: ['reset'],
@@ -65,7 +66,7 @@ defineElement('complex-counter-demo', () => {
   return () =>
     <div>
       <h3>Complex counter demo</h3>
-      <Counter /* ref={counterRef} // TODO */></Counter>
+      <Counter ref={counterRef}></Counter>
       <br/>
       <button onClick={onSetTo0}>Set to 0</button>
       <button onClick={onSetTo100}>Set to 100</button>

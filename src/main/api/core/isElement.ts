@@ -1,3 +1,6 @@
+import { isValidElement } from '../../internal/platform'
+
 export default function isElement(it: any) {
-  return !!it && it.kind === 'virtual-element'
+  return isValidElement(it)
+  //return !!it && it.kind === 'virtual-element'
 }

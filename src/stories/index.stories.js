@@ -11,6 +11,7 @@ import './demos/iterator-demo'
 import './demos/mouse-demo'
 import './demos/interval-demo'
 import './demos/promise-demo'
+import './demos/store-demo'
 //import './demos/todo-mvc'
 import './styles.css'
 
@@ -27,6 +28,7 @@ export const Mouse =  () => '<mouse-demo></mouse-demo'
 export const Iterator =  () => '<iterator-demo/>'
 export const Interval =  () => '<interval-demo></iterator-demo>'
 export const Promises =  () => '<promise-demo></promise-demo>'
+export const Stores =  () => '<store-demo></store-demo>'
 
 /*
 export const TodoMvc =  () => `

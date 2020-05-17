@@ -7,13 +7,13 @@ import Component from '../#types/Component'
 import VNode from '../#types/VNode'
 
 type StoreProviderProps = {
-  store: {
+  store: any | {
     dispatch(msg: any): void,
     getState(): any,
     subscribe(subscriber: (() => void)): () => void
   },
 
-  children?: VNode
+  children: VNode
 }
 
 const StoreProvider: Component<StoreProviderProps> = defineElement({
@@ -21,12 +21,12 @@ const StoreProvider: Component<StoreProviderProps> = defineElement({
 
   props: {
     store: prop.obj.opt(), // TODO
-    children: prop.obj.opt() // TODO
+    children: prop.opt() // TODO
   },
 
- // slots: ['default'],
-
   init(c, props) {
+    let key = 0
+
     useEffect(c, () => {
       const
         unsubscribe1 = receive(c, (msg: any) => {
@@ -47,5 +47,6 @@ const StoreProvider: Component<StoreProviderProps> = defineElement({
     return () => h('slot') 
   }
 })
+
 
 export default StoreProvider
