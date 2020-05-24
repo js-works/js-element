@@ -529,7 +529,8 @@ function isEventPropName(name: string) {
 }
 
 function eventPropNameToEventName(eventPropName: string) {
-  return toKebabCase(eventPropName.substr(2))
+  //return toKebabCase(eventPropName.substr(2))
+  return eventPropName.substr(2).toLowerCase()
 }
 
 function propNameToAttrName(propName: string) {

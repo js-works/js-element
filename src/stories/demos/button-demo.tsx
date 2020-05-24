@@ -35,7 +35,7 @@ const DemoButton: Component<DemoProps> = defineElement({
   init(c, props) {
     const onClick = () => {
       if (props.onButtonAction) {
-        props.onButtonAction(new CustomEvent('button-action'))
+        props.onButtonAction(new CustomEvent('buttonaction'))
       }
     }
 
@@ -49,11 +49,10 @@ defineElement('button-demo', () => {
 
   return ( 
     <div>
-      <h3 onbutton-Click="4">Button demo</h3>
-      <DemoButton onbutton-action={onButtonAction} text="Click me"/>
-   <template>
-      { h('demo-button', { 'onbutton-action': onButtonAction, text: 'Click me' }) } { /* TODO */ }
-   </template>
+      <h3>Button demo</h3>
+      <DemoButton onButtonAction={onButtonAction} text="Click me"/>
+      <hr/>
+      { h('demo-button', { 'onbuttonaction': onButtonAction, text: 'Click me' }) } { /* TODO */ }
     </div>
   )
 })
