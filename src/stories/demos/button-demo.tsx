@@ -3,15 +3,15 @@ import { defineElement, h, prop, Component } from '../../main/index'
 
 type DemoProps = {
   text?: string,
-  onAction?: (event: CustomEvent<'action'>) => void
+  onButtonAction?: (event: CustomEvent<'action'>) => void
 }
 
-const Demo: Component<DemoProps> = defineElement({
+const DemoButton: Component<DemoProps> = defineElement({
   name: 'demo-button',
 
   props: {
     text: prop.str.opt(''),
-    onAction: prop.func.opt() 
+    onButtonAction: prop.func.opt() 
   },
 
   styles: [`
@@ -34,7 +34,9 @@ const Demo: Component<DemoProps> = defineElement({
 
   init(c, props) {
     const onClick = () => {
-      props.onAction && props.onAction(new CustomEvent('action'))
+      if (props.onButtonAction) {
+        props.onButtonAction(new CustomEvent('button-action'))
+      }
     }
 
     return () =>
@@ -43,12 +45,15 @@ const Demo: Component<DemoProps> = defineElement({
 })
 
 defineElement('button-demo', () => {
-  const onAction = (e: any) => alert(e.type) // TODO
+  const onButtonAction = (e: any) => alert(e.type) // TODO
 
   return ( 
     <div>
-      <h3>Button demo</h3>
-      <Demo onAction={onAction} text="Click me"></Demo>
+      <h3 onbutton-Click="4">Button demo</h3>
+      <DemoButton onbutton-action={onButtonAction} text="Click me"/>
+   <template>
+      { h('demo-button', { 'onbutton-action': onButtonAction, text: 'Click me' }) } { /* TODO */ }
+   </template>
     </div>
   )
 })

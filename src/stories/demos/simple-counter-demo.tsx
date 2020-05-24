@@ -16,7 +16,7 @@ const Counter: Component<CounterProps> = defineElement({
     label: prop.str.opt('Counter')
   },
 
-  init(c, props) {
+  init(c, props) {console.log(1111)
     const
       [state, setState] = useState(c, { count: props.initialCount }),
       onIncrement = () => setState({ count: state.count + 1 })
@@ -45,7 +45,7 @@ defineElement('simple-counter-demo', () => {
   return (
     div(
       h3('Counter demo'),
-      div(Counter())
+      h('div', Counter())
     )
   )
 })

@@ -183,7 +183,7 @@ function generateCustomElementClass(tagName: any, options: any, main: any) { // 
     propNameByAttrName = {}, // dito
     attrNameByPropName = {}, // dito
     eventPropNames = propNames.filter(isEventPropName),
-    eventNameMappings = getEventNameMappings(eventPropNames) // TODO: this is just an ugly workaround
+    eventNames = new Set(eventPropNames.map(it => eventPropNameToEventName(it)))
 
   const statics: any = { // TODO
     tagName,
@@ -193,7 +193,7 @@ function generateCustomElementClass(tagName: any, options: any, main: any) { // 
     propNameByAttrName,
     attrNameByPropName,
     eventPropNames,
-    eventNameMappings,
+    eventNames,
     defaultProps: null
   }
   
@@ -268,24 +268,6 @@ function toKebabCase(s: string) {
     .replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()
 }
 
-function getEventNameMappings(eventPropNames: any) { // TODO
-  const ret: any = {} // TODO
-
-  eventPropNames
-    .forEach((eventPropName: string) => {
-      const
-        name = eventPropName.substr(2),
-        eventName = toKebabCase(name)
-
-      ret[eventName] = eventName
-      ret[name] = eventName
-      ret[name.toLowerCase()] = eventName
-      ret[name[0].toLowerCase() + name.substr(1)] = eventName
-    })
-
-  return ret
-}
-
 class BaseElement extends HTMLElement {
   constructor(statics: any) { // TODO
     super()
@@ -303,6 +285,20 @@ class BaseElement extends HTMLElement {
     self._beforeUpdateNotifier = null
     self._afterUpdateNotifier = null
     self._beforeUnmountNotifier = null
+  
+    statics.eventPropNames.forEach((eventPropName: string) => {
+      const eventName = eventPropNameToEventName(eventPropName)
+
+      Object.defineProperty(self._props, eventPropName, {
+        get() {
+          const listenerSet = self._listenersByEventName && self._listenersByEventName[eventName]
+
+          return !listenerSet || listenerSet.size === 0
+            ? undefined
+            : (ev: any) => self.dispatchEvent(ev)
+        }
+      })
+    })
   }
 
   connectedCallback(this: any) { // TODO
@@ -425,43 +421,27 @@ class BaseElement extends HTMLElement {
 
     this[propName] = converter ? converter.fromString(newValue) : newValue
   }
-  addEventListener(this: any, eventName: string, callback: any) { // TODO
-    const
-      eventNameMappings = this._statics.eventNameMappings,
-      normalizedEventName =
-        hasOwnProp(eventNameMappings, eventName)
-          ? eventNameMappings[eventName]
-          : null
 
-    if (!normalizedEventName) {
+  addEventListener(this: any, eventName: string, callback: any) { // TODO
+    if (!this._statics.eventNames.has(eventName)) {
       HTMLElement.prototype.addEventListener.call(this, eventName, callback)
       return
     }
 
     this._listenersByEventName = this._listenersByEventName || {}
-    this._listenersByEventName[normalizedEventName] = this._listenersByEventName[normalizedEventName] || new Set()
-    this._listenersByEventName[normalizedEventName].add(callback)
-    HTMLElement.prototype.addEventListener.call(this, normalizedEventName, callback)
+    this._listenersByEventName[eventName] = this._listenersByEventName[eventName] || new Set()
+    this._listenersByEventName[eventName].add(callback)
+    HTMLElement.prototype.addEventListener.call(this, eventName, callback)
   }
+
   removeEventListener(this: any, eventName: string, callback: any) { // TODO
-    const
-      eventNameMappings = this._statics.eventNameMappings,
-      normalizedEventName =
-        hasOwnProp(eventNameMappings, eventName)
-          ? eventNameMappings[eventName]
-          : null
-    
-    if (!normalizedEventName) {
+    if (!this._listenersByEventName[eventName]) {
       HTMLElement.prototype.removeEventListener.call(this, eventName, callback)
       return
     }
 
-    if (!this._listenersByEventName[eventName]) {
-      return
-    }
-
     this._listenersByEventName[eventName].remove(callback)
-    HTMLElement.prototype.removeEventListener.call(this, normalizedEventName, callback)
+    HTMLElement.prototype.removeEventListener.call(this, eventName, callback)
   }
 
   _refresh(this: any) { // TODO
@@ -474,8 +454,7 @@ class BaseElement extends HTMLElement {
 
     try {
       this._rendering = true
-      this._adjustEventProps()
-      
+
       const content = this._render(this._props)
 
       if (isElement(content))  {
@@ -486,7 +465,11 @@ class BaseElement extends HTMLElement {
         }
 
         //this._root2 = patch(this._root2, content) // TODO!!!!!!
-        render(content, this._root2) // TODO!!!!!!
+        let result = (render as any)(content, this._root2) // TODO!!!!!!
+
+        if (result) {
+          this._root2 = result
+        } 
       } else {
         throw new TypeError('Illegal return value of render function')
       }
@@ -537,34 +520,16 @@ class BaseElement extends HTMLElement {
     this._beforeUnmount = this._beforeUnmountNotifier.subscribe
     this._beforeUnmount(callback)
   }
-  _adjustEventProps(this: any) { // TODO
-    const
-      eventPropNames = this._statics.eventPropNames,
-      eventNameMappings = this._statics.eventNameMappings
-
-    eventPropNames.forEach((eventPropName: string) => {
-      const
-        eventName = eventNameMappings[eventPropName.substr(2)],
-        listeners = this._listenersByEventName && this._listenersByEventName[eventName],
-        hasAnyListeners = listeners && listeners.size > 0
-
-      if (hasAnyListeners) {
-        if (!this._props[eventPropName]) {
-          this._props[eventPropName] = (event: any) => { // TODO
-            this.dispatchEvent(event)
-          }
-        }
-      } else {
-        delete this._props[eventPropName]
-      }
-    })
-  }
 }
 
 // --- tools ---------------------------------------------------------
 
 function isEventPropName(name: string) {
-  return name.match(/^on[A-Z][a-z0-9_-]*/)
+  return name.match(/^on[A-Z][a-z0-9]*/)
+}
+
+function eventPropNameToEventName(eventPropName: string) {
+  return toKebabCase(eventPropName.substr(2))
 }
 
 function propNameToAttrName(propName: string) {
@@ -711,8 +676,8 @@ function checkPropConfig(propName: string, propConfig: any) { // TODO
         defaultValue = propConfig.defaultValue,
         typeOfDefault = typeof defaultValue
 
-      if (type &&
-        (type === Boolean && typeOfDefault !== 'boolean'
+      if (type && !(defaultValue === null && propConfig.nullable)
+        && (type === Boolean && typeOfDefault !== 'boolean'
           || type === Number && typeOfDefault !== 'number'
           || type === String && typeOfDefault !== 'string'
           || type === Object && typeOfDefault !== 'object'

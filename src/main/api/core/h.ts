@@ -1,5 +1,5 @@
 //import { h as h2 } from '../../internal/vdom'
-import { h as h2 } from '../../internal/platform'
+import { h as h2, isValidElement } from '../../internal/platform'
 import Component from '../#types/Component'
 
 export default function h(type: string  | Component, ...rest: any[]): Element { // TODO
@@ -9,7 +9,7 @@ export default function h(type: string  | Component, ...rest: any[]): Element { 
     type = (type as any)['js-elements:type']
   }
 
-  if (second !== undefined &&  second !== null && (typeof second !== 'object' || second.kind === 'virtual-element' )) {
+  if (second !== undefined &&  second !== null && (typeof second !== 'object' || isValidElement(second))) {
     rest.unshift(null)
   }
 
