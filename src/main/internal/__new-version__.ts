@@ -60,7 +60,25 @@ type Config1<
   state?: S
   styles?: string | (() => string)
   slots?: string[]
-  init(props: InternalPropsOf<P>, state: S): () => VNode
+  init: P extends PropsConfig
+    ? C extends CtxConfig
+      ? S extends StateConfig<P, C>
+        ? (
+            props: InternalPropsOf<P>,
+            ctx: CtxOf<C>,
+            state: StateOf<S, P, C>
+          ) => () => VNode
+        : (props: InternalPropsOf<P>, ctx: CtxOf<C>) => () => VNode
+      : S extends StateConfig<P, C>
+      ? (props: InternalPropsOf<P>, state: StateOf<S, P, C>) => () => VNode
+      : (props: InternalPropsOf<P>) => () => VNode
+    : C extends CtxConfig
+    ? S extends StateConfig<P, C>
+      ? (ctx: CtxOf<C>, state: StateOf<S, P, C>) => () => VNode
+      : (ctx: CtxOf<C>) => () => VNode
+    : S extends StateConfig<P, C>
+    ? (state: StateOf<S, P, C>) => () => VNode
+    : () => () => VNode
 }
 
 type Config2<P extends PropsConfig, C extends CtxConfig> = {
@@ -68,7 +86,13 @@ type Config2<P extends PropsConfig, C extends CtxConfig> = {
   ctx?: C
   styles?: string | (() => string)
   slots?: string[]
-  render(props: InternalPropsOf<P>, ctx: CtxTypeOf<C>): VNode
+  render: P extends PropsConfig
+    ? C extends CtxConfig
+      ? (props: InternalPropsOf<P>, ctx: CtxTypeOf<C>) => VNode
+      : (props: InternalPropsOf<P>) => VNode
+    : C extends CtxConfig
+    ? (ctx: CtxTypeOf<C>) => VNode
+    : () => VNode
 }
 
 type ExternalPropsOf<P extends PropsConfig> = Pick<
@@ -116,6 +140,10 @@ type PropOf<P extends PropConfig<any>> = P extends { type: infer T }
           : any)
       | (P extends { nullable: true } ? null : never)
   : never
+
+type CtxOf<C extends CtxConfig> = {
+  [K in keyof ReturnType<C>]: ReturnType<ReturnType<C>[K]>
+}
 
 type StateOf<
   S extends StateConfig<P, C>,
