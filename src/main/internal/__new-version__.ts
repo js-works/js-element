@@ -46,39 +46,34 @@ type PropsConfig = {
 
 type CtxConfig = (c: Ctrl) => Record<string, () => any>
 
-type StateConfig<P extends PropsConfig, C extends CtxConfig> =
-  | State
-  | ((props: InternalPropsOf<P>, ctx: CtxTypeOf<C>) => State)
-
-type Config1<
-  P extends PropsConfig,
-  S extends StateConfig<P, C>,
-  C extends CtxConfig
-> = {
+type Config1<P extends PropsConfig, C extends CtxConfig> = {
   props?: P
   ctx?: C
-  state?: S
   styles?: string | (() => string)
   slots?: string[]
   init: P extends PropsConfig
-    ? C extends CtxConfig
-      ? S extends StateConfig<P, C>
-        ? (
-            props: InternalPropsOf<P>,
-            ctx: CtxOf<C>,
-            state: StateOf<S, P, C>
-          ) => () => VNode
-        : (props: InternalPropsOf<P>, ctx: CtxOf<C>) => () => VNode
-      : S extends StateConfig<P, C>
-      ? (props: InternalPropsOf<P>, state: StateOf<S, P, C>) => () => VNode
-      : (props: InternalPropsOf<P>) => () => VNode
-    : C extends CtxConfig
-    ? S extends StateConfig<P, C>
-      ? (ctx: CtxOf<C>, state: StateOf<S, P, C>) => () => VNode
-      : (ctx: CtxOf<C>) => () => VNode
-    : S extends StateConfig<P, C>
-    ? (state: StateOf<S, P, C>) => () => VNode
-    : () => () => VNode
+    ? C extends unknown
+      ? (
+          self: Ctrl<InternalPropsOf<P>>,
+          props: InternalPropsOf<P>,
+          update: (action?: () => void) => void
+        ) => () => VNode
+      : (
+          self: Ctrl<InternalPropsOf<P>>,
+          props: InternalPropsOf<P>,
+          ctx: CtxOf<C>,
+          update: (action?: () => void) => void
+        ) => () => VNode
+    : C extends unknown
+    ? (
+        self: Ctrl<InternalPropsOf<P>>,
+        update: (action?: () => void) => void
+      ) => () => VNode
+    : (
+        self: Ctrl<InternalPropsOf<P>>,
+        ctx: CtxOf<C>,
+        update: (action?: () => void) => void
+      ) => () => VNode
 }
 
 type Config2<P extends PropsConfig, C extends CtxConfig> = {
@@ -87,12 +82,12 @@ type Config2<P extends PropsConfig, C extends CtxConfig> = {
   styles?: string | (() => string)
   slots?: string[]
   render: P extends PropsConfig
-    ? C extends CtxConfig
-      ? (props: InternalPropsOf<P>, ctx: CtxTypeOf<C>) => VNode
-      : (props: InternalPropsOf<P>) => VNode
-    : C extends CtxConfig
-    ? (ctx: CtxTypeOf<C>) => VNode
-    : () => VNode
+    ? C extends unknown
+      ? (props: InternalPropsOf<P>) => VNode
+      : (props: InternalPropsOf<P>, ctx: CtxTypeOf<C>) => VNode
+    : C extends unknown
+    ? () => VNode
+    : (ctx: CtxTypeOf<C>) => VNode
 }
 
 type ExternalPropsOf<P extends PropsConfig> = Pick<
@@ -145,12 +140,6 @@ type CtxOf<C extends CtxConfig> = {
   [K in keyof ReturnType<C>]: ReturnType<ReturnType<C>[K]>
 }
 
-type StateOf<
-  S extends StateConfig<P, C>,
-  P extends PropsConfig,
-  C extends CtxConfig
-> = S extends (props: InternalPropsOf<P>) => infer R ? R : S
-
 type CtxTypeOf<C extends CtxConfig> = C extends (
   c: Ctrl
 ) => Record<infer K, () => infer R>
@@ -159,11 +148,10 @@ type CtxTypeOf<C extends CtxConfig> = C extends (
   ? Record<K, R>
   : never
 
-function defineElement<
-  P extends PropsConfig,
-  C extends CtxConfig,
-  S extends StateConfig<P, C>
->(name: string, config: Config1<P, S, C>): Component<ExternalPropsOf<P>>
+function defineElement<P extends PropsConfig, C extends CtxConfig>(
+  name: string,
+  config: Config1<P, C>
+): Component<ExternalPropsOf<P>>
 
 function defineElement<P extends PropsConfig, C extends CtxConfig>(
   name: string,
@@ -184,17 +172,13 @@ const Test = defineElement('some-test', {
 
     b: {
       type: String,
-      nullable: true,
-      default: 'xxxx'
+      nullable: true
+      //      default: 'xxxx'
     }
   },
 
-  state: (props) => ({
-    a: props.a,
-    b: props.b
-  }),
-
-  init(props, state) {
+  init(self, props, update) {
+    props
     return () => 'xxx'
   }
 })
