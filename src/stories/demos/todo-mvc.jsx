@@ -325,77 +325,73 @@ defineElement('todo-mvc', (c) => {
 
   let nextTodoId = 0
 
-  c.effect(
-    c,
-    () => {
-      try {
-        const storedTodos = JSON.parse(localStorage.getItem(STORAGE_KEY))
+  c.effect(() => {
+    try {
+      const storedTodos = JSON.parse(localStorage.getItem(STORAGE_KEY))
 
-        if (Array.isArray(storedTodos) && storedTodos.length) {
-          setState({ todos: storedTodos })
-          nextTodoId = Math.max(...storedTodos.map((todo) => todo.id)) + 1
-        } else {
-          localStorage.removeItem(STORAGE_KEY)
-        }
-      } catch (err) {
+      if (Array.isArray(storedTodos) && storedTodos.length) {
+        setState({ todos: storedTodos })
+        nextTodoId = Math.max(...storedTodos.map((todo) => todo.id)) + 1
+      } else {
         localStorage.removeItem(STORAGE_KEY)
       }
+    } catch (err) {
+      localStorage.removeItem(STORAGE_KEY)
+    }
 
-      root.addEventListener('todo.create', (ev) => {
-        const newTodos = [...state.todos]
-        newTodos.push({
-          id: nextTodoId++,
-          title: ev.detail.title,
-          completed: false
-        })
-        setState({ todos: newTodos })
-        save(state.todos)
+    root.addEventListener('todo.create', (ev) => {
+      const newTodos = [...state.todos]
+      newTodos.push({
+        id: nextTodoId++,
+        title: ev.detail.title,
+        completed: false
       })
+      setState({ todos: newTodos })
+      save(state.todos)
+    })
 
-      root.addEventListener('todo.edit', (ev) => {
-        const i = state.todos.findIndex((todo) => todo.id === ev.detail.id)
-        const newTodos = [...state.todos]
-        newTodos[i] = { ...newTodos[i], title: ev.detail.title }
-        setState({ todos: newTodos })
-        save(state.todos)
-      })
+    root.addEventListener('todo.edit', (ev) => {
+      const i = state.todos.findIndex((todo) => todo.id === ev.detail.id)
+      const newTodos = [...state.todos]
+      newTodos[i] = { ...newTodos[i], title: ev.detail.title }
+      setState({ todos: newTodos })
+      save(state.todos)
+    })
 
-      root.addEventListener('todo.toggle', (ev) => {
-        const i = state.todos.findIndex((todo) => todo.id === ev.detail.id)
-        const newTodos = [...state.todos]
-        newTodos[i] = { ...state.todos[i], completed: ev.detail.completed }
-        setState({ todos: newTodos })
-        save(state.todos)
-      })
+    root.addEventListener('todo.toggle', (ev) => {
+      const i = state.todos.findIndex((todo) => todo.id === ev.detail.id)
+      const newTodos = [...state.todos]
+      newTodos[i] = { ...state.todos[i], completed: ev.detail.completed }
+      setState({ todos: newTodos })
+      save(state.todos)
+    })
 
-      root.addEventListener('todo.toggleAll', (ev) => {
-        setState({
-          todos: state.todos.map((todo) => ({
-            ...todo,
-            completed: ev.detail.completed
-          }))
-        })
-        save(state.todos)
+    root.addEventListener('todo.toggleAll', (ev) => {
+      setState({
+        todos: state.todos.map((todo) => ({
+          ...todo,
+          completed: ev.detail.completed
+        }))
       })
+      save(state.todos)
+    })
 
-      root.addEventListener('todo.clearCompleted', () => {
-        setState({ todods: state.todos.filter((todo) => !todo.completed) })
-        save(state.todos)
-      })
+    root.addEventListener('todo.clearCompleted', () => {
+      setState({ todods: state.todos.filter((todo) => !todo.completed) })
+      save(state.todos)
+    })
 
-      root.addEventListener('todo.destroy', (ev) => {
-        setState({
-          todos: state.todos.filter((todo) => todo.id !== ev.detail.id)
-        })
-        save(state.todos)
+    root.addEventListener('todo.destroy', (ev) => {
+      setState({
+        todos: state.todos.filter((todo) => todo.id !== ev.detail.id)
       })
+      save(state.todos)
+    })
 
-      root.addEventListener('todo.setFilter', (ev) => {
-        setState({ filter: ev.detail.filter })
-      })
-    },
-    null
-  )
+    root.addEventListener('todo.setFilter', (ev) => {
+      setState({ filter: ev.detail.filter })
+    })
+  }, null)
 
   return () => {
     let todoBody
