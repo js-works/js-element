@@ -216,7 +216,7 @@ const createCustomElementClass = (name: string, config: any) => {
         },
 
         refresh(): void {
-          self.requestUpdate()
+          self.performUpdate()
         },
 
         afterMount(action: Action): void {
