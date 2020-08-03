@@ -1,4 +1,4 @@
-import { defineElement, h, prop, send, StoreProvider, Component } from '../../main/index'
+import { defineElement, html, prop, send } from '../../main/index'
 
 function createStore() {
   const data = {
@@ -34,26 +34,21 @@ function createStore() {
   }
 }
 
-const StoreDemo = defineElement({
-  name: 'store-demo',
+const StoreDemo = defineElement('store-demo', (c) => {
+  const store = createStore()
 
-  init(c) {
-    const store = createStore()
-    
-    return () =>
-      <StoreProvider store={store}>
-        <h3>Current store state</h3>
-        <pre>{JSON.stringify(store.getState(), null, 2)}</pre>
-        <hr/>
-        <DispatchButton/>
-      </StoreProvider>
-  }
+  return () => html`
+    <store-provider .store=${store}>
+      <h3>Current store state</h3>
+      <pre>${JSON.stringify(store.getState(), null, 2)}</pre>
+      <hr />
+      <dispatch-button />
+    </store-provider>
+  `
 })
 
-const DispatchButton = defineElement('dispatch-button', c => {
-  const
-   onClick = () => send(c, { type: 'some.message' })
+const DispatchButton = defineElement('dispatch-button', (c) => {
+  const onClick = () => send(c, { type: 'some.message' })
 
-  return () =>
-    <button onClick={onClick}>Send event</button>
+  return () => html`<button @click="{onClick}">Send event</button>`
 })

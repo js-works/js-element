@@ -1,12 +1,8 @@
-/** @jsx h */
-import { defineElement, h, useTime } from '../../main/index'
+import { defineElement, html } from '../../main/index'
+import { withTime } from '../extensions'
 
-defineElement('clock-demo', c => {
-  const time = useTime(c, 1000, () => new Date().toLocaleTimeString())
+defineElement('clock-demo', (c) => {
+  const getTime = withTime(c, 1000, () => new Date().toLocaleTimeString())
 
-  return () => (
-    <div>
-      Current time: {time.value}
-    </div>
-  )
+  return () => html`Current time: ${getTime()}`
 })

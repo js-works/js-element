@@ -1,5 +1,4 @@
-/** @jsx h */
-import { defineElement, h } from '../../main/index'
+import { defineElement, html } from '../../main/index'
 
 const demoContent = {
   *[Symbol.iterator]() {
@@ -14,7 +13,7 @@ const demoContent = {
     yield 's'
 
     yield {
-      [Symbol.iterator]: function * () {
+      [Symbol.iterator]: function* () {
         yield ' '
         yield 'seem'
         yield ' '
@@ -25,24 +24,31 @@ const demoContent = {
 
     yield 'w'
     yield 'o'
-    yield ['r', 'k', ' ', 'p', {
-      [Symbol.iterator]: function * () {
-        yield 'r'
-        yield 'operly!'
+    yield [
+      'r',
+      'k',
+      ' ',
+      'p',
+      {
+        [Symbol.iterator]: function* () {
+          yield 'r'
+          yield 'operly!'
+        }
       }
-    }]
+    ]
   }
 }
 
 defineElement('iterator-demo', () => {
-  return (
+  return html`
     <div>
       <div>
-          If everything works fine then the following line should be:
-          "<i>Iterators seem to work properly!</i>"
+        If everything works fine then the following line should be: "<i
+          >Iterators seem to work properly!</i
+        >"
       </div>
-      <br/>
-      <div>&gt;&gt; {demoContent}</div>
+      <br />
+      <div>&gt;&gt; ${demoContent}</div>
     </div>
-  )
+  `
 })

@@ -1,51 +1,49 @@
-import { defineElement, h, prop, useEffect, useState, Html, Component } from '../../main/index'
+import { defineElement, html, prop } from '../../main/index'
 
-// needed for non-JSX example
-const { div, h3 } = Html
-
-type CounterProps = {
-  initialCount?: number,
-  label?: string
-}
-
-const Counter: Component<CounterProps> = defineElement({
-  name: 'simple-counter',
-
+defineElement('simple-counter', {
   props: {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
   },
 
-  init(c, props) {console.log(1111)
-    const
-      [state, setState] = useState(c, { count: props.initialCount }),
-      onIncrement = () => setState({ count: state.count + 1 })
+  init(c, props) {
+    const [state, setState] = c.addState({ count: props.initialCount }),
+      onIncrement = () => {
+        setState({ count: state.count + 1 })
+      }
 
-    useEffect(c, () => {
+    c.effect(() => {
       console.log('Component "simple-counter" has been mounted')
-      
+
       return () => console.log('Component "simple-counter" will be umounted')
     }, null)
-    
-    useEffect(c, () => {
-      console.log(`New value of counter "${props.label}": ${state.count}`)
-    }, () => [state.count])
 
-    return () =>
-      <div>
-        <label>{props.label}: </label>
-        <button onClick={onIncrement}>
-          {state.count}
-        </button>
-      </div>
+    c.effect(
+      () => {
+        console.log(`New value of counter "${props.label}": ${state.count}`)
+      },
+      () => [state.count]
+    )
+
+    return () => {
+      return html`
+        <div>
+          <label>${props.label}: </label>
+          <button @click=${onIncrement}>
+            ${state.count}
+          </button>
+        </div>
+      `
+    }
   }
 })
 
-defineElement('simple-counter-demo', () => {
-  return (
-    div(
-      h3('Counter demo'),
-      h('div', Counter())
-    )
-  )
-})
+defineElement(
+  'simple-counter-demo',
+  () => html`
+    <div>
+      <h3>Counter demo</h3>
+      <div><simple-counter></simple-counter></div>
+    </div>
+  `
+)

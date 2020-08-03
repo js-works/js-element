@@ -1,19 +1,10 @@
-/** @jsx h */
-import { defineElement, h, prop, asRef, useEffect, useMethods, useState, Component, Ref } from '../../main/index'
-
-type CounterProps = {
-  initialValue?: number,
-  label?: string,
-  ref?: Ref<CounterMethods>
-}
+import { defineElement, html, prop } from '../../main/index'
 
 type CounterMethods = {
   reset(n: number): void
 }
 
-const Counter: Component<CounterProps, CounterMethods> = defineElement({
-  name: 'complex-counter',
-
+defineElement('complex-counter', {
   props: {
     initialValue: prop.num.opt(0),
     label: prop.str.opt('Counter'),
@@ -21,54 +12,57 @@ const Counter: Component<CounterProps, CounterMethods> = defineElement({
   },
 
   methods: ['reset'],
- 
+
   init(c, props) {
-    const 
-      [state, setState] = useState(c, {
-        count: props.initialValue
-      }),
+    const [state, setState] = c.addState({
+      count: props.initialValue
+    })
 
-      onIncrement = () => setState({ count: state.count + 1 }),
-      onDecrement = () => setState({ count: state.count - 1 })
+    const onIncrement = () => setState({ count: state.count + 1 })
+    const onDecrement = () => setState({ count: state.count - 1 })
 
-    useMethods(c, {
+    c.setMethods({
       reset(n: number) {
         setState({ count: n })
       }
     })
 
-    useEffect(c, () => {
+    c.effect(() => {
       console.log('Component "complex-counter" has been mounted')
-    
+
       return () => console.log('Component "complex-counter" will be umounted')
     }, null)
 
-    useEffect(c, () => {
-      console.log(`New value of counter "${props.label}": ${state.count}`)
-    }, () => [state.count])
+    c.effect(
+      () => {
+        console.log(`Value of counter "${props.label}": ${state.count}`)
+      },
+      () => [state.count]
+    )
 
-    return () =>
-     <div>
-        <label>{props.label}: </label>
-        <button onClick={onDecrement}>-</button>
-        <span> {state.count} </span>
-        <button onClick={onIncrement}>+</button>
-     </div>
+    return () => html`
+      <div>
+        <label>${props.label}: </label>
+        <button @click=${onDecrement}>-</button>
+        <span>${state.count} </span>
+        <button @click=${onIncrement}>+</button>
+      </div>
+    `
   }
 })
 
-defineElement('complex-counter-demo', () => {
-  const
-    counterRef = asRef(null as any), // TODO
-    onSetTo0 = () => counterRef.current.reset(0),
-    onSetTo100 = () => counterRef.current.reset(100)
+defineElement('complex-counter-demo', (c) => {
+  const counterRef = c.createElementRef()
+  const onSetTo0 = () => counterRef.current.reset(0)
+  const onSetTo100 = () => counterRef.current.reset(100)
 
-  return () =>
+  return () => html`
     <div>
       <h3>Complex counter demo</h3>
-      <Counter ref={counterRef}></Counter>
-      <br/>
-      <button onClick={onSetTo0}>Set to 0</button>
-      <button onClick={onSetTo100}>Set to 100</button>
+      <complex-counter *ref=${counterRef.bind}></complex-counter>
+      <br />
+      <button @click=${onSetTo0}>Set to 0</button>
+      <button @click=${onSetTo100}>Set to 100</button>
     </div>
+  `
 })

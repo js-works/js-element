@@ -1,63 +1,68 @@
-/** @jsx h */
-import { defineElement, h, prop, update, usePromise, useState, Component } from '../../main/index'
+import { defineElement, html, prop } from '../../main/index'
+import { withPromise } from '../extensions'
 
-type LoaderProps = {
-  loadingText?: string,
-  finishText?: string
-}
-
-const Loader: Component<LoaderProps> = defineElement({
-  name: 'data-loader',
-
+defineElement('data-loader', {
   props: {
     loadingText: prop.str.opt('Loading...'),
-    finishText: prop.str.opt('Finished!')
+    finishText: prop.str.opt('Finished!'),
+    key: prop.num.opt()
   },
 
   init(c, props) {
-    const res = usePromise(c, () => wait(4000))
+    const res = withPromise(
+      c,
+      () => wait(4000),
+      () => [props.key]
+    )
 
-    return () => res.state === 'pending'
-      ? <div>{props.loadingText}</div>
-      : <div>{props.finishText}</div>
+    return () =>
+      res.state === 'pending'
+        ? html`<div>${props.loadingText}</div>`
+        : html`<div>${props.finishText}</div>`
   }
 })
 
-defineElement('promise-demo', c => {
-  const
-    [state, setState] = useState(c, {
-      key: 0,
-      loadingText: 'Loading...',
-      finishText: 'Finished!'
-    }),
+defineElement('promise-demo', (c) => {
+  const [state, setState] = c.addState({
+    key: 0,
+    loadingText: 'Loading...',
+    finishText: 'Finished!'
+  })
 
-    onRefresh = () => update(c),
-    onRestart = () => setState('key', (it: any) => it + 1), // TODO
+  const onRefresh = () => c.refresh()
+  const onRestart = () => setState('key', (it: any) => it + 1) // TODO
 
-    onToggleLoadingText = () => setState('loadingText',
-      (it: any) => it === 'Loading...' ? 'Please wait...' : 'Loading...'), // TODO
+  const onToggleLoadingText = () =>
+    setState('loadingText', (it: any) =>
+      it === 'Loading...' ? 'Please wait...' : 'Loading...'
+    ) // TODO
 
-    onToggleFinishText = () => setState('finishText',
-      (it: any) => it === 'Finished!' ? 'Done!' : 'Finished!') // TODO
+  const onToggleFinishText = () =>
+    setState('finishText', (it: any) =>
+      it === 'Finished!' ? 'Done!' : 'Finished!'
+    ) // TODO
 
-  return () => (
+  return () => html`
     <div>
-      <h3>Demo (last update {getTime()})</h3>
+      <h3>Demo (last update ${getTime()})</h3>
       <section>
-        <Loader key={state.key} loadingText={state.loadingText} finishText={state.finishText}/>
+        <data-loader
+          key=${state.key}
+          loadingText=${state.loadingText}
+          finishText=${state.finishText}
+        />
       </section>
       <br />
-      <button onClick={onRefresh}>Refresh</button>
-      <button onClick={onRestart}>Restart</button>
-      <button onClick={onToggleLoadingText}>Toggle loading text</button>
-      <button onClick={onToggleFinishText}>Toggle finish text</button>
+      <button @click=${onRefresh}>Refresh</button>
+      <button @click=${onRestart}>Restart</button>
+      <button @click=${onToggleLoadingText}>Toggle loading text</button>
+      <button @click=${onToggleFinishText}>Toggle finish text</button>
     </div>
-  )
+  `
 })
 
 function wait(ms: number) {
-  return new Promise(resolve =>
-    setTimeout(() => resolve(), ms))
+  return new Promise((resolve) => setTimeout(() => resolve(), ms))
 }
 
 function getTime() {

@@ -1,117 +1,89 @@
-/** @jsx h */
-import { defineElement, getRoot, h, prop, useEffect, useState } from '../../main/index'
+import { defineElement, html, prop } from '../../main/index'
 
 const ENTER_KEY = 13
 const ESC_KEY = 27
 
-const Header = defineElement('todo-header', c => {
-  const
-    root = getRoot(c),
-    [state, setState] = useState(c, { title: '' }),
-    onInput = ev => setState({ title: ev.target.value }),
+defineElement('todo-header', (c) => {
+  const root = c.getRoot()
+  const [state, setState] = c.addState(c, { title: '' })
+  const onInput = (ev) => setState({ title: ev.target.value })
 
-    onKeyDown = ev => {
-      if (ev.keyCode === ENTER_KEY && state.title.trim()) {
-        const title1 = state.title.trim()
+  const onKeyDown = (ev) => {
+    if (ev.keyCode === ENTER_KEY && state.title.trim()) {
+      const title1 = state.title.trim()
 
-        ev.preventDefault()
-        setState({ title: ''})
-        ev.target.value = ''
+      ev.preventDefault()
+      setState({ title: '' })
+      ev.target.value = ''
 
-        root.dispatchEvent(
-          new CustomEvent('todo.create', {
-            bubbles: true,
-            detail: { title: title1 }
-          })
-        )
-      }
+      root.dispatchEvent(
+        new CustomEvent('todo.create', {
+          bubbles: true,
+          detail: { title: title1 }
+        })
+      )
     }
+  }
 
-  return () =>
+  return () => html`
     <header class="header">
       <h1>todos (not working!)</h1>
       <input
         class="new-todo"
         placeholder="What needs to be done?"
         autofocus
-        value={state.title}
-        onInput={onInput}
-        onKleydown={onKeyDown}
+        value=${state.title}
+        @input=${onInput}
+        @keydown=${onKeyDown}
       />
     </header>
+  `
 })
 
-const Item = defineElement({
-  name: 'todo-item',
-
+defineElement('todo-item', {
   props: {
     todo: prop.obj.req()
   },
 
   init(c, props) {
-    const
-      root = getRoot(c),
+    const root = c.getRoot()
+    const [state, setState] = c.addState({
+      active: false,
+      title: props.todo.title
+    })
+    const onToggle = (ev) => {
+      root.dispatchEvent(
+        new CustomEvent('todo.toggle', {
+          bubbles: true,
+          detail: { id: props.todo.id, completed: ev.target.checked }
+        })
+      )
+    }
+    const onDestroy = () => {
+      root.dispatchEvent(
+        new CustomEvent('todo.destroy', {
+          bubbles: true,
+          detail: { id: props.todo.id }
+        })
+      )
+    }
 
-      [state, setState] = useState(c, {
-        active: false,
-        title: props.todo.title
-      }),
+    const onDoubleClick = (ev) => {
+      setState({ active: true })
+      ev.target.parentElement.nextSibling.focus()
+    }
 
-      onToggle = ev => {
-        root.dispatchEvent(
-          new CustomEvent('todo.toggle', {
-            bubbles: true,
-            detail: { id: props.todo.id, completed: ev.target.checked },
-          })
-        )
-      },
-    
-      onDestroy = () => {
-        root.dispatchEvent(
-          new CustomEvent('todo.destroy', {
-            bubbles: true,
-            detail: { id: props.todo.id }
-          })
-        )
-      },
+    const onInput = (ev) => {
+      setState({ title: ev.target.value })
+    }
 
-      onDoubleClick = ev => {
-        setState({ active: true })
-        ev.target.parentElement.nextSibling.focus()
-      },
+    const onKeyDown = (ev) => {
+      if (ev.keyCode === ENTER_KEY || ev.keyCode === ESC_KEY) {
+        setState({
+          active: false,
+          title: state.title.trim()
+        })
 
-      onInput = ev => {
-        setState({ title: ev.target.value })
-      },
-
-      onKeyDown = ev => {
-        if (ev.keyCode === ENTER_KEY || ev.keyCode === ESC_KEY) {
-          setState({
-            active: false,
-            title: state.title.trim()
-          })
-
-          if (state.title) {
-            root.dispatchEvent(
-              new CustomEvent('todo.edit', {
-                bubbles: true,
-                detail: { id: props.todo.id, title: state.title }
-              })
-            )
-          } else {
-            root.dispatchEvent(
-              new CustomEvent('todo.destroy', {
-                bubbles: true,
-                detail: { id: props.todo.id },
-              }),
-            )
-          }
-        }
-      },
-
-      onBlur = () => {
-        setState({ active: false })
-          
         if (state.title) {
           root.dispatchEvent(
             new CustomEvent('todo.edit', {
@@ -128,6 +100,27 @@ const Item = defineElement({
           )
         }
       }
+    }
+
+    const onBlur = () => {
+      setState({ active: false })
+
+      if (state.title) {
+        root.dispatchEvent(
+          new CustomEvent('todo.edit', {
+            bubbles: true,
+            detail: { id: props.todo.id, title: state.title }
+          })
+        )
+      } else {
+        root.dispatchEvent(
+          new CustomEvent('todo.destroy', {
+            bubbles: true,
+            detail: { id: props.todo.id }
+          })
+        )
+      }
+    }
 
     return () => {
       const classes = []
@@ -140,239 +133,291 @@ const Item = defineElement({
         classes.push('completed')
       }
 
-      return (
-        <li class={classes.join(' ')}>
+      return html`
+        <li class=${classes.join(' ')}>
           <div class="view">
             <input
               class="toggle"
               type="checkbox"
-              checked={props.todo.completed}
-              onClick={onToggle}
+              checked=${props.todo.completed}
+              @click=${onToggle}
             />
-            <label onDblclick={onDoubleClick}>
-              {props.todo.title}
+            <label @dblclick=${onDoubleClick}>
+              ${props.todo.title}
             </label>
-            <button
-              class="destroy"
-              onClick={onDestroy}
-            />
+            <button class="destroy" onClick=${onDestroy}></button>
           </div>
           <input
             class="edit"
-            value={state.title}
-            onInput={onInput}
-            onKeydown={onKeyDown}
-            onBlur={onBlur}
+            value=${state.title}
+            @input=${onInput}
+            @keydown=${onKeyDown}
+            @blur=${onBlur}
           />
         </li>
-      )
+      `
     }
   }
 })
 
-const Main = defineElement({
-  name: 'todo-main',
-
+defineElement('todo-main', {
   props: {
     todos: prop.obj.req(),
     filter: prop.str.req()
   },
 
   init(c, props) {
-    const
-      root = getRoot(c),
-      completed = props.todos.every(todo => todo.completed),
+    const root = c.getRoot()
+    const completed = props.todos.every((todo) => todo.completed)
 
-      onToggleAll = () => {
-        root.dispatchEvent(
-          new CustomEvent('todo.toggleAll', {
-            bubbles: true,
-            detail: { completed: !completed }
-          })
-        )
-      }
+    const onToggleAll = () => {
+      root.dispatchEvent(
+        new CustomEvent('todo.toggleAll', {
+          bubbles: true,
+          detail: { completed: !completed }
+        })
+      )
+    }
 
     let filteredTodos =
       props.filter === 'active'
-        ? props.todos.filter(todo => !todo.completed)
+        ? props.todos.filter((todo) => !todo.completed)
         : props.filter === 'completed'
-          ? props.todos.filter(todo => todo.completed)
-          : props.todos
+        ? props.todos.filter((todo) => todo.completed)
+        : props.todos
 
-    return () =>
+    return () => html`
       <section class="main">
         <input
           id="toggle-all"
           class="toggle-all"
           type="checkbox"
-          onClick={onToggleAll}
-          checked={completed}
+          @click=${onToggleAll}
+          checked=${completed}
         />
         <label for="toggle-all">Mark all as complete</label>
         <ul class="todo-list">
-          {filteredTodos.map(todo => <Item todo={todo}/>)}
+          ${filteredTodos.map(
+            (todo) => html`<todo-item todo=${todo}></todo-item>`
+          )}
         </ul>
       </section>
+    `
   }
 })
 
-const Filters = defineElement({
-  name: 'todo-filters',
-
+defineElement('todo-filters', {
   props: {
     filter: prop.str.req()
   },
 
   init(c, props) {
-    const
-      root = getRoot(c),
-      onActiveFilter = ev => setFilter('active', ev),
-      onCompletedFilter = ev => setFilter('completed', ev),
-      onNoFilter = ev => setFilter('', ev),
-      
-      setFilter = (filter, ev) => {
-        ev.preventDefault()
-        root.dispatchEvent(
-          new CustomEvent('todo.setFilter', {
-            bubbles: true,
-            detail: { filter }
-          }))
-      }
+    const root = c.getRoot()
+    const onActiveFilter = (ev) => setFilter('active', ev)
+    const onCompletedFilter = (ev) => setFilter('completed', ev)
+    const onNoFilter = (ev) => setFilter('', ev)
 
-    return () =>
+    const setFilter = (filter, ev) => {
+      ev.preventDefault()
+
+      root.dispatchEvent(
+        new CustomEvent('todo.setFilter', {
+          bubbles: true,
+          detail: { filter }
+        })
+      )
+    }
+
+    return () => html`
       <ul class="filters">
         <li>
-          <a class={props.filter === '' ? 'selected' : ''} onClick={onNoFilter} href="#/">
+          <a
+            class=${props.filter === '' ? 'selected' : ''}
+            @click=${onNoFilter}
+            href="#/"
+          >
             All
           </a>
         </li>
         <li>
-          <a class={props.filter === 'active' ? 'selected' : ''} onClick={onActiveFilter} href="#/active">
+          <a
+            class=${props.filter === 'active' ? 'selected' : ''}
+            @click=${onActiveFilter}
+            href="#/active"
+          >
             Active
           </a>
         </li>
         <li>
-          <a class={props.filter === 'completed' ? 'selected' : ''} onClick={onCompletedFilter} href="#/completed">
+          <a
+            class=${props.filter === 'completed' ? 'selected' : ''}
+            @click=${onCompletedFilter}
+            href="#/completed"
+          >
             Completed
           </a>
         </li>
       </ul>
+    `
   }
 })
 
-const Footer = defineElement({
-  name: 'todo-footer',
-
+defineElement('todo-footer', {
   props: {
     todos: prop.obj.req(),
     filter: prop.str.req()
   },
 
   init(c, props) {
-    const
-      root = getRoot(c),
-      completed = props.todos.filter(todo => todo.completed).length,
-      remaining = props.todos.length - completed,
+    const root = c.getRoot()
+    const completed = props.todos.filter((todo) => todo.completed).length
+    const remaining = props.todos.length - completed
 
-      onClearCompleted = () => 
-        root.dispatchEvent(
-          new CustomEvent('todo.clearCompleted', { bubbles: true }))
+    const onClearCompleted = () =>
+      root.dispatchEvent(
+        new CustomEvent('todo.clearCompleted', { bubbles: true })
+      )
 
-    return () =>
+    return () => html`
       <footer class="footer">
         <span class="todo-count">
-          <strong>{remaining}</strong> {remaining === 1 ? 'item' : 'items'} left
+          <strong>${remaining}</strong> ${remaining === 1 ? 'item' : 'items'}
+          left
         </span>
-        <Filters filter={props.filter}/>
-        {!completed ? '' : <button class="clear-completed" onClick={onClearCompleted}>Clear completed</button>}
+        <todo-filters filter=${props.filter}></todo-filters>
+        ${!completed
+          ? ''
+          : html`
+              <button class="clear-completed" @click=${onClearCompleted}>
+                Clear completed
+              </button>
+            `}
       </footer>
+    `
+    /*
+    return () => html` 
+      <footer class="footer">
+        <span class="todo-count">
+          <strong>${remaining}</strong><span> ${remaining === 1 ? 'item' : 'items'}<span> left</span><span>
+        </span>
+        <todo-filters filter=${props.filter}></todo-filters>
+        ${!completed ? (
+          '' 
+        ) : (
+          html` 
+            <button class="clear-completed" @click=${onClearCompleted}>
+              Clear completed
+            </button>
+          `
+        )}
+      </footer>
+    ´
+    */
   }
 })
 
-const TodoMvc = defineElement('todo-mvc', c => {
-  const
-    root = getRoot(c),
-    [state, setState] = useState(c, {
+defineElement('todo-mvc', (c) => {
+  const root = c.getRoot(),
+    [state, setState] = c.addState({
       todos: [],
       filter: ''
     })
-  
+
   let nextTodoId = 0
 
-  useEffect(c, () => {
-    try {
-      const storedTodos = JSON.parse(localStorage.getItem(STORAGE_KEY))
+  c.effect(
+    c,
+    () => {
+      try {
+        const storedTodos = JSON.parse(localStorage.getItem(STORAGE_KEY))
 
-      if (Array.isArray(storedTodos) && storedTodos.length) {
-        setState({ todos: storedTodos })
-        nextTodoId = Math.max(...storedTodos.map(todo => todo.id)) + 1
-      } else {
+        if (Array.isArray(storedTodos) && storedTodos.length) {
+          setState({ todos: storedTodos })
+          nextTodoId = Math.max(...storedTodos.map((todo) => todo.id)) + 1
+        } else {
+          localStorage.removeItem(STORAGE_KEY)
+        }
+      } catch (err) {
         localStorage.removeItem(STORAGE_KEY)
       }
-    } catch (err) {
-      localStorage.removeItem(STORAGE_KEY)
-    }
 
-    root.addEventListener('todo.create', ev => {
-      const newTodos = [...state.todos]
-      newTodos.push({ id: nextTodoId++, title: ev.detail.title, completed: false })
-      setState({ todos: newTodos })
-      save(state.todos)
-    })
+      root.addEventListener('todo.create', (ev) => {
+        const newTodos = [...state.todos]
+        newTodos.push({
+          id: nextTodoId++,
+          title: ev.detail.title,
+          completed: false
+        })
+        setState({ todos: newTodos })
+        save(state.todos)
+      })
 
-    root.addEventListener('todo.edit', ev => {
-      const i = state.todos.findIndex(todo => todo.id === ev.detail.id)
-      const newTodos = [...state.todos]
-      newTodos[i] = { ...newTodos[i], title: ev.detail.title }
-      setState({ todos: newTodos })
-      save(state.todos)
-    })
+      root.addEventListener('todo.edit', (ev) => {
+        const i = state.todos.findIndex((todo) => todo.id === ev.detail.id)
+        const newTodos = [...state.todos]
+        newTodos[i] = { ...newTodos[i], title: ev.detail.title }
+        setState({ todos: newTodos })
+        save(state.todos)
+      })
 
-    root.addEventListener('todo.toggle', ev => {
-      const i = state.todos.findIndex(todo => todo.id === ev.detail.id)
-      const newTodos = [...state.todos]
-      newTodos[i] = { ...state.todos[i], completed: ev.detail.completed }
-      setState({ todos: newTodos })
-      save(state.todos)
-    })
+      root.addEventListener('todo.toggle', (ev) => {
+        const i = state.todos.findIndex((todo) => todo.id === ev.detail.id)
+        const newTodos = [...state.todos]
+        newTodos[i] = { ...state.todos[i], completed: ev.detail.completed }
+        setState({ todos: newTodos })
+        save(state.todos)
+      })
 
-    root.addEventListener('todo.toggleAll', ev => {
-      setState({ todos: state.todos.map(todo => ({ ...todo, completed: ev.detail.completed })) })
-      save(state.todos)
-    })
+      root.addEventListener('todo.toggleAll', (ev) => {
+        setState({
+          todos: state.todos.map((todo) => ({
+            ...todo,
+            completed: ev.detail.completed
+          }))
+        })
+        save(state.todos)
+      })
 
-    root.addEventListener('todo.clearCompleted', () => {
-      setState({ todods: state.todos.filter(todo => !todo.completed) })
-      save(state.todos)
-    })
+      root.addEventListener('todo.clearCompleted', () => {
+        setState({ todods: state.todos.filter((todo) => !todo.completed) })
+        save(state.todos)
+      })
 
-    root.addEventListener('todo.destroy', ev => {
-      setState({ todos: state.todos.filter(todo => todo.id !== ev.detail.id) })
-      save(state.todos)
-    })
+      root.addEventListener('todo.destroy', (ev) => {
+        setState({
+          todos: state.todos.filter((todo) => todo.id !== ev.detail.id)
+        })
+        save(state.todos)
+      })
 
-    root.addEventListener('todo.setFilter', ev => {
-      setState({ filter: ev.detail.filter })
-    })
-  }, null)
+      root.addEventListener('todo.setFilter', (ev) => {
+        setState({ filter: ev.detail.filter })
+      })
+    },
+    null
+  )
 
   return () => {
     let todoBody
 
     if (state.todos.length > 0) {
-      todoBody =
+      todoBody = html`
         <div>
-          <Main todos={state.todos} filter={state.filter}/>
-          <Footer todos={state.todos} filter={state.filter}/>
+          <todo-main todos=${state.todos} filter=${state.filter}></todo-main>
+          <todo-footer
+            todos=${state.todos}
+            filter=${state.filter}
+          ></todo-footer>
         </div>
+      `
     }
-    
-    return (
+
+    return html`
       <div>
-        <Header/>
-        {todoBody}
+        <todo-header></todo-header>
+        ${todoBody}
       </div>
-    )
+    `
   }
 })
 

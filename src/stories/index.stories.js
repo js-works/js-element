@@ -12,28 +12,27 @@ import './demos/mouse-demo'
 import './demos/interval-demo'
 import './demos/promise-demo'
 import './demos/store-demo'
-//import './demos/todo-mvc'
+import './demos/todo-mvc'
 import './styles.css'
 
 export default {
-  title: 'Demos',
+  title: 'Demos'
 }
 
-export const Button =  () => '<button-demo></button-demo>'
+export const Button = () => '<button-demo></button-demo>'
 
-export const SimpleCounter =  () => '<simple-counter-demo></simple-counter-demo>'
-export const ComplexCounter =  () => '<complex-counter-demo></complex-counter-demo>'
-export const Clock =  () => '<clock-demo></clock-demo>'
-export const Mouse =  () => '<mouse-demo></mouse-demo'
-export const Iterator =  () => '<iterator-demo/>'
-export const Interval =  () => '<interval-demo></iterator-demo>'
-export const Promises =  () => '<promise-demo></promise-demo>'
-export const Stores =  () => '<store-demo></store-demo>'
+export const SimpleCounter = () => '<simple-counter-demo></simple-counter-demo>'
+export const ComplexCounter = () =>
+  '<complex-counter-demo></complex-counter-demo>'
+export const Clock = () => '<clock-demo></clock-demo>'
+export const Mouse = () => '<mouse-demo></mouse-demo'
+export const Iterator = () => '<iterator-demo/>'
+export const Interval = () => '<interval-demo></iterator-demo>'
+export const Promises = () => '<promise-demo></promise-demo>'
+export const Stores = () => '<store-demo></store-demo>'
 
-/*
-export const TodoMvc =  () => `
+export const TodoMvc = () => `
   <div class="todoapp">
     <todo-mvc></todo-mvc>
   </div>
 `
-*/
