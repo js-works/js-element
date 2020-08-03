@@ -46,7 +46,7 @@ defineElement('simple-counter', {
       <div class="simple-counter">
         <label class="simple-counter__label">${props.label}: </label>
         <button class="simple-counter__button" @click=${onIncrement}>
-          {state.count}
+          ${state.count}
         </button>
       </div>
     `
