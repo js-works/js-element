@@ -1,12 +1,14 @@
 // === exports =======================================================
 
-export { Action, Ctrl, Methods, State, StateUpdater }
+export { Action, AnyElement, Ctrl, Message, Methods, State, StateUpdater }
 
 // === types =========================================================
 
 type Action = () => void
+type Message = { type: string } & Record<string, any>
 type Methods = Record<string, (...args: any[]) => any>
 type State = Record<string, any>
+type AnyElement = Element & Record<string, any>
 
 type StateUpdater<S extends State> = {
   (newState: Partial<S>): void
@@ -27,10 +29,12 @@ type Ctrl = {
   beforeUnmount(action: Action): void
 
   // js-elements specific control functions
-  isRendering(): boolean
   getRoot(): Element
   addState<S extends State>(initialState: S): [S, StateUpdater<S>]
   effect(action: Action, getDeps?: null | (() => any[])): void
   setMethods(methods: Methods): void // TODO!!!!!!!!!!!!!!!
-  createElementRef(): any // TODO!!!!!!!!!!!!!!!!!
+  find<T = {}>(selector: string): (T & Element) | null
+  findAll<T = {}>(selector: string): NodeListOf<T & Element>
+  send(message: Message): void
+  receive(receiver: (message: Message) => void): () => void
 }

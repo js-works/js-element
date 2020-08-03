@@ -1,4 +1,4 @@
-import { defineElement, html, prop, send } from '../../main/index'
+import { defineElement, html, prop } from '../../main/index'
 
 function createStore() {
   const data = {
@@ -48,7 +48,7 @@ const StoreDemo = defineElement('store-demo', (c) => {
 })
 
 const DispatchButton = defineElement('dispatch-button', (c) => {
-  const onClick = () => send(c, { type: 'some.message' })
+  const onClick = () => c.send({ type: 'some.message' })
 
   return () => html`<button @click="{onClick}">Send event</button>`
 })

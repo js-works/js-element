@@ -51,6 +51,7 @@ defineElement('todo-item', {
       active: false,
       title: props.todo.title
     })
+
     const onToggle = (ev) => {
       root.dispatchEvent(
         new CustomEvent('todo.toggle', {
@@ -59,6 +60,7 @@ defineElement('todo-item', {
         })
       )
     }
+
     const onDestroy = () => {
       root.dispatchEvent(
         new CustomEvent('todo.destroy', {
@@ -73,9 +75,7 @@ defineElement('todo-item', {
       ev.target.parentElement.nextSibling.focus()
     }
 
-    const onInput = (ev) => {
-      setState({ title: ev.target.value })
-    }
+    const onInput = (ev) => setState({ title: ev.target.value })
 
     const onKeyDown = (ev) => {
       if (ev.keyCode === ENTER_KEY || ev.keyCode === ESC_KEY) {

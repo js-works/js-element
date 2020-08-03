@@ -1,20 +1,28 @@
 import { html, LitElement, TemplateResult } from 'lit-element'
-import { directive, AttributePart } from 'lit-html'
 
-import { toRef, Ref } from './utils'
-import { Action, Ctrl, Methods, State, StateUpdater } from '../internal/types'
+import {
+  Action,
+  AnyElement,
+  Ctrl,
+  Message,
+  Methods,
+  State,
+  StateUpdater
+} from '../internal/types'
 
 // === exports =======================================================
 
 export { defineElement, html, propConfigBuilder as prop }
+
+// === constants =====================================================
+
+const MESSAGE_EVENT_TYPE = 'js-element:###message###'
 
 // === types =========================================================
 
 type Class<T> = {
   new (...arg: any[]): T
 }
-
-type Props = Record<string, any> & { ref?: Methods }
 
 type Content = TemplateResult
 
@@ -172,7 +180,6 @@ const createCustomElementClass = (name: string, config: any) => {
     private _methods?: Methods
     private _initialized = false
     private _mounted = false
-    private _rendering = false
     private _propsObject = this._createPropsObject()
     private _listenersByEventName?: any // TODO!!!!!!!
     private _afterMountNotifier?: Notifier
@@ -193,7 +200,7 @@ const createCustomElementClass = (name: string, config: any) => {
         },
 
         getRoot(): Element {
-          return self // TODO!!!!!
+          return (self.shadowRoot?.getRootNode() || self) as any // TODO!!!!!
         },
 
         isInitialized(): boolean {
@@ -315,51 +322,43 @@ const createCustomElementClass = (name: string, config: any) => {
           self._methods = methods
         },
 
-        isRendering() {
-          return self._rendering
+        find(selector: string) {
+          return this.getRoot().querySelector(selector)
         },
 
-        createElementRef() {
-          let current: any = null
+        findAll<T extends Element = AnyElement>(selector: string) {
+          return this.getRoot().querySelectorAll<T>(selector)
+        },
 
-          const ref = toRef(() => {
-            if (this.isRendering()) {
-              throw Error(
-                'Property "current" of element refs ' +
-                  'is not readable while the component is rendering'
-              )
+        send(msg: Message) {
+          const root = this.getRoot()
+
+          root.dispatchEvent(
+            new CustomEvent(MESSAGE_EVENT_TYPE, {
+              bubbles: true,
+              detail: msg
+            })
+          )
+        },
+
+        receive(handler: (msg: Message) => void): () => void {
+          const root = this.getRoot(),
+            listener = (ev: Event) => {
+              handler((ev as any).detail)
+            },
+            unsubscribe = () => {
+              root.removeEventListener(MESSAGE_EVENT_TYPE, listener)
             }
 
-            return current
-          })
+          root.addEventListener(MESSAGE_EVENT_TYPE, listener)
+          this.beforeUnmount(unsubscribe)
 
-          ;(ref as any).bind = directive(() => (part: any) => {
-            const committer = part.committer
-            const element = committer.element
-
-            if (!(part instanceof AttributePart) || committer.name !== '*ref') {
-              throw new Error(
-                'Directive "<elementRef>.bind" must only be used on pseudo attribute "*ref"'
-              )
-            }
-
-            if (ref && typeof ref === 'object') {
-              current = element
-            }
-
-            self._beforeUnmountNotifier ||
-              (self._beforeUpdateNotifier = createNotifier())
-
-            self._beforeUpdateNotifier!.subscribe(() => (current = null))
-          })()
-
-          return ref
+          return unsubscribe
         }
       }
     }
 
     render() {
-      console.log(222, Object.keys(this))
       if (
         this._mounted &&
         this._onceBeforeUpdateActions &&
@@ -383,13 +382,7 @@ const createCustomElementClass = (name: string, config: any) => {
         this._initialized = true
       }
 
-      this._rendering = true
-
-      try {
-        return this._render!()
-      } finally {
-        this._rendering = false
-      }
+      return this._render!()
     }
 
     connectedCallback() {
@@ -513,35 +506,102 @@ const createCustomElementClass = (name: string, config: any) => {
   }
 }
 
-// === send/receive ==================================================
+// === defineProvision ===============================================
+/* 
+let counter = 0
 
-const MESSAGE_EVENT_TYPE = 'js-element:###message###'
-
-export function send(c: Ctrl, msg: any) {
-  const root = c.getRoot()
-
-  root.dispatchEvent(
-    new CustomEvent(MESSAGE_EVENT_TYPE, {
-      bubbles: true,
-      detail: msg
-    })
-  )
+function getNewEventType() {
+  return `$$provision$$_${++counter}`
 }
 
-function receive(c: Ctrl, handler: (msg: any) => void): () => void {
-  const root = c.getRoot(),
-    listener = (ev: Event) => {
-      handler((ev as any).detail)
-    },
-    unsubscribe = () => {
-      root.removeEventListener(MESSAGE_EVENT_TYPE, listener)
+export function defineProvision<T>(name: string, defaultValue: T) {
+  const subscribeEventType = getNewEventType()
+  const providersMap = new Map() // key: context, value: { value, subscribers }
+  const consumersMap = new Map() // key: context, value: getterFunction
+
+  const provideProvision = (c: Ctrl, value) => {
+    if (!providersMap.has(context)) {
+      if (c.isMounted(context)) {
+        throw new Error(
+          'First invocation of provision provider function must be performed before first component rendering'
+        )
+      }
+
+      const onSubscribe = (ev) => {
+        ev.stopPropagation()
+        const subscriber = ev.detail
+        const { value, subscribers } = providersMap.get(context)
+
+        subscribers.add(subscriber)
+
+        subscriber.cancelled.then(() => {
+          subscribers.remove(subscriber)
+        })
+
+        subscriber.notifyChange(value)
+      }
+
+      providersMap.set(context, { value, subscribers: new Set() })
+      context.addEventListener(subscribeEventType, onSubscribe)
+
+      context.cleanup(() => {
+        context.removeEventListener(subscribeEventType, onSubscribe)
+        providersMap.delete(context)
+      })
+    } else {
+      const data = providersMap.get(context)
+
+      if (value !== data.value) {
+        data.value = value
+
+        data.subscribers.forEach((subscriber) => {
+          subscriber.notifyChange(value)
+        })
+      }
+    }
+  }
+
+  const consumeProvision = (context) => {
+    let currentValue
+    let getter = consumersMap.get(context)
+
+    if (!getter) {
+      if (isMounted(context)) {
+        throw new Error(
+          'First invocation of provision consumer function must be performed before first component rendering'
+        )
+      }
+
+      getter = () => (currentValue !== undefined ? currentValue : defaultValue)
+      consumersMap.set(context, getter)
+
+      let cancel = null // will be set below
+
+      context.cleanup(() => cancel && cancel())
+
+      context.dispatchEvent(
+        new CustomEvent(subscribeEventType, {
+          bubbles: true,
+          detail: {
+            notifyChange(newValue) {
+              currentValue = newValue
+              refreshAsync(context) // TODO: optimize
+            },
+
+            cancelled: new Promise((resolve) => {
+              cancel = resolve
+            })
+          }
+        })
+      )
     }
 
-  root.addEventListener(MESSAGE_EVENT_TYPE, listener)
-  c.beforeUnmount(unsubscribe)
+    return getter()
+  }
 
-  return unsubscribe
+  return [provideProvision, consumeProvision]
 }
+*/
 
 // === StoreProvider =================================================
 
@@ -558,7 +618,7 @@ defineElement('store-provider', {
 
     c.effect(
       () => {
-        const unsubscribe1 = receive(c, (msg: any) => {
+        const unsubscribe1 = c.receive((msg) => {
           props.store.dispatch(msg)
         })
 

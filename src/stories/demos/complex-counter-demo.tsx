@@ -52,14 +52,14 @@ defineElement('complex-counter', {
 })
 
 defineElement('complex-counter-demo', (c) => {
-  const counterRef = c.createElementRef()
-  const onSetTo0 = () => counterRef.current.reset(0)
-  const onSetTo100 = () => counterRef.current.reset(100)
+  const findCounter = () => c.find<CounterMethods>('[data-counter]')!
+  const onSetTo0 = () => findCounter().reset(0)
+  const onSetTo100 = () => findCounter().reset(100)
 
   return () => html`
     <div>
       <h3>Complex counter demo</h3>
-      <complex-counter *ref=${counterRef.bind}></complex-counter>
+      <complex-counter data-counter></complex-counter>
       <br />
       <button @click=${onSetTo0}>Set to 0</button>
       <button @click=${onSetTo100}>Set to 100</button>
