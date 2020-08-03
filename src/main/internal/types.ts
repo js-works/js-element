@@ -29,6 +29,7 @@ type Ctrl = {
   beforeUnmount(action: Action): void
 
   // js-elements specific control functions
+  getElement(): Element
   getRoot(): Element
   addState<S extends State>(initialState: S): [S, StateUpdater<S>]
   effect(action: Action, getDeps?: null | (() => any[])): void

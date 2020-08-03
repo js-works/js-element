@@ -199,6 +199,10 @@ const createCustomElementClass = (name: string, config: any) => {
           return name
         },
 
+        getElement(): Element {
+          return self
+        },
+
         getRoot(): Element {
           return (self.shadowRoot?.getRootNode() || self) as any // TODO!!!!!
         },
@@ -498,6 +502,10 @@ const createCustomElementClass = (name: string, config: any) => {
           options.type = propConfig.type // TODO
         }
 
+        if (!propConfig.type || propConfig.type === Object) {
+          options.attribute = false
+        }
+
         ret[propName] = options
       }
     }
@@ -507,91 +515,98 @@ const createCustomElementClass = (name: string, config: any) => {
 }
 
 // === defineProvision ===============================================
-/* 
+
+type ProvisionSubscriber<T> = {
+  notifyChange(newValue: T): void
+}
+
 let counter = 0
 
-function getNewEventType() {
+function getNewEventType(): string {
   return `$$provision$$_${++counter}`
 }
 
-export function defineProvision<T>(name: string, defaultValue: T) {
+export function defineProvision<T>(
+  name: string,
+  defaultValue: T
+): [(c: Ctrl, value: T) => void, (c: Ctrl) => T] {
   const subscribeEventType = getNewEventType()
-  const providersMap = new Map() // key: context, value: { value, subscribers }
-  const consumersMap = new Map() // key: context, value: getterFunction
+  const providersMap = new Map<Ctrl, [T, Set<ProvisionSubscriber<any>>]>()
+  const consumersMap = new Map<Ctrl, () => T>()
 
-  const provideProvision = (c: Ctrl, value) => {
-    if (!providersMap.has(context)) {
-      if (c.isMounted(context)) {
+  const provideProvision = (c: Ctrl, value: T) => {
+    if (!providersMap.has(c)) {
+      if (c.isMounted()) {
         throw new Error(
           'First invocation of provision provider function must be performed before first component rendering'
         )
       }
 
-      const onSubscribe = (ev) => {
+      const onSubscribe = (ev: any) => {
         ev.stopPropagation()
         const subscriber = ev.detail
-        const { value, subscribers } = providersMap.get(context)
+        const [value, subscribers] = providersMap.get(c)!
 
         subscribers.add(subscriber)
 
         subscriber.cancelled.then(() => {
-          subscribers.remove(subscriber)
+          subscribers.delete(subscriber)
         })
 
         subscriber.notifyChange(value)
       }
 
-      providersMap.set(context, { value, subscribers: new Set() })
-      context.addEventListener(subscribeEventType, onSubscribe)
+      providersMap.set(c, [value, new Set()])
+      c.getRoot().addEventListener(subscribeEventType, onSubscribe)
 
-      context.cleanup(() => {
-        context.removeEventListener(subscribeEventType, onSubscribe)
-        providersMap.delete(context)
+      c.beforeUnmount(() => {
+        c.getRoot().removeEventListener(subscribeEventType, onSubscribe)
+        providersMap.delete(c)
       })
     } else {
-      const data = providersMap.get(context)
+      const data = providersMap.get(c)!
 
-      if (value !== data.value) {
-        data.value = value
+      if (value !== data[0]) {
+        data[0] = value
 
-        data.subscribers.forEach((subscriber) => {
+        data[1].forEach((subscriber) => {
           subscriber.notifyChange(value)
         })
       }
     }
   }
 
-  const consumeProvision = (context) => {
-    let currentValue
-    let getter = consumersMap.get(context)
+  const consumeProvision = function (c: Ctrl) {
+    let currentValue: T
+    let getter = consumersMap.get(c)
 
     if (!getter) {
-      if (isMounted(context)) {
+      if (c.isMounted()) {
         throw new Error(
           'First invocation of provision consumer function must be performed before first component rendering'
         )
       }
 
       getter = () => (currentValue !== undefined ? currentValue : defaultValue)
-      consumersMap.set(context, getter)
+      consumersMap.set(c, getter)
 
-      let cancel = null // will be set below
+      let cancel: any = null // will be set below // TODO
 
-      context.cleanup(() => cancel && cancel())
+      c.beforeUnmount(() => cancel && cancel())
 
-      context.dispatchEvent(
+      c.getElement().dispatchEvent(
         new CustomEvent(subscribeEventType, {
           bubbles: true,
           detail: {
             notifyChange(newValue) {
               currentValue = newValue
-              refreshAsync(context) // TODO: optimize
+              c.refresh() // TODO: optimize
             },
 
             cancelled: new Promise((resolve) => {
               cancel = resolve
             })
-          }
+          } as ProvisionSubscriber<T>
         })
       )
     }
@@ -601,7 +616,6 @@ export function defineProvision<T>(name: string, defaultValue: T) {
 
   return [provideProvision, consumeProvision]
 }
-*/
 
 // === StoreProvider =================================================
 
@@ -623,7 +637,6 @@ defineElement('store-provider', {
         })
 
         const unsubscribe2 = props.store.subscribe(() => {
-          console.log(props.store.getState())
           c.refresh()
         })
 

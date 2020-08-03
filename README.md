@@ -36,9 +36,7 @@ defineElement('simple-counter', {
     }, null)
 
     c.effect(
-      () => {
-        console.log(`Value of "${props.label}": ${state.count}`)
-      },
+      () => console.log(`Value of "${props.label}": ${state.count}`),
       () => [state.count]
     )
 
