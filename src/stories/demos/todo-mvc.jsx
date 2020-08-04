@@ -1,11 +1,12 @@
 import { defineElement, html, prop } from '../../main/js-elements'
+import { useState } from '../../main/js-elements-ext'
 
 const ENTER_KEY = 13
 const ESC_KEY = 27
 
 defineElement('todo-header', (c) => {
   const root = c.getRoot()
-  const [state, setState] = c.addState(c, { title: '' })
+  const [state, setState] = useState(c, { title: '' })
   const onInput = (ev) => setState({ title: ev.target.value })
 
   const onKeyDown = (ev) => {

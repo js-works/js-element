@@ -1,9 +1,9 @@
 /** @jsx h */
 import { defineElement, html } from '../../main/js-elements'
-import { withMousePosition } from '../../main/js-elements-ext'
+import { useMousePosition } from '../../main/js-elements-ext'
 
 defineElement('mouse-demo', (c) => {
-  const mousePos = withMousePosition(c)
+  const mousePos = useMousePosition(c)
 
   return () =>
     mousePos.x === -1

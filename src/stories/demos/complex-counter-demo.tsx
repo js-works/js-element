@@ -1,4 +1,5 @@
 import { defineElement, html, prop } from '../../main/js-elements'
+import { useState } from '../../main/js-elements-ext'
 
 type CounterMethods = {
   reset(n: number): void
@@ -14,7 +15,7 @@ defineElement('complex-counter', {
   methods: ['reset'],
 
   init(c, props) {
-    const [state, setState] = c.addState({
+    const [state, setState] = useState(c, {
       count: props.initialValue
     })
 

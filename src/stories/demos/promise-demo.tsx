@@ -1,5 +1,5 @@
 import { defineElement, html, prop } from '../../main/js-elements'
-import { withPromise } from '../../main/js-elements-ext'
+import { usePromise, useState } from '../../main/js-elements-ext'
 
 defineElement('data-loader', {
   props: {
@@ -9,7 +9,7 @@ defineElement('data-loader', {
   },
 
   init(c, props) {
-    const res = withPromise(
+    const res = usePromise(
       c,
       () => wait(4000),
       () => [props.key]
@@ -23,7 +23,7 @@ defineElement('data-loader', {
 })
 
 defineElement('promise-demo', (c) => {
-  const [state, setState] = c.addState({
+  const [state, setState] = useState(c, {
     key: 0,
     loadingText: 'Loading...',
     finishText: 'Finished!'

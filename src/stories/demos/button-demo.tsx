@@ -1,6 +1,6 @@
 import { defineElement, html, prop } from '../../main/js-elements'
 
-const styles = ` 
+const buttonDemoStyles = ` 
   .demo-button {
     border: none;
     color: white;
@@ -24,7 +24,7 @@ defineElement('demo-button', {
     onButtonAction: prop.func.opt()
   },
 
-  styles,
+  styles: buttonDemoStyles,
 
   init(c, props) {
     const onClick = () => {

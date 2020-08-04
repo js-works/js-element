@@ -348,39 +348,6 @@ const createCustomElementClass = (name: string, config: any) => {
           self._onceBeforeUpdateActions.push(action)
         },
 
-        addState<S extends State>(initialState: S): [S, StateUpdater<S>] {
-          let nextState: any, // TODO
-            mergeNecessary = false
-
-          const state = { ...initialState }
-
-          const setState = (arg1: any, arg2: any) => {
-            mergeNecessary = true
-
-            if (typeof arg1 === 'string') {
-              nextState[arg1] =
-                typeof arg2 === 'function' ? arg2(nextState[arg1]) : arg2
-            } else if (typeof arg1 === 'function') {
-              Object.assign(nextState, arg1(nextState))
-            } else {
-              Object.assign(nextState, arg1)
-            }
-
-            this.onceBeforeUpdate(() => {
-              if (mergeNecessary) {
-                mergeNecessary = false
-                Object.assign(state, nextState)
-              }
-            })
-
-            this.refresh()
-          }
-
-          nextState = { ...state }
-
-          return [state, setState as any] // TODO
-        },
-
         effect(action: Action, getDeps?: null | (() => any[])) {
           let oldDeps: any[] | null = null,
             cleanup: Action | null | undefined | void

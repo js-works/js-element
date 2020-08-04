@@ -1,5 +1,5 @@
 import { defineElement, defineProvision, html } from '../../main/js-elements'
-import { withInterval } from '../../main/js-elements-ext'
+import { useInterval } from '../../main/js-elements-ext'
 
 const [provideTheme, consumeTheme] = defineProvision('theme', 'light')
 
@@ -8,7 +8,7 @@ defineElement('provision-demo', (c) => {
 
   provideTheme(c, theme)
 
-  withInterval(
+  useInterval(
     c,
     () => {
       theme = theme === 'light' ? 'dark' : 'light'

@@ -33,7 +33,6 @@ type Ctrl = {
   updateFn<A extends any[]>(fn: (...args: A) => void): void
   getElement(): Element
   getContentElement(): Element
-  addState<S extends State>(initialState: S): [S, StateUpdater<S>]
   effect(action: Action, getDeps?: null | (() => any[])): void
   setMethods(methods: Methods): void // TODO!!!!!!!!!!!!!!!
   find<T = {}>(selector: string): (T & Element) | null

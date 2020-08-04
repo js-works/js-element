@@ -1,15 +1,15 @@
 /** @jsx h */
 import { defineElement, html } from '../../main/js-elements'
-import { withInterval } from '../../main/js-elements-ext'
+import { useInterval, useState } from '../../main/js-elements-ext'
 
 defineElement('interval-demo', (c) => {
-  const [state, setState] = c.addState({
+  const [state, setState] = useState(c, {
       count: 0,
       delay: 1000
     }),
     onReset = () => setState('delay', 1000)
 
-  withInterval(
+  useInterval(
     c,
     () => {
       setState('count', (it: any) => it + 1) // TODO
@@ -17,7 +17,7 @@ defineElement('interval-demo', (c) => {
     () => state.delay
   )
 
-  withInterval(
+  useInterval(
     c,
     () => {
       if (state.delay > 10) {
