@@ -1,4 +1,4 @@
-import { html, render, TemplateResult } from 'lit-html'
+import { html, render, TemplateResult } from '../internal/lit-html'
 
 import {
   Action,
@@ -289,7 +289,7 @@ const createCustomElementClass = (name: string, config: any) => {
           return self
         },
 
-        getRoot(): Element {
+        getContentElement(): Element {
           return self._contentElem!
         },
 
@@ -304,6 +304,18 @@ const createCustomElementClass = (name: string, config: any) => {
         refresh(): void {
           if (self._mounted) {
             self._refresh()
+          }
+        },
+
+        update(action) {
+          action()
+          this.refresh()
+        },
+
+        updateFn<A extends any[]>(fn: (...args: A) => void) {
+          return (...args: A) => {
+            fn.apply(null, args)
+            this.refresh()
           }
         },
 
@@ -415,15 +427,15 @@ const createCustomElementClass = (name: string, config: any) => {
         },
 
         find(selector: string) {
-          return this.getRoot().querySelector(selector)
+          return this.getContentElement().querySelector(selector)
         },
 
         findAll<T extends Element = AnyElement>(selector: string) {
-          return this.getRoot().querySelectorAll<T>(selector)
+          return this.getContentElement().querySelectorAll<T>(selector)
         },
 
         send(msg: Message) {
-          const root = this.getRoot()
+          const root = this.getContentElement()
 
           root.dispatchEvent(
             new CustomEvent(MESSAGE_EVENT_TYPE, {
@@ -434,7 +446,7 @@ const createCustomElementClass = (name: string, config: any) => {
         },
 
         receive(handler: (msg: Message) => void): () => void {
-          const root = this.getRoot(),
+          const root = this.getContentElement(),
             listener = (ev: Event) => {
               handler((ev as any).detail)
             },
@@ -568,7 +580,7 @@ const createCustomElementClass = (name: string, config: any) => {
 
     disconnectedCallback() {
       this._beforeUnmountNotifier && this._beforeUnmountNotifier.notify()
-      this._ctrl.getRoot().innerHTML = ''
+      this._ctrl.getContentElement().innerHTML = ''
     }
 
     _createPropsObject() {
@@ -661,10 +673,13 @@ export function defineProvision<T>(
       }
 
       providersMap.set(c, [value, new Set()])
-      c.getRoot().addEventListener(subscribeEventType, onSubscribe)
+      c.getContentElement().addEventListener(subscribeEventType, onSubscribe)
 
       c.beforeUnmount(() => {
-        c.getRoot().removeEventListener(subscribeEventType, onSubscribe)
+        c.getContentElement().removeEventListener(
+          subscribeEventType,
+          onSubscribe
+        )
         providersMap.delete(c)
       })
     } else {

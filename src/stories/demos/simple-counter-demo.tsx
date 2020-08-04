@@ -7,11 +7,9 @@ defineElement('simple-counter', {
   },
 
   init(c, props) {
-    const [state, setState] = c.addState({ count: props.initialCount })
+    let count = props.initialCount
 
-    const onIncrement = () => {
-      setState({ count: state.count + 1 })
-    }
+    const onIncrement = c.updateFn(() => ++count)
 
     c.effect(() => {
       console.log('Component "simple-counter" has been mounted')
@@ -21,16 +19,16 @@ defineElement('simple-counter', {
 
     c.effect(
       () => {
-        console.log(`Value of "${props.label}": ${state.count}`)
+        console.log(`Value of "${props.label}": ${count}`)
       },
-      () => [state.count]
+      () => [count]
     )
 
     return () => html`
       <div>
         <label>${props.label}: </label>
         <button @click=${onIncrement}>
-          ${state.count}
+          ${count}
         </button>
       </div>
     `

@@ -2,7 +2,7 @@
   "compilerOptions": {
     "allowJs": true,
     "target": "ES2015",
-    "module": "commonjs",
+    "module": "ES2015",
     "strict": true,
     "strictNullChecks": true,
     "jsx": "react",

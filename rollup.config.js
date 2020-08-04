@@ -39,7 +39,7 @@ function createConfig(moduleFormat, productive) {
 
     plugins: [
       resolve(),
-      //commonjs(),
+      commonjs(),
       // tslint({
       //}),
       replace({
