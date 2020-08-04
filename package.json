@@ -1,12 +1,12 @@
 {
   "name": "js-elements",
-  "version": "0.0.39",
+  "version": "0.0.43",
   "description": "",
   "main": "index.js",
   "module": "dist/js-elements.esm.producion.js",
   "unpkg": "dist/js-elements.umd.production.js",
   "jsdelivr": "dist/js-elements.umd.production.js",
-  "types": "dist/types/index.d.ts",
+  "types": "dist/types/main/index.d.ts",
   "files": [
     "index.js",
     "dist"
@@ -31,9 +31,6 @@
     "url": "https://github.com/js-works/js-elements/issues"
   },
   "homepage": "https://github.com/js-works/js-elements#readme",
-  "dependencies": {
-    "@webcomponents/webcomponentsjs": "^2.4.4"
-  },
   "devDependencies": {
     "@babel/core": "^7.11.0",
     "@babel/preset-env": "^7.11.0",

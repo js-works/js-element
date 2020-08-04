@@ -29,7 +29,7 @@ defineElement('demo-button', {
   init(c, props) {
     const onClick = () => {
       if (props.onButtonAction) {
-        props.onButtonAction(new CustomEvent('buttonaction'))
+        //props.onButtonAction(new CustomEvent('buttonaction')) // TODO
       }
     }
 

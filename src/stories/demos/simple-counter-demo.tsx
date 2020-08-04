@@ -8,7 +8,6 @@ defineElement('simple-counter', {
 
   init(c, props) {
     let count = props.initialCount
-
     const onIncrement = c.updateFn(() => ++count)
 
     c.effect(() => {

@@ -103,40 +103,38 @@ type ExternalPropsOf<P extends PropsConfig> = Pick<
     { [K in keyof P]: P[K] extends { required: true } ? K : never }[keyof P]
   >
 
-type InternalPropsOf<P extends PropsConfig> = Pick<
-  { [K in keyof P]: PropOf<P[K]> },
+type InternalPropsOf<PC extends PropsConfig> = Pick<
+  { [K in keyof PC]: PropOf<PC[K]> },
   {
-    [K in keyof P]: P[K] extends { default: any }
+    [K in keyof PC]: PC[K] extends { defaultValue: any }
       ? K
-      : P[K] extends { required: true }
+      : PC[K] extends { required: true }
       ? K
       : never
-  }[keyof P]
+  }[keyof PC]
 > &
   Pick<
-    { [K in keyof P]?: PropOf<P[K]> },
+    { [K in keyof PC]?: PropOf<PC[K]> },
     {
-      [K in keyof P]: P[K] extends { default: any }
+      [K in keyof PC]: PC[K] extends { defaultValue: any }
         ? never
-        : P[K] extends { required: true }
+        : PC[K] extends { required: true }
         ? never
         : K
-    }[keyof P]
+    }[keyof PC]
   >
 
 type PropOf<P extends PropConfig<any>> = P extends { type: infer T }
   ?
-      | (T extends BooleanConstructor
+      | (T extends Boolean
           ? boolean
-          : T extends NumberConstructor
+          : T extends Number
           ? number
-          : T extends StringConstructor
-          ? string
-          : T extends ArrayConstructor
+          : T extends String // ? string // : T extends Array
           ? any[]
-          : T extends DateConstructor
+          : T extends Date
           ? Date
-          : any)
+          : never)
       | (P extends { nullable: true } ? null : never)
   : never
 
@@ -708,7 +706,6 @@ export function defineProvision<T>(
 defineElement('store-provider', {
   props: {
     store: {
-      type: Object,
       required: true
     }
   },
@@ -719,10 +716,11 @@ defineElement('store-provider', {
     c.effect(
       () => {
         const unsubscribe1 = c.receive((msg) => {
-          props.store.dispatch(msg)
+          ;(props.store as any).dispatch(msg) // TODO
         })
 
-        const unsubscribe2 = props.store.subscribe(() => {
+        // TODO
+        const unsubscribe2 = (props.store as any).subscribe(() => {
           c.refresh()
         })
 

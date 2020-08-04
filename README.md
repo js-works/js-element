@@ -11,8 +11,7 @@ and btw: It is currently not meant to be used in production.
 
 ```js
 import { defineElement, html, prop } from 'js-elements'
-
-import simpleCounterStyles from './simple-counter.css' // BEM conventions
+import simpleCounterStyles from './simple-counter.css'
 
 defineElement('simple-counter', {
   props: {
@@ -41,8 +40,8 @@ defineElement('simple-counter', {
 
     return () => html`
       <div class="simple-counter">
-        <label class="simple-counter__label">${props.label}: </label>
-        <button class="simple-counter__button" @click=${onIncrement}>
+        <label class="simple-counter-label">${props.label}: </label>
+        <button class="simple-counter-button" @click=${onIncrement}>
           ${count}
         </button>
       </div>
