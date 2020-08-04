@@ -26,11 +26,12 @@ defineElement('simple-counter', {
     let count = props.initialCount
     const onIncrement = () => c.updateFn(() => ++count)
 
-    c.effect(() => {
+    c.afterMount(() => {
       console.log(`"${props.label}" has been mounted`)
 
-      return () => console.log(`Unmounting "${props.label}"`)
-    }, null)
+    c.beforeUnmount(() => {
+      console.log(`Unmounting "${props.label}"`)
+    })
 
     c.effect(
       () => console.log(`Value of "${props.label}": ${count}`),
