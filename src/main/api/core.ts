@@ -1,4 +1,4 @@
-import { html, LitElement, TemplateResult } from 'lit-element'
+import { html, render, TemplateResult } from 'lit-html'
 
 import {
   Action,
@@ -69,7 +69,7 @@ type ConfigStateful<PC extends PropsConfig, CC extends CtxConfig> = {
 type ConfigStateless<PC extends PropsConfig, CC extends CtxConfig> = {
   props?: PC
   ctx?: CC
-  styles?: string | (() => string)
+  styles?: string | string[] | (() => string) | (() => string[])
   slots?: string[]
   render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): Content
 }
@@ -174,7 +174,7 @@ const createCustomElementClass = (name: string, config: any) => {
     }
   }
 
-  const customElementClass = class extends LitElement {
+  const customElementClass = class extends HTMLElement {
     private _ctrl: Ctrl
     private _render?: () => TemplateResult
     private _methods?: Methods
@@ -204,7 +204,8 @@ const createCustomElementClass = (name: string, config: any) => {
         },
 
         getRoot(): Element {
-          return (self.shadowRoot?.getRootNode() || self) as any // TODO!!!!!
+          // return (self.shadowRoot?.getRootNode() || self) as any // TODO!!!!!
+          return self.shadowRoot!.childNodes[1] as Element
         },
 
         isInitialized(): boolean {
@@ -216,7 +217,7 @@ const createCustomElementClass = (name: string, config: any) => {
         },
 
         refresh(): void {
-          self.performUpdate()
+          self._refresh()
         },
 
         afterMount(action: Action): void {
@@ -362,7 +363,7 @@ const createCustomElementClass = (name: string, config: any) => {
       }
     }
 
-    render() {
+    _refresh() {
       if (
         this._mounted &&
         this._onceBeforeUpdateActions &&
@@ -386,11 +387,38 @@ const createCustomElementClass = (name: string, config: any) => {
         this._initialized = true
       }
 
-      return this._render!()
+      const content = this._render!()
+
+      render(content, this._ctrl.getRoot())
+
+      if (!this._mounted) {
+        this._mounted = true
+        this._afterMountNotifier && this._afterMountNotifier.notify()
+      } else {
+        this._afterUpdateNotifier && this._afterUpdateNotifier.notify()
+      }
     }
 
     connectedCallback() {
-      super.connectedCallback.apply(this, arguments as any)
+      this.attachShadow({ mode: 'open' })
+      this.shadowRoot!.innerHTML =
+        '<span data-role="styles"></span><span data-role="content"></span>'
+
+      if (config.styles) {
+        const styles: any =
+          config.styles === 'function' ? config.styles() : config.styles
+
+        const css =
+          typeof styles === 'string'
+            ? styles
+            : styles.join('\n\n/* =============== */\n\n')
+
+        const styleElem = document.createElement('style')
+        styleElem.appendChild(document.createTextNode(css))
+        this.shadowRoot!.firstChild!.appendChild(styleElem)
+      }
+
+      this._refresh()
     }
 
     attributeChangedCallback(propName: string, _: any, value: any) {
@@ -399,8 +427,6 @@ const createCustomElementClass = (name: string, config: any) => {
       if (normalizedPropName) {
         this._propsObject[normalizedPropName] = value
       }
-
-      return super.attributeChangedCallback.apply(this, arguments as any)
     }
 
     addEventListener(this: any, eventName: string, callback: any) {
@@ -433,15 +459,7 @@ const createCustomElementClass = (name: string, config: any) => {
 
     disconnectedCallback() {
       this._beforeUnmountNotifier && this._beforeUnmountNotifier.notify()
-    }
-
-    firstUpdated() {
-      this._mounted = true
-      this._afterMountNotifier && this._afterMountNotifier.notify()
-    }
-
-    updated() {
-      this._afterUpdateNotifier && this._afterUpdateNotifier.notify()
+      this._ctrl.getRoot().innerHTML = ''
     }
 
     _createPropsObject() {

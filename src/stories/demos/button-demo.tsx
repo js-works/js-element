@@ -32,7 +32,7 @@ defineElement('demo-button', {
     }
 
     return () => html`
-      <button className="demo-button" onClick=${onClick}>${props.text}</button>
+      <button class="demo-button" @click=${onClick}>${props.text}</button>
     `
   }
 })
