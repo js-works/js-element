@@ -1,28 +1,30 @@
 import { defineElement, html, prop } from '../../main/js-elements'
 
+const styles = ` 
+  .demo-button {
+    border: none;
+    color: white;
+    background-color: black;
+    padding: 5px 8px;
+    outline: none;
+  }
+
+  .demo-button:hover {
+    background-color: #444;
+  }
+
+  .demo-button:active {
+    background-color: #555;
+  }
+`
+
 defineElement('demo-button', {
   props: {
     text: prop.str.opt(''),
     onButtonAction: prop.func.opt()
   },
 
-  styles: `
-    .demo-button {
-      border: none;
-      color: white;
-      background-color: black;
-      padding: 5px 8px;
-      outline: none;
-    }
-
-    .demo-button:hover {
-      background-color: #444;
-    }
-
-    .demo-button:active {
-      background-color: #555;
-    }
-  `,
+  styles,
 
   init(c, props) {
     const onClick = () => {

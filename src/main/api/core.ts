@@ -36,6 +36,7 @@ const REGEX_TAG_NAME = /^[a-z][a-z0-9]*(-[a-z][a-z0-9]*)+$/
 const REGEX_PROP_NAME = /^[a-z][a-zA-Z0-9]*$/
 const REGEX_METHOD_NAME = /^[a-z][a-z0-9]*$/
 const REGEX_SLOT_NAME = /^[a-z][a-z0-9]*$/
+const REGEX_CTX_KEY = /^[a-z][a-z0-9]*$/
 
 // === types =========================================================
 
@@ -214,6 +215,7 @@ function defineElement(name: string, config: any): void {
 
 const createCustomElementClass = (name: string, config: any) => {
   const propNames = config.props ? Object.keys(config.props) : []
+  const ctxKeys = config.ctx ? Object.keys(config.ctx) : []
   const eventPropNames = propNames.filter(isEventPropName)
 
   const eventNames = new Set(
@@ -250,6 +252,7 @@ const createCustomElementClass = (name: string, config: any) => {
     private _initialized = false
     private _mounted = false
     private _propsObject = this._createPropsObject()
+    private _ctxObject = {} as any // TODO
     private _listenersByEventName?: any // TODO!!!!!!!
     private _afterMountNotifier?: Notifier
     private _afterUpdateNotifier?: Notifier
@@ -262,6 +265,20 @@ const createCustomElementClass = (name: string, config: any) => {
     constructor() {
       super()
       const self = this
+
+      for (const propName of propNames.filter((it) => !isEventPropName(it))) {
+        Object.defineProperty(this, propName, {
+          get() {
+            this._propsObject[propName]
+          },
+
+          set(value: any) {
+            // TODO: Validation?
+            this._propsObject[propName] = value
+            this._ctrl.refresh()
+          }
+        })
+      }
 
       this._ctrl = {
         getName() {
@@ -285,7 +302,9 @@ const createCustomElementClass = (name: string, config: any) => {
         },
 
         refresh(): void {
-          self._refresh()
+          if (self._mounted) {
+            self._refresh()
+          }
         },
 
         afterMount(action: Action): void {
@@ -449,11 +468,19 @@ const createCustomElementClass = (name: string, config: any) => {
         }
       }
 
+      for (const ctxKey of ctxKeys) {
+        this._ctxObject[ctxKey] = config.ctx[ctxKey](this._ctrl)
+      }
+
       if (!this._render) {
         if (config.render) {
-          this._render = () => config.render(this._propsObject)
+          this._render = () => config.render(this._propsObject, this._ctxObject)
         } else {
-          this._render = config.init(this._ctrl, this._propsObject)
+          this._render = config.init(
+            this._ctrl,
+            this._propsObject,
+            this._ctxObject
+          )
         }
 
         this._initialized = true
@@ -489,7 +516,7 @@ const createCustomElementClass = (name: string, config: any) => {
 
         const css = Array.isArray(styles)
           ? styles.join('\n\n/* =============== */\n\n')
-          : String(styles)
+          : styles
 
         const styleElem = document.createElement('style')
         styleElem.appendChild(document.createTextNode(css))
@@ -548,7 +575,7 @@ const createCustomElementClass = (name: string, config: any) => {
       const ret = {} as any
 
       for (const propName of propNames) {
-        ret[propName] = config.props[propName].default
+        ret[propName] = config.props[propName].defaultValue
 
         if (isEventPropName(propName)) {
           const eventName = eventPropNameToEventName(propName)
@@ -886,6 +913,10 @@ function checkComponentConfig(config: any) {
     throw 'Component configuration must be an object'
   }
 
+  if (hasOwnProp(config, 'render') && hasOwnProp(config, 'init')) {
+    throw 'Component configuration must not have both "render" and "init" parameter'
+  }
+
   const checkParam = (key: string, pred: (it: any) => boolean) => {
     if (!pred(config[key])) {
       throw `Invalid option parameter "${key}"`
@@ -901,6 +932,11 @@ function checkComponentConfig(config: any) {
           checkPropConfig(propName, config.props[propName])
         }
 
+        break
+      }
+
+      case 'ctx': {
+        checkCtxConfig(config.ctx)
         break
       }
 
@@ -921,21 +957,21 @@ function checkComponentConfig(config: any) {
         break
 
       case 'slots':
-        checkParam(
-          'slots',
-          (it) =>
-            (validateStringArray(it, true, REGEX_SLOT_NAME) &&
-              it.length === 0) ||
-            config.shadow !== 'none'
+        checkParam('slots', (it) =>
+          validateStringArray(it, true, REGEX_SLOT_NAME)
         )
         break
 
       case 'render':
+        checkParam('render', validateFunction)
+        break
+
       case 'init':
+        checkParam('init', validateFunction)
         break
 
       default:
-        throw new TypeError(`Illegal option "${key}"`)
+        throw new TypeError(`Illegal parameter "${key}"`)
     }
   }
 }
@@ -990,11 +1026,33 @@ function checkPropConfig(propName: string, propConfig: any) {
         }
         break
       }
+
       default:
-        console.log(propName, propConfig)
         throw `Illegal parameter "${key}" for prop "${propName}"`
     }
   }
+}
+
+function checkCtxConfig(ctxConfig: any) {
+  if (!ctxConfig || typeof ctxConfig !== 'object') {
+    throw 'Component config parameter "ctx" must be an object'
+  }
+
+  const ctxKeys = Object.keys(ctxConfig)
+
+  for (const ctxKey of ctxKeys) {
+    if (!ctxKey.match(REGEX_CTX_KEY)) {
+      throw `Illegal component context key "${ctxKey}"`
+    }
+
+    if (typeof ctxConfig[ctxKey] !== 'function') {
+      throw `Parameter "${ctxKey}" of "ctx" object must be a function`
+    }
+  }
+}
+
+function validateFunction(fn: any) {
+  return typeof fn === 'function'
 }
 
 function validateStringOrStringArray(subj: any) {
