@@ -16,7 +16,26 @@ export { defineElement, html, propConfigBuilder as prop }
 
 // === constants =====================================================
 
+// --- general constants ---
+
 const MESSAGE_EVENT_TYPE = 'js-element:###message###'
+
+// --- constants for component configuration validation ---
+
+const ALLOWED_PROPERTY_TYPES = new Set([
+  Boolean,
+  Number,
+  String,
+  Object,
+  Function,
+  Array,
+  Date
+])
+
+const REGEX_TAG_NAME = /^[a-z][a-z0-9]*(-[a-z][a-z0-9]*)+$/
+const REGEX_PROP_NAME = /^[a-z][a-zA-Z0-9]*$/
+const REGEX_METHOD_NAME = /^[a-z][a-z0-9]*$/
+const REGEX_SLOT_NAME = /^[a-z][a-z0-9]*$/
 
 // === types =========================================================
 
@@ -48,7 +67,7 @@ type PropConfig<T> = {
 
   nullable?: boolean
   required?: boolean
-  default?: T
+  defaultValue?: T
 }
 
 type PropsConfig = {
@@ -58,7 +77,7 @@ type PropsConfig = {
 type CtxConfig = Record<string, (c: Ctrl) => any>
 
 type ConfigStateful<PC extends PropsConfig, CC extends CtxConfig> = {
-  props?: PC | ((propBuilder: typeof propConfigBuilder) => PC)
+  props?: PC
   ctx?: CC
   styles?: string | (() => string)
   slots?: string[]
@@ -69,7 +88,7 @@ type ConfigStateful<PC extends PropsConfig, CC extends CtxConfig> = {
 type ConfigStateless<PC extends PropsConfig, CC extends CtxConfig> = {
   props?: PC
   ctx?: CC
-  styles?: string | string[] | (() => string) | (() => string[])
+  styles?: string | string[]
   slots?: string[]
   render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): Content
 }
@@ -147,8 +166,44 @@ function defineElement<PC extends PropsConfig, CC extends CtxConfig>(
 ): void
 
 function defineElement(name: string, config: any): void {
+  if (process.env.NODE_ENV === ('development' as any)) {
+    if (typeof name !== 'string') {
+      throw new TypeError(
+        'First argument for function "defineElement" must be a string'
+      )
+    } else if (!name.match(REGEX_TAG_NAME)) {
+      throw new Error(`Illegal tag name for custom element: "${name}"`)
+    }
+
+    if (typeof config !== 'function') {
+      try {
+        checkComponentConfig(config)
+      } catch (errorMsg) {
+        throw new TypeError(
+          `Invalid configuration for custom element "${name}": ${errorMsg}`
+        )
+      }
+    }
+  }
+
   if (typeof config === 'function') {
-    config = config.length === 0 ? { render: config } : { init: config }
+    const fn = config
+
+    if (config.length > 0) {
+      config = { init: fn }
+    } else {
+      config = {
+        init: () => {
+          let ret = fn()
+
+          if (typeof ret !== 'function') {
+            ret = fn
+          }
+
+          return ret
+        }
+      }
+    }
   }
 
   const CustomElement = createCustomElementClass(config.name, config)
@@ -430,13 +485,11 @@ const createCustomElementClass = (name: string, config: any) => {
       this._contentElem = contentElem
 
       if (config.styles) {
-        const styles: any =
-          config.styles === 'function' ? config.styles() : config.styles
+        const styles = config.styles
 
-        const css =
-          typeof styles === 'string'
-            ? styles
-            : styles.join('\n\n/* =============== */\n\n')
+        const css = Array.isArray(styles)
+          ? styles.join('\n\n/* =============== */\n\n')
+          : String(styles)
 
         const styleElem = document.createElement('style')
         styleElem.appendChild(document.createTextNode(css))
@@ -694,6 +747,10 @@ function createNotifier(): Notifier {
 
 // === helpers =======================================================
 
+function hasOwnProp(obj: object, propName: string) {
+  return Object.prototype.hasOwnProperty.call(obj, propName)
+}
+
 function isEqualArray(arr1: any[], arr2: any[]) {
   let ret =
     Array.isArray(arr1) && Array.isArray(arr2) && arr1.length === arr2.length
@@ -761,51 +818,53 @@ type G = Readonly<{
 }>
 
 const reqAndOpt = <T>(
-    type: PropConfig<any>['type'] | null,
-    nullable: boolean
-  ) => ({
-    req: () => propConfig(type, nullable, true, undefined, false),
+  type: PropConfig<any>['type'] | null,
+  nullable: boolean
+) => ({
+  req: () => propConfig(type, nullable, true, undefined, false),
 
-    opt: (defaultValue?: T, isGetter: boolean = false) =>
-      propConfig(type, nullable, false, defaultValue, isGetter)
-  }),
-  typedProp = <T extends Class<any>>(type: T) => ({
-    nul: reqAndOpt(type, true),
-    ...reqAndOpt(type, false)
-  }),
-  propConfig = <T>(
-    type: PropConfig<any>['type'],
+  opt: (defaultValue?: T, isGetter: boolean = false) =>
+    propConfig(type, nullable, false, defaultValue, isGetter)
+})
 
-    //  | BooleanConstructor
-    //  | NumberConstructor
-    //  | StringConstructor
-    //  | ObjectConstructor
-    //  | FunctionConstructor,
-    // | ArrayConstructor
-    // | DateConstructor,
-    nullable: boolean,
-    required: boolean,
-    defaultValue: T | undefined,
-    defaultValueIsGetter: boolean
-  ): PropConfig<T> => {
-    const ret: PropConfig<T> = {}
+const typedProp = <T extends Class<any>>(type: T) => ({
+  nul: reqAndOpt(type, true),
+  ...reqAndOpt(type, false)
+})
 
-    type && (ret.type = type)
-    nullable && (ret.nullable = true)
-    required && (ret.required = true)
+const propConfig = <T>(
+  type: PropConfig<any>['type'],
 
-    if (defaultValue !== undefined) {
-      if (defaultValueIsGetter && typeof defaultValue === 'function') {
-        Object.defineProperty(ret, 'defaultValue', {
-          get: defaultValue as any // TODO
-        })
-      } else {
-        ret.default = defaultValue
-      }
+  //  | BooleanConstructor
+  //  | NumberConstructor
+  //  | StringConstructor
+  //  | ObjectConstructor
+  //  | FunctionConstructor,
+  // | ArrayConstructor
+  // | DateConstructor,
+  nullable: boolean,
+  required: boolean,
+  defaultValue: T | undefined,
+  defaultValueIsGetter: boolean
+): PropConfig<T> => {
+  const ret: PropConfig<T> = {}
+
+  type && (ret.type = type)
+  nullable && (ret.nullable = true)
+  required && (ret.required = true)
+
+  if (defaultValue !== undefined) {
+    if (defaultValueIsGetter && typeof defaultValue === 'function') {
+      Object.defineProperty(ret, 'defaultValue', {
+        get: defaultValue as any // TODO
+      })
+    } else {
+      ret.defaultValue = defaultValue
     }
-
-    return Object.freeze(ret)
   }
+
+  return Object.freeze(ret)
+}
 
 const propConfigBuilder = (Object.freeze({
   bool: typedProp(Boolean),
@@ -815,3 +874,155 @@ const propConfigBuilder = (Object.freeze({
   func: typedProp(Function),
   ...reqAndOpt(null, false)
 }) as any) as G
+
+// === validation ofcomponent configuration validation ===============
+
+function checkComponentConfig(config: any) {
+  if (config === undefined) {
+    return
+  }
+
+  if (!config || typeof config !== 'object') {
+    throw 'Component configuration must be an object'
+  }
+
+  const checkParam = (key: string, pred: (it: any) => boolean) => {
+    if (!pred(config[key])) {
+      throw `Invalid option parameter "${key}"`
+    }
+  }
+
+  for (const key of Object.keys(config)) {
+    switch (key) {
+      case 'props': {
+        const propNames = Object.keys(config.props)
+
+        for (const propName of propNames) {
+          checkPropConfig(propName, config.props[propName])
+        }
+
+        break
+      }
+
+      case 'methods':
+        checkParam('methods', (it) =>
+          validateStringArray(it, true, REGEX_METHOD_NAME)
+        )
+        break
+
+      case 'styles':
+        if (
+          typeof Object.getOwnPropertyDescriptor(config, 'styles')?.get !==
+          'function'
+        ) {
+          checkParam('styles', validateStringOrStringArray)
+        }
+
+        break
+
+      case 'slots':
+        checkParam(
+          'slots',
+          (it) =>
+            (validateStringArray(it, true, REGEX_SLOT_NAME) &&
+              it.length === 0) ||
+            config.shadow !== 'none'
+        )
+        break
+
+      case 'render':
+      case 'init':
+        break
+
+      default:
+        throw new TypeError(`Illegal option "${key}"`)
+    }
+  }
+}
+
+function checkPropConfig(propName: string, propConfig: any) {
+  // TODO
+  if (!propName.match(REGEX_PROP_NAME)) {
+    throw `Illegal prop name "${propName}"`
+  }
+
+  const type = propConfig.type
+
+  if (hasOwnProp(propConfig, 'type') && !ALLOWED_PROPERTY_TYPES.has(type)) {
+    throw `Illegal parameter "type" for property "${propName}"`
+  }
+
+  for (const key of Object.keys(propConfig)) {
+    switch (key) {
+      case 'type':
+        // already checked
+        break
+
+      case 'nullable':
+        if (typeof propConfig.nullable !== 'boolean') {
+          throw `Illegal parameter "nullable" for property "${propName}"`
+        }
+        break
+
+      case 'required':
+        if (typeof propConfig.required !== 'boolean') {
+          throw `Illegal parameter "required" for property ${propName}`
+        }
+        break
+
+      case 'defaultValue': {
+        const defaultValue = propConfig.defaultValue
+        const typeOfDefault = typeof defaultValue
+
+        if (
+          type &&
+          !(defaultValue === null && propConfig.nullable) &&
+          ((type === Boolean && typeOfDefault !== 'boolean') ||
+            (type === Number && typeOfDefault !== 'number') ||
+            (type === String && typeOfDefault !== 'string') ||
+            (type === Object && typeOfDefault !== 'object') ||
+            (type === Function && typeOfDefault !== 'function') ||
+            (type === Array && !(defaultValue instanceof Array)) ||
+            (type === Date && !(defaultValue instanceof Date)))
+        ) {
+          // TODO!!!
+          throw `Illegal parameter "defaultValue" for property ${propName}`
+        }
+        break
+      }
+      default:
+        console.log(propName, propConfig)
+        throw `Illegal parameter "${key}" for prop "${propName}"`
+    }
+  }
+}
+
+function validateStringOrStringArray(subj: any) {
+  return typeof subj === 'string' || validateStringArray(subj)
+}
+
+function validateStringArray(arr: any, unique = false, regex?: RegExp) {
+  const alreadyUsedValues: any = {} // TODO
+
+  if (!Array.isArray(arr)) {
+    return false
+  }
+
+  for (let i = 0; i < arr.length; ++i) {
+    const value = arr[i]
+
+    if (typeof value !== 'string' || (regex && !value.match(regex))) {
+      return false
+    }
+
+    if (unique) {
+      if (hasOwnProp(alreadyUsedValues, value)) {
+        return false
+      }
+
+      alreadyUsedValues[value] = true
+    }
+  }
+
+  return true
+}
