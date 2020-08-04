@@ -50,44 +50,6 @@ export function createExtension<T extends Ctrl, A extends [T, ...any[]], R>(
   return ret
 }
 
-/*
-// --- useState ------------------------------------------------------
-
-export const useState = createExtension('useState', function <S extends State>(
-  c: Ctrl,
-  initialState: S
-): [S, StateUpdater<S>] {
-  let nextState: any // TODO
-  let mergeNecessary = false
-
-  const state = { ...initialState }
-
-  const setState = (arg1: any, arg2: any) => {
-    mergeNecessary = true
-
-    if (typeof arg1 === 'string') {
-      nextState[arg1] =
-        typeof arg2 === 'function' ? arg2(nextState[arg1]) : arg2
-    } else if (typeof arg1 === 'function') {
-      Object.assign(nextState, arg1(nextState))
-    } else {
-      Object.assign(nextState, arg1)
-    }
-
-    c.onceBeforeUpdate(() => {
-      if (mergeNecessary) {
-        mergeNecessary = false
-        Object.assign(state, nextState)
-      }
-    })
-
-    c.refresh()
-  }
-
-  return [state, setState]
-})
-*/
-
 // --- useValue ------------------------------------------------------
 
 export const useValue = createExtension('useValue', function <T>(
