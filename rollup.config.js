@@ -20,7 +20,7 @@ export default configs
 
 function createConfig(moduleFormat, productive) {
   return {
-    input: `src/main/index.ts`, 
+    input: 'src/main/index.ts',
 
     output: {
       file: productive
@@ -32,15 +32,14 @@ function createConfig(moduleFormat, productive) {
 
       name: 'jsElements',
 
-      globals: {
-      }
+      globals: {}
     },
 
     external: [],
 
     plugins: [
       resolve(),
-      commonjs(),
+      //commonjs(),
       // tslint({
       //}),
       replace({
@@ -48,14 +47,14 @@ function createConfig(moduleFormat, productive) {
         delimiters: ['', ''],
 
         values: {
-          'process.env.NODE_ENV': productive ? "'production'" : "'development'",
+          'process.env.NODE_ENV': productive ? "'production'" : "'development'"
         }
       }),
       typescript({
-        exclude: 'node_modules/**',
+        exclude: 'node_modules/**'
       }),
       productive && terser(),
       productive && gzip()
-    ],
+    ]
   }
 }
