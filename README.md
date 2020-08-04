@@ -28,6 +28,7 @@ defineElement('simple-counter', {
 
     c.afterMount(() => {
       console.log(`"${props.label}" has been mounted`)
+    })
 
     c.beforeUnmount(() => {
       console.log(`Unmounting "${props.label}"`)
