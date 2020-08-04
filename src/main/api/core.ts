@@ -165,17 +165,31 @@ const createCustomElementClass = (name: string, config: any) => {
     eventPropNames.map((it) => eventPropNameToEventName(it))
   )
 
-  const propNameNormalizationMap = new Map<string, string>()
+  const attrNameToPropNameMap = new Map<string, string>()
 
   for (const propName of propNames) {
     if (!isEventPropName(propName)) {
-      propNameNormalizationMap.set(propName, propName)
-      propNameNormalizationMap.set(propName.toLowerCase(), propName)
+      attrNameToPropNameMap.set(propNameToAttrName(propName), propName)
     }
   }
 
+  const observedAttributes = propNames
+    .filter((propName) => {
+      const type = config.props[propName].type
+
+      return (
+        type &&
+        type !== Object &&
+        type !== Array &&
+        type !== Date &&
+        !isEventPropName(propName)
+      )
+    })
+    .map(propNameToAttrName)
+
   const customElementClass = class extends HTMLElement {
     private _ctrl: Ctrl
+    private _contentElem: Element | null = null
     private _render?: () => TemplateResult
     private _methods?: Methods
     private _initialized = false
@@ -188,7 +202,7 @@ const createCustomElementClass = (name: string, config: any) => {
     private _beforeUnmountNotifier?: Notifier
     private _onceBeforeUpdateActions?: Action[]
 
-    static properties = getLitElementPropertiesMeta()
+    static observedAttributes = observedAttributes
 
     constructor() {
       super()
@@ -204,8 +218,7 @@ const createCustomElementClass = (name: string, config: any) => {
         },
 
         getRoot(): Element {
-          // return (self.shadowRoot?.getRootNode() || self) as any // TODO!!!!!
-          return self.shadowRoot!.childNodes[1] as Element
+          return self._contentElem!
         },
 
         isInitialized(): boolean {
@@ -364,6 +377,10 @@ const createCustomElementClass = (name: string, config: any) => {
     }
 
     _refresh() {
+      if (!this._contentElem) {
+        return // TODO!!!!!!!!!!!!!!!!!!!!!
+      }
+
       if (
         this._mounted &&
         this._onceBeforeUpdateActions &&
@@ -388,8 +405,7 @@ const createCustomElementClass = (name: string, config: any) => {
       }
 
       const content = this._render!()
-
-      render(content, this._ctrl.getRoot())
+      render(content, this._contentElem!)
 
       if (!this._mounted) {
         this._mounted = true
@@ -401,8 +417,17 @@ const createCustomElementClass = (name: string, config: any) => {
 
     connectedCallback() {
       this.attachShadow({ mode: 'open' })
-      this.shadowRoot!.innerHTML =
-        '<span data-role="styles"></span><span data-role="content"></span>'
+      const root = this.shadowRoot!
+
+      const stylesElem = document.createElement('span')
+      const contentElem = document.createElement('span')
+
+      stylesElem.setAttribute('data-role', 'styles')
+      contentElem.setAttribute('data-role', 'content')
+
+      root.appendChild(stylesElem)
+      root.appendChild(contentElem)
+      this._contentElem = contentElem
 
       if (config.styles) {
         const styles: any =
@@ -415,18 +440,22 @@ const createCustomElementClass = (name: string, config: any) => {
 
         const styleElem = document.createElement('style')
         styleElem.appendChild(document.createTextNode(css))
-        this.shadowRoot!.firstChild!.appendChild(styleElem)
+        stylesElem.appendChild(styleElem)
       }
 
       this._refresh()
     }
 
-    attributeChangedCallback(propName: string, _: any, value: any) {
-      const normalizedPropName = propNameNormalizationMap.get(propName)
+    attributeChangedCallback(attrName: string, _: any, value: any) {
+      const normalizedPropName = attrNameToPropNameMap.get(
+        attrName.toLocaleLowerCase()
+      )
 
       if (normalizedPropName) {
         this._propsObject[normalizedPropName] = value
       }
+
+      this._refresh()
     }
 
     addEventListener(this: any, eventName: string, callback: any) {
@@ -507,29 +536,6 @@ const createCustomElementClass = (name: string, config: any) => {
   }
 
   return customElementClass
-
-  function getLitElementPropertiesMeta() {
-    const ret = {} as any
-
-    if (config.props) {
-      for (const propName of propNames) {
-        const propConfig = config.props[propName]
-        const options = {} as any
-
-        if (propConfig.type) {
-          options.type = propConfig.type // TODO
-        }
-
-        if (!propConfig.type || propConfig.type === Object) {
-          options.attribute = false
-        }
-
-        ret[propName] = options
-      }
-    }
-
-    return ret
-  }
 }
 
 // === defineProvision ===============================================
@@ -710,6 +716,13 @@ function isEventPropName(name: string) {
 
 function eventPropNameToEventName(eventPropName: string) {
   return eventPropName[2].toLowerCase() + eventPropName.substr(3)
+}
+
+function propNameToAttrName(propName: string) {
+  return propName
+    .replace(/(.)([A-Z])([A-Z]+)([A-Z])/g, '$1-$2$3-$4')
+    .replace(/([a-z0-0])([A-Z])/g, '$1-$2')
+    .toLowerCase()
 }
 
 // === propConfigBuilder =============================================

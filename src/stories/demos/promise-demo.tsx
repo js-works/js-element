@@ -48,8 +48,8 @@ defineElement('promise-demo', (c) => {
       <section>
         <data-loader
           key=${state.key}
-          loadingText=${state.loadingText}
-          finishText=${state.finishText}
+          loading-text=${state.loadingText}
+          finish-text=${state.finishText}
         />
       </section>
       <br />
