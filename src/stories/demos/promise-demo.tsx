@@ -1,5 +1,5 @@
-import { defineElement, html, prop } from '../../main/index'
-import { withPromise } from '../extensions'
+import { defineElement, html, prop } from '../../main/js-elements'
+import { withPromise } from '../../main/js-elements-ext'
 
 defineElement('data-loader', {
   props: {

@@ -24,7 +24,7 @@
 
     "types": ["node", "mocha", "chai", "react"]
   },
-  "files": ["./src/main/index.ts"],
+  "files": ["src/main/js-elements.ts"],
 
   "include": ["./src/**/*.*"],
 

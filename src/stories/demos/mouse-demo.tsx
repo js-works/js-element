@@ -1,6 +1,6 @@
 /** @jsx h */
-import { defineElement, html } from '../../main/index'
-import { withMousePosition } from '../extensions'
+import { defineElement, html } from '../../main/js-elements'
+import { withMousePosition } from '../../main/js-elements-ext'
 
 defineElement('mouse-demo', (c) => {
   const mousePos = withMousePosition(c)

@@ -1,4 +1,4 @@
-import { defineElement, html, prop } from '../../main/index'
+import { defineElement, html, prop } from '../../main/js-elements'
 
 function createStore() {
   const data = {

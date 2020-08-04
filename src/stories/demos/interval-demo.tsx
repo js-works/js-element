@@ -1,6 +1,6 @@
 /** @jsx h */
-import { defineElement, html } from '../../main/index'
-import { withInterval } from '../extensions'
+import { defineElement, html } from '../../main/js-elements'
+import { withInterval } from '../../main/js-elements-ext'
 
 defineElement('interval-demo', (c) => {
   const [state, setState] = c.addState({

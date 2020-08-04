@@ -1,5 +1,5 @@
-import { defineElement, defineProvision, html } from '../../main/index'
-import { withInterval } from '../extensions'
+import { defineElement, defineProvision, html } from '../../main/js-elements'
+import { withInterval } from '../../main/js-elements-ext'
 
 const [provideTheme, consumeTheme] = defineProvision('theme', 'light')
 

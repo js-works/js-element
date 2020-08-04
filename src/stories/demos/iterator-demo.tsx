@@ -1,4 +1,4 @@
-import { defineElement, html } from '../../main/index'
+import { defineElement, html } from '../../main/js-elements'
 
 const demoContent = {
   *[Symbol.iterator]() {

@@ -1,4 +1,4 @@
-import { defineElement, html, prop } from '../../main/index'
+import { defineElement, html, prop } from '../../main/js-elements'
 
 const ENTER_KEY = 13
 const ESC_KEY = 27
