@@ -1,18 +1,14 @@
 import { html, render, TemplateResult } from '../internal/lit-html'
 
-import {
-  Action,
-  AnyElement,
-  Ctrl,
-  Message,
-  Methods,
-  State,
-  StateUpdater
-} from '../internal/types'
+import { Action, AnyElement, Ctrl, Message, Methods } from '../internal/types'
 
 // === exports =======================================================
 
-export { defineElement, html, propConfigBuilder as prop }
+export {
+  defineElementLitHtml as defineElement,
+  html,
+  propConfigBuilder as prop
+}
 
 // === constants =====================================================
 
@@ -44,7 +40,7 @@ type Class<T> = {
   new (...arg: any[]): T
 }
 
-type Content = TemplateResult
+type Renderer = (content: any, target: Element) => void
 
 type Notifier = {
   subscribe(subscriber: () => void): void
@@ -77,16 +73,20 @@ type PropsConfig = {
 
 type CtxConfig = Record<string, (c: Ctrl) => any>
 
-type ConfigStateful1<PC extends PropsConfig, CC extends CtxConfig> = {
+type ConfigStateful1LitHtml<PC extends PropsConfig, CC extends CtxConfig> = {
   props?: PC
   ctx?: CC
   styles?: string | (() => string)
   slots?: string[]
   methods?: string[]
-  main(c: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>): () => Content
+  main(
+    c: Ctrl,
+    props: InternalPropsOf<PC>,
+    ctx: CtxOf<CC>
+  ): () => TemplateResult
 }
 
-type ConfigStateful2<PC extends PropsConfig, CC extends CtxConfig> = {
+type ConfigStateful2LitHtml<PC extends PropsConfig, CC extends CtxConfig> = {
   props?: PC
   ctx?: CC
   styles?: string | (() => string)
@@ -96,15 +96,45 @@ type ConfigStateful2<PC extends PropsConfig, CC extends CtxConfig> = {
     c: Ctrl,
     getProps: () => InternalPropsOf<PC>,
     getCtx: () => CtxOf<CC>
-  ): () => Content
+  ): () => TemplateResult
 }
 
-type ConfigStateless<PC extends PropsConfig, CC extends CtxConfig> = {
+type ConfigStatelessLitHtml<PC extends PropsConfig, CC extends CtxConfig> = {
   props?: PC
   ctx?: CC
   styles?: string | string[]
   slots?: string[]
-  render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): Content
+  render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): TemplateResult
+}
+
+type ConfigStateful1Superfine<PC extends PropsConfig, CC extends CtxConfig> = {
+  props?: PC
+  ctx?: CC
+  styles?: string | (() => string)
+  slots?: string[]
+  methods?: string[]
+  main(c: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>): () => any // TODO
+}
+
+type ConfigStateful2Superfine<PC extends PropsConfig, CC extends CtxConfig> = {
+  props?: PC
+  ctx?: CC
+  styles?: string | (() => string)
+  slots?: string[]
+  methods?: string[]
+  view(
+    c: Ctrl,
+    getProps: () => InternalPropsOf<PC>,
+    getCtx: () => CtxOf<CC>
+  ): () => any // TODO
+}
+
+type ConfigStatelessSuperfine<PC extends PropsConfig, CC extends CtxConfig> = {
+  props?: PC
+  ctx?: CC
+  styles?: string | string[]
+  slots?: string[]
+  render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): any
 }
 
 type ExternalPropsOf<P extends PropsConfig> = Pick<
@@ -164,25 +194,56 @@ type CtxTypeOf<C extends CtxConfig> = C extends (
   : never
 */
 
-function defineElement(name: string, main: (c: Ctrl) => () => Content): void
-function defineElement(name: string, render: () => Content): void
+type FunctionDefineElementLitHtml = {
+  (name: string, main: (c: Ctrl) => () => TemplateResult): void
+  (name: string, render: () => TemplateResult): void
 
-function defineElement<PC extends PropsConfig, CC extends CtxConfig>(
+  <PC extends PropsConfig, CC extends CtxConfig>(
+    name: string,
+    config: ConfigStateful1LitHtml<PC, CC>
+  ): void
+
+  <PC extends PropsConfig, CC extends CtxConfig>(
+    name: string,
+    config: ConfigStateful2LitHtml<PC, CC>
+  ): void
+
+  <PC extends PropsConfig, CC extends CtxConfig>(
+    name: string,
+    config: ConfigStatelessLitHtml<PC, CC>
+  ): void
+}
+
+type FunctionDefineElementSuperfine = {
+  (name: string, main: (c: Ctrl) => () => any): void
+  (name: string, render: () => any): void
+
+  <PC extends PropsConfig, CC extends CtxConfig>(
+    name: string,
+    config: ConfigStateful1Superfine<PC, CC>
+  ): void
+
+  <PC extends PropsConfig, CC extends CtxConfig>(
+    name: string,
+    config: ConfigStateful2Superfine<PC, CC>
+  ): void
+
+  <PC extends PropsConfig, CC extends CtxConfig>(
+    name: string,
+    config: ConfigStatelessSuperfine<PC, CC>
+  ): void
+}
+
+// === defineElementLitHtml ==========================================
+
+const defineElementLitHtml: FunctionDefineElementLitHtml = (
   name: string,
-  config: ConfigStateful1<PC, CC>
-): void
+  config: any
+) => defineElement(name, config, render)
 
-function defineElement<PC extends PropsConfig, CC extends CtxConfig>(
-  name: string,
-  config: ConfigStateful2<PC, CC>
-): void
+// === defineElement =================================================
 
-function defineElement<PC extends PropsConfig, CC extends CtxConfig>(
-  name: string,
-  config: ConfigStateless<PC, CC>
-): void
-
-function defineElement(name: string, config: any): void {
+function defineElement(name: string, config: any, renderer: any): void {
   if (process.env.NODE_ENV === ('development' as any)) {
     if (typeof name !== 'string') {
       throw new TypeError(
@@ -223,13 +284,17 @@ function defineElement(name: string, config: any): void {
     }
   }
 
-  const CustomElement = createCustomElementClass(config.name, config)
+  const CustomElement = createCustomElementClass(config.name, config, renderer)
   customElements.define(name, CustomElement)
 }
 
 // === BaseElement ===================================================
 
-const createCustomElementClass = (name: string, config: any) => {
+const createCustomElementClass = (
+  name: string,
+  config: any,
+  renderer: Renderer
+) => {
   const propNames = config.props ? Object.keys(config.props) : []
   const ctxKeys = config.ctx ? Object.keys(config.ctx) : []
   const eventPropNames = propNames.filter(isEventPropName)
@@ -263,7 +328,7 @@ const createCustomElementClass = (name: string, config: any) => {
   const customElementClass = class extends HTMLElement {
     private _ctrl: Ctrl
     private _contentElem: Element | null = null
-    private _render?: () => TemplateResult
+    private _render?: () => any
     private _methods?: Methods
     private _initialized = false
     private _mounted = false
@@ -492,7 +557,7 @@ const createCustomElementClass = (name: string, config: any) => {
       }
 
       const content = this._render!()
-      render(content, this._contentElem!)
+      renderer(content, this._contentElem!)
 
       if (!this._mounted) {
         this._mounted = true
@@ -731,7 +796,7 @@ export function defineProvision<T>(
 
 // === StoreProvider =================================================
 
-defineElement('store-provider', {
+defineElementLitHtml('store-provider', {
   props: {
     store: {
       required: true
@@ -743,7 +808,7 @@ defineElement('store-provider', {
 
     c.effect(
       () => {
-        const unsubscribe1 = c.receive((msg) => {
+        const unsubscribe1 = c.receive((msg: Message) => {
           ;(props.store as any).dispatch(msg) // TODO
         })
 
@@ -760,7 +825,7 @@ defineElement('store-provider', {
       () => [props.store]
     )
 
-    return () => html`<slot></slot>`
+    return html`<slot></slot>`
   }
 })
 
