@@ -1,11 +1,15 @@
 import { html, render, TemplateResult } from '../internal/lit-html'
+import { h as createElement, patch, isElement } from '../internal/superfine'
 
 import { Action, AnyElement, Ctrl, Message, Methods } from '../internal/types'
 
 // === exports =======================================================
 
 export {
-  defineElementLitHtml as defineElement,
+  defineElement,
+  defineProvision,
+  component,
+  h,
   html,
   propConfigBuilder as prop
 }
@@ -35,6 +39,23 @@ const REGEX_SLOT_NAME = /^[a-z][a-z0-9]*$/
 const REGEX_CTX_KEY = /^[a-z][a-z0-9]*$/
 
 // === types =========================================================
+
+type Key = string | number
+type Props = Record<string, any> & { key?: never; children?: VNode }
+type VElement<T extends Props = Props> = any // TODO !!!!!!!!
+
+type VNode =
+  | undefined
+  | null
+  | boolean
+  | number
+  | string
+  | VElement
+  | Iterable<VNode>
+
+type Component<P extends Props = {}, M extends Methods = {}> = (
+  props?: P & { key?: Key }
+) => VNode // TODO
 
 type Class<T> = {
   new (...arg: any[]): T
@@ -215,35 +236,85 @@ type FunctionDefineElementLitHtml = {
 }
 
 type FunctionDefineElementSuperfine = {
-  (name: string, main: (c: Ctrl) => () => any): void
-  (name: string, render: () => any): void
+  (name: string, main: (c: Ctrl) => () => any): Component<any>
+  (name: string, render: () => any): Component<any>
 
   <PC extends PropsConfig, CC extends CtxConfig>(
     name: string,
     config: ConfigStateful1Superfine<PC, CC>
-  ): void
+  ): Component<any>
 
   <PC extends PropsConfig, CC extends CtxConfig>(
     name: string,
     config: ConfigStateful2Superfine<PC, CC>
-  ): void
+  ): Component<any>
 
   <PC extends PropsConfig, CC extends CtxConfig>(
     name: string,
     config: ConfigStatelessSuperfine<PC, CC>
-  ): void
+  ): Component<any>
 }
-
-// === defineElementLitHtml ==========================================
-
-const defineElementLitHtml: FunctionDefineElementLitHtml = (
-  name: string,
-  config: any
-) => defineElement(name, config, render)
 
 // === defineElement =================================================
 
-function defineElement(name: string, config: any, renderer: any): void {
+const defineElement: FunctionDefineElementLitHtml = (
+  name: string,
+  config: any
+) => defineElementWithRenderer(name, config, render)
+
+// === component ======================================================
+
+function superfineRenderer(content: any, target: Element) {
+  if (target.hasChildNodes()) {
+    patch(target.firstChild, content)
+  } else {
+    const newTarget = document.createElement('span')
+
+    target.appendChild(newTarget)
+    patch(newTarget, content)
+  }
+}
+
+export default function h(type: any, ...rest: any[]): any {
+  // TODO
+  const second = rest[0]
+
+  if (typeof type === 'function') {
+    type = (type as any)['js-elements:type']
+  }
+
+  if (
+    (second !== undefined && second !== null && typeof second !== 'object') ||
+    isElement(second)
+  ) {
+    rest.unshift(null)
+  }
+
+  return (createElement as any)(type, ...rest) // TODO
+}
+
+const component: FunctionDefineElementSuperfine = (
+  name: string,
+  config: any
+) => {
+  defineElementWithRenderer(name, config, superfineRenderer)
+
+  const ret = h.bind(null, name)
+
+  Object.defineProperty(ret, 'js-elements:type', {
+    value: name
+  })
+
+  return ret
+}
+
+// === defineElementWithRenderer =====================================
+
+function defineElementWithRenderer(
+  name: string,
+  config: any,
+  renderer: any
+): void {
   if (process.env.NODE_ENV === ('development' as any)) {
     if (typeof name !== 'string') {
       throw new TypeError(
@@ -700,7 +771,7 @@ function getNewEventType(): string {
   return `$$provision$$_${++counter}`
 }
 
-export function defineProvision<T>(
+function defineProvision<T>(
   name: string,
   defaultValue: T
 ): [(c: Ctrl, value: T) => void, (c: Ctrl) => T] {
@@ -794,9 +865,10 @@ export function defineProvision<T>(
   return [provideProvision, consumeProvision]
 }
 
+/*
 // === StoreProvider =================================================
 
-defineElementLitHtml('store-provider', {
+defineElement('store-provider', {
   props: {
     store: {
       required: true
@@ -828,7 +900,7 @@ defineElementLitHtml('store-provider', {
     return html`<slot></slot>`
   }
 })
-
+*/
 // === createNotifier ================================================
 
 function createNotifier(): Notifier {
@@ -975,7 +1047,7 @@ const propConfigBuilder = (Object.freeze({
   ...reqAndOpt(null, false)
 }) as any) as G
 
-// === validation ofcomponent configuration validation ===============
+// === component configuration validation ============================
 
 function checkComponentConfig(config: any) {
   if (config === undefined) {
