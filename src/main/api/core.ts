@@ -1,4 +1,4 @@
-import { html, render, TemplateResult } from '../internal/lit-html'
+import { html, render as renderLit, TemplateResult } from '../internal/lit-html'
 import { h as createElement, patch, isElement } from '../internal/superfine'
 
 import { Action, AnyElement, Ctrl, Message, Methods } from '../internal/types'
@@ -7,11 +7,12 @@ import { Action, AnyElement, Ctrl, Message, Methods } from '../internal/types'
 
 export {
   defineElement,
-  defineProvision,
+  provision,
   component,
   h,
   html,
   propConfigBuilder as prop,
+  render,
   VElement,
   VNode
 }
@@ -262,7 +263,7 @@ type FunctionDefineElementSuperfine = {
 const defineElement: FunctionDefineElementLitHtml = (
   name: string,
   config: any
-) => defineElementWithRenderer(name, config, render)
+) => defineElementWithRenderer(name, config, renderLit)
 
 // === component ======================================================
 
@@ -761,7 +762,7 @@ const createCustomElementClass = (
   return customElementClass
 }
 
-// === defineProvision ===============================================
+// === provision =====================================================
 
 type ProvisionSubscriber<T> = {
   notifyChange(newValue: T): void
@@ -773,7 +774,7 @@ function getNewEventType(): string {
   return `$$provision$$_${++counter}`
 }
 
-function defineProvision<T>(
+function provision<T>(
   name: string,
   defaultValue: T
 ): [(c: Ctrl, value: T) => void, (c: Ctrl) => T] {
@@ -1049,6 +1050,37 @@ const propConfigBuilder = (Object.freeze({
   ...reqAndOpt(null, false)
 }) as any) as G
 
+// === render ========================================================
+
+function render(content: VElement, container: Element | string) {
+  if (content !== null && (!content || content.kind !== 'virtual-element')) {
+    throw new TypeError(
+      'First argument "content" of function "render" must be a virtual element or null'
+    )
+  }
+
+  if (!container || (typeof container !== 'string' && !container.tagName)) {
+    throw new TypeError(
+      'Second argument "container" of funtion "render" must either be a DOM element or selector string for the DOM element'
+    )
+  }
+
+  const target =
+    typeof container === 'string'
+      ? document.querySelector(container)
+      : container
+
+  if (!target) {
+    throw new TypeError(`Could not find container DOM element "${container}"`)
+  }
+
+  target.innerHTML = ''
+
+  if (content !== null) {
+    patch(target, content)
+  }
+}
+
 // === component configuration validation ============================
 
 function checkComponentConfig(config: any) {
@@ -1066,7 +1098,7 @@ function checkComponentConfig(config: any) {
       Number(hasOwnProp(config, 'view')) >
     1
   ) {
-    throw 'Component configuration can only have one of the parameters "render", "main" or "view" parameter'
+    throw 'Component configuration can only have one of the parameters "render", "main" or "view"'
   }
 
   const checkParam = (key: string, pred: (it: any) => boolean) => {

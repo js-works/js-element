@@ -1,11 +1,10 @@
-import { defineElement, defineProvision, html } from '../../main/js-elements'
+import { defineElement, provision, html } from '../../main/js-elements'
 import { useInterval } from '../../main/js-elements-ext'
 
-const [provideTheme, consumeTheme] = defineProvision('theme', 'light')
+const [provideTheme, consumeTheme] = provision('theme', 'light')
 
 defineElement('provision-demo', (c) => {
   let theme = 'light'
-
   provideTheme(c, theme)
 
   useInterval(

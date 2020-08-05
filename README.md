@@ -21,7 +21,7 @@ defineElement('simple-counter', {
 
   styles: simpleCounterStyles,
 
-  init(c, props) {
+  main(c, props) {
     let count = props.initialCount
     const onIncrement = c.updateFn(() => ++count)
 
