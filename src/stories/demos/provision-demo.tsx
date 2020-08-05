@@ -26,10 +26,12 @@ defineElement('provision-demo', (c) => {
   `
 })
 
-defineElement('theme-info', (c) => {
-  return () => {
-    const theme = consumeTheme(c)
+defineElement('theme-info', {
+  ctx: {
+    theme: consumeTheme
+  },
 
-    return html`<div>Current theme: ${theme}</div>`
+  render(_, ctx) {
+    return html`<div>Current theme: ${ctx.theme}</div>`
   }
 })

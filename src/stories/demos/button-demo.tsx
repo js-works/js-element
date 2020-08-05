@@ -26,7 +26,7 @@ defineElement('demo-button', {
 
   styles: buttonDemoStyles,
 
-  init(c, props) {
+  main(c, props) {
     const onClick = () => {
       if (props.onButtonAction) {
         //props.onButtonAction(new CustomEvent('buttonaction')) // TODO

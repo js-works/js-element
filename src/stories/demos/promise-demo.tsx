@@ -8,7 +8,7 @@ defineElement('data-loader', {
     key: prop.num.opt()
   },
 
-  init(c, props) {
+  main(c, props) {
     const res = usePromise(
       c,
       () => wait(4000),

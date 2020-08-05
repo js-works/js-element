@@ -46,7 +46,7 @@ defineElement('todo-item', {
     todo: prop.obj.req()
   },
 
-  init(c, props) {
+  main(c, props) {
     const root = c.getRoot()
     const [state, setState] = c.addState({
       active: false,
@@ -167,7 +167,7 @@ defineElement('todo-main', {
     filter: prop.str.req()
   },
 
-  init(c, props) {
+  main(c, props) {
     const root = c.getRoot()
     const completed = props.todos.every((todo) => todo.completed)
 
@@ -212,7 +212,7 @@ defineElement('todo-filters', {
     filter: prop.str.req()
   },
 
-  init(c, props) {
+  main(c, props) {
     const root = c.getRoot()
     const onActiveFilter = (ev) => setFilter('active', ev)
     const onCompletedFilter = (ev) => setFilter('completed', ev)
@@ -269,7 +269,7 @@ defineElement('todo-footer', {
     filter: prop.str.req()
   },
 
-  init(c, props) {
+  main(c, props) {
     const root = c.getRoot()
     const completed = props.todos.filter((todo) => todo.completed).length
     const remaining = props.todos.length - completed

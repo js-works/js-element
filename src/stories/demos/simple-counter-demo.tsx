@@ -6,7 +6,7 @@ defineElement('simple-counter', {
     label: prop.str.opt('Counter')
   },
 
-  init(c, props) {
+  main(c, props) {
     let count = props.initialCount
     const onIncrement = c.updateFn(() => ++count)
 

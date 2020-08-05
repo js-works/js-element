@@ -77,13 +77,26 @@ type PropsConfig = {
 
 type CtxConfig = Record<string, (c: Ctrl) => any>
 
-type ConfigStateful<PC extends PropsConfig, CC extends CtxConfig> = {
+type ConfigStateful1<PC extends PropsConfig, CC extends CtxConfig> = {
   props?: PC
   ctx?: CC
   styles?: string | (() => string)
   slots?: string[]
   methods?: string[]
-  init(c: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>): () => Content
+  main(c: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>): () => Content
+}
+
+type ConfigStateful2<PC extends PropsConfig, CC extends CtxConfig> = {
+  props?: PC
+  ctx?: CC
+  styles?: string | (() => string)
+  slots?: string[]
+  methods?: string[]
+  view(
+    c: Ctrl,
+    getProps: () => InternalPropsOf<PC>,
+    getCtx: () => CtxOf<CC>
+  ): () => Content
 }
 
 type ConfigStateless<PC extends PropsConfig, CC extends CtxConfig> = {
@@ -151,12 +164,17 @@ type CtxTypeOf<C extends CtxConfig> = C extends (
   : never
 */
 
-function defineElement(name: string, init: (c: Ctrl) => () => Content): void
+function defineElement(name: string, main: (c: Ctrl) => () => Content): void
 function defineElement(name: string, render: () => Content): void
 
 function defineElement<PC extends PropsConfig, CC extends CtxConfig>(
   name: string,
-  config: ConfigStateful<PC, CC>
+  config: ConfigStateful1<PC, CC>
+): void
+
+function defineElement<PC extends PropsConfig, CC extends CtxConfig>(
+  name: string,
+  config: ConfigStateful2<PC, CC>
 ): void
 
 function defineElement<PC extends PropsConfig, CC extends CtxConfig>(
@@ -189,10 +207,10 @@ function defineElement(name: string, config: any): void {
     const fn = config
 
     if (config.length > 0) {
-      config = { init: fn }
+      config = { main: fn }
     } else {
       config = {
-        init: () => {
+        main: () => {
           let ret = fn()
 
           if (typeof ret !== 'function') {
@@ -452,12 +470,22 @@ const createCustomElementClass = (name: string, config: any) => {
       if (!this._render) {
         if (config.render) {
           this._render = () => config.render(this._propsObject, this._ctxObject)
-        } else {
-          this._render = config.init(
+        } else if (config.main) {
+          this._render = config.main(
             this._ctrl,
             this._propsObject,
             this._ctxObject
           )
+        } else {
+          // TODO: This is ugly and buggy as hell - fix as soon as possible
+          const getProps = () => ({ ...this._propsObject })
+          const getCtx = () => ({ ...this._ctxObject })
+
+          this._render = () => {
+            const fn = config.view(this._ctrl, getProps, getCtx)
+
+            return () => fn(getProps(), getCtx())
+          }
         }
 
         this._initialized = true
@@ -710,7 +738,7 @@ defineElement('store-provider', {
     }
   },
 
-  init(c, props) {
+  main(c, props) {
     let key = 0
 
     c.effect(
@@ -893,8 +921,13 @@ function checkComponentConfig(config: any) {
     throw 'Component configuration must be an object'
   }
 
-  if (hasOwnProp(config, 'render') && hasOwnProp(config, 'init')) {
-    throw 'Component configuration must not have both "render" and "init" parameter'
+  if (
+    Number(hasOwnProp(config, 'render')) +
+      Number(hasOwnProp(config, 'main')) +
+      Number(hasOwnProp(config, 'view')) >
+    1
+  ) {
+    throw 'Component configuration can only have one of the parameters "render", "main" or "view" parameter'
   }
 
   const checkParam = (key: string, pred: (it: any) => boolean) => {
@@ -946,8 +979,12 @@ function checkComponentConfig(config: any) {
         checkParam('render', validateFunction)
         break
 
-      case 'init':
-        checkParam('init', validateFunction)
+      case 'main':
+        checkParam('main', validateFunction)
+        break
+
+      case 'view':
+        checkParam('view', validateFunction)
         break
 
       default:

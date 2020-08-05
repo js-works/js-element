@@ -14,7 +14,7 @@ defineElement('complex-counter', {
 
   methods: ['reset'],
 
-  init(c, props) {
+  main(c, props) {
     const [state, setState] = useState(c, {
       count: props.initialValue
     })
