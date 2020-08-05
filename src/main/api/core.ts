@@ -11,7 +11,9 @@ export {
   component,
   h,
   html,
-  propConfigBuilder as prop
+  propConfigBuilder as prop,
+  VElement,
+  VNode
 }
 
 // === constants =====================================================
