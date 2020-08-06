@@ -14,6 +14,7 @@ import './demos/provision-demo'
 import './demos/interval-demo'
 import './demos/promise-demo'
 import './demos/store-demo'
+import './demos/cranky-demo'
 import './demos/todo-mvc'
 import './styles.css'
 
@@ -36,6 +37,8 @@ export const Iterator = () => '<iterator-demo/>'
 export const Interval = () => '<interval-demo></iterator-demo>'
 export const Promises = () => '<promise-demo></promise-demo>'
 export const Stores = () => '<store-demo></store-demo>'
+
+export const Cranky = () => '<cranky-demo></cranky-demo>'
 
 export const TodoMvc = () => `
   <div class="todoapp">
