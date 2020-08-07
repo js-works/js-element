@@ -6,6 +6,7 @@ import './demos/styles/todomvc-app.css'
 import './demos/button-demo'
 import './demos/simple-counter-demo'
 import './demos/simple-counter-jsx-demo'
+import './demos/simple-counter-crank-demo'
 import './demos/complex-counter-demo'
 import './demos/clock-demo'
 import './demos/iterator-demo'
@@ -14,7 +15,6 @@ import './demos/provision-demo'
 import './demos/interval-demo'
 import './demos/promise-demo'
 import './demos/store-demo'
-import './demos/cranky-demo'
 import './demos/todo-mvc'
 import './styles.css'
 
@@ -23,11 +23,11 @@ export default {
 }
 
 export const Button = () => '<button-demo></button-demo>'
-
 export const SimpleCounter = () => '<simple-counter-demo></simple-counter-demo>'
 export const SimpleCounterJsx = () =>
   '<simple-counter-jsx-demo></simple-counter-jsx-demo>'
-
+export const SimpleCounterCrank = () =>
+  '<simple-counter-crank initial-count="100"></simple-counter-crank>'
 export const ComplexCounter = () =>
   '<complex-counter-demo></complex-counter-demo>'
 export const Clock = () => '<clock-demo></clock-demo>'
@@ -38,10 +38,10 @@ export const Interval = () => '<interval-demo></iterator-demo>'
 export const Promises = () => '<promise-demo></promise-demo>'
 export const Stores = () => '<store-demo></store-demo>'
 
-export const Cranky = () => '<cranky-demo></cranky-demo>'
-
+/*
 export const TodoMvc = () => `
   <div class="todoapp">
     <todo-mvc></todo-mvc>
   </div>
 `
+*/

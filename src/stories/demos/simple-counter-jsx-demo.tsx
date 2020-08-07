@@ -1,5 +1,5 @@
 /** @jsx h */
-import { component, h, prop } from '../../main/js-elements-common'
+import { component, h, prop } from '../../main/js-elements'
 
 component('simple-counter-jsx', {
   props: {
@@ -8,7 +8,6 @@ component('simple-counter-jsx', {
   },
 
   main(c, props) {
-    console.log('JUHU')
     let count = props.initialCount
     const onIncrement = c.updateFn(() => ++count)
 

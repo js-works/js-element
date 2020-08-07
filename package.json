@@ -1,6 +1,6 @@
 {
   "name": "js-elements",
-  "version": "0.0.53",
+  "version": "0.0.59",
   "description": "",
   "main": "index.js",
   "module": "dist/js-elements.esm.producion.js",
@@ -9,14 +9,18 @@
   "types": "dist/types/main/index.d.ts",
   "files": [
     "index.js",
-    "dist"
+    "dist",
+    "ext",
+    "lit-html",
+    "preact",
+    "crank"
   ],
   "scripts": {
     "clean": "shx rm -rf ./build ./dist",
     "test": "echo \"Error: no test specified\" && exit 1",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
-    "build": "npm run clean && rollup --c rollup.config.js && tsc -d --emitDeclarationOnly --declarationDir dist/types",
+    "build": "npm run clean && cross-env NODE_OPTIONS=--max_old_space_size=4096 rollup --c rollup.config.js && tsc -d --emitDeclarationOnly --declarationDir dist/types",
     "dist": "npm run build && npm run zipsource",
     "zipsource": "shx rm -rf ./build/source && shx mkdir -p ./build/source && copyfiles -a ./* ./build/source && shx cp -r ./src ./build/source && shx mkdir -p ./dist/source && cd build && bestzip --force node ../dist/source/source.zip source && cd .."
   },
@@ -49,6 +53,7 @@
     "bestzip": "^2.1.6",
     "compression-webpack-plugin": "^4.0.0",
     "copyfiles": "^2.3.0",
+    "cross-env": "^7.0.2",
     "dyo": "^2.0.4",
     "eslint": "^7.6.0",
     "js-spec": "^0.1.79",
@@ -76,6 +81,7 @@
     "zip-webpack-plugin": "^3.0.0"
   },
   "dependencies": {
+    "@bikeshaving/crank": "^0.3.2",
     "@types/superfine": "^7.0.1"
   }
 }

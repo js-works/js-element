@@ -69,7 +69,6 @@ function render(content: VElement, container: Element | string) {
 // === component ======================================================
 
 function superfineRenderer(content: VElement, target: Element) {
-  console.log('22222')
   if (target.hasChildNodes()) {
     patch(target.firstChild, content)
   } else {
@@ -80,7 +79,7 @@ function superfineRenderer(content: VElement, target: Element) {
   }
 }
 
-export default function h(type: any, ...rest: any[]): any {
+function h(type: any, ...rest: any[]): any {
   // TODO
   const second = rest[0]
 

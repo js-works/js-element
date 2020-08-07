@@ -8,7 +8,7 @@ import gzip from 'rollup-plugin-gzip'
 
 const configs = []
 
-for (const pkg of ['core', 'common', 'lit-html', 'ext', 'preact', 'crank']) {
+for (const pkg of ['root', 'lit-html', 'ext', 'preact', 'crank']) {
   for (const format of ['umd', 'cjs', 'amd', 'esm']) {
     for (const productive of [false, true]) {
       configs.push(createConfig(pkg, format, productive))
@@ -21,22 +21,38 @@ export default configs
 // --- locals -------------------------------------------------------
 
 function createConfig(pkg, moduleFormat, productive) {
+  const env = productive ? 'productive' : 'development'
+
   return {
-    input: `src/main/js-elements-${pkg}.ts`,
+    input:
+      pkg === 'root'
+        ? 'src/main/js-elements.ts'
+        : `src/main/js-elements-${pkg}.ts`,
 
     output: {
-      file: productive
-        ? `dist/js-elements.${pkg}.${moduleFormat}.production.js`
-        : `dist/js-elements.${pkg}.${moduleFormat}.development.js`,
+      file:
+        pkg === 'root'
+          ? `dist/js-elements.${moduleFormat}.${env}.js`
+          : `dist/js-elements.${pkg}.${moduleFormat}.${env}.js`,
 
       format: moduleFormat,
       sourcemap: false, // productive ? false : 'inline', // TODO
-      name: 'jsElements.' + pkg,
+      name: pkg === 'root' ? 'jsElements' : 'jsElements.' + pkg,
 
-      globals: {}
+      globals: {
+        'lit-html': 'litHtml',
+        preact: 'preact',
+        '@bikeshaving/crank': 'crank',
+        '@bikeshaving/crank/dom': 'crankDOM'
+      }
     },
 
-    external: ['lit-html', 'preact', 'crank'],
+    external: [
+      'lit-html',
+      'preact',
+      '@bikeshaving/crank',
+      '@bikeshaving/crank/dom'
+    ],
 
     plugins: [
       resolve(),

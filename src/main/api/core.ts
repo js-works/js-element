@@ -179,7 +179,9 @@ type FunctionDefineElement<O, R> = {
 
 // === createAdaption ================================================
 
-function createAdaption<O, R>(renderer: any): FunctionDefineElement<O, R> {
+function createAdaption<O, R>(
+  renderer: (content: O, target: Element) => void
+): FunctionDefineElement<O, R> {
   return (name: string, config: any) =>
     defineElementWithRenderer(name, config, renderer) as any // TODO
 }
