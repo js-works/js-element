@@ -41,7 +41,7 @@ function createConfig(pkg, moduleFormat, productive) {
 
       globals: {
         'lit-html': 'litHtml',
-        preact: 'preact',
+        //        preact: 'preact',
         '@bikeshaving/crank': 'crank',
         '@bikeshaving/crank/dom': 'crankDOM'
       }
@@ -49,7 +49,7 @@ function createConfig(pkg, moduleFormat, productive) {
 
     external: [
       'lit-html',
-      'preact',
+      //'preact',
       '@bikeshaving/crank',
       '@bikeshaving/crank/dom'
     ],

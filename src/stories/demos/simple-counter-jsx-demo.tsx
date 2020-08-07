@@ -23,7 +23,7 @@ component('simple-counter-jsx', {
       },
       () => [count]
     )
-    console.log('xxxx')
+
     return () =>
       h(
         'div',
