@@ -1,4 +1,4 @@
-import { defineElement, html, prop } from '../../main/js-elements'
+import { defineElement, html, prop } from '../../main/js-elements-lit-html'
 import { usePromise, useState } from '../../main/js-elements-ext'
 
 defineElement('data-loader', {

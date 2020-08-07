@@ -1,4 +1,4 @@
-import { defineElement, html, prop } from '../../main/js-elements'
+import { defineElement, html, prop } from '../../main/js-elements-lit-html'
 import { useState } from '../../main/js-elements-ext'
 
 const ENTER_KEY = 13

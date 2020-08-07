@@ -1,4 +1,4 @@
-import { defineElement, html, prop } from '../../main/js-elements'
+import { defineElement, html, prop } from '../../main/js-elements-lit-html'
 
 function createStore() {
   const data = {

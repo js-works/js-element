@@ -1,20 +1,13 @@
-import { html, render as renderLit, TemplateResult } from '../internal/lit-html'
-import { h as createElement, patch, isElement } from '../internal/superfine'
-
 import { Action, AnyElement, Ctrl, Message, Methods } from '../internal/types'
 
 // === exports =======================================================
 
 export {
-  defineElement,
+  createAdaption,
   provision,
-  component,
-  h,
-  html,
   propConfigBuilder as prop,
-  render,
-  VElement,
-  VNode
+  FunctionDefineElement,
+  Methods
 }
 
 // === constants =====================================================
@@ -42,23 +35,6 @@ const REGEX_SLOT_NAME = /^[a-z][a-z0-9]*$/
 const REGEX_CTX_KEY = /^[a-z][a-z0-9]*$/
 
 // === types =========================================================
-
-type Key = string | number
-type Props = Record<string, any> & { key?: never; children?: VNode }
-type VElement<T extends Props = Props> = any // TODO !!!!!!!!
-
-type VNode =
-  | undefined
-  | null
-  | boolean
-  | number
-  | string
-  | VElement
-  | Iterable<VNode>
-
-type Component<P extends Props = {}, M extends Methods = {}> = (
-  props?: P & { key?: Key }
-) => VNode // TODO
 
 type Class<T> = {
   new (...arg: any[]): T
@@ -96,70 +72,6 @@ type PropsConfig = {
 }
 
 type CtxConfig = Record<string, (c: Ctrl) => any>
-
-type ConfigStateful1LitHtml<PC extends PropsConfig, CC extends CtxConfig> = {
-  props?: PC
-  ctx?: CC
-  styles?: string | (() => string)
-  slots?: string[]
-  methods?: string[]
-  main(
-    c: Ctrl,
-    props: InternalPropsOf<PC>,
-    ctx: CtxOf<CC>
-  ): () => TemplateResult
-}
-
-type ConfigStateful2LitHtml<PC extends PropsConfig, CC extends CtxConfig> = {
-  props?: PC
-  ctx?: CC
-  styles?: string | (() => string)
-  slots?: string[]
-  methods?: string[]
-  view(
-    c: Ctrl,
-    getProps: () => InternalPropsOf<PC>,
-    getCtx: () => CtxOf<CC>
-  ): () => TemplateResult
-}
-
-type ConfigStatelessLitHtml<PC extends PropsConfig, CC extends CtxConfig> = {
-  props?: PC
-  ctx?: CC
-  styles?: string | string[]
-  slots?: string[]
-  render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): TemplateResult
-}
-
-type ConfigStateful1Superfine<PC extends PropsConfig, CC extends CtxConfig> = {
-  props?: PC
-  ctx?: CC
-  styles?: string | (() => string)
-  slots?: string[]
-  methods?: string[]
-  main(c: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>): () => any // TODO
-}
-
-type ConfigStateful2Superfine<PC extends PropsConfig, CC extends CtxConfig> = {
-  props?: PC
-  ctx?: CC
-  styles?: string | (() => string)
-  slots?: string[]
-  methods?: string[]
-  view(
-    c: Ctrl,
-    getProps: () => InternalPropsOf<PC>,
-    getCtx: () => CtxOf<CC>
-  ): () => any // TODO
-}
-
-type ConfigStatelessSuperfine<PC extends PropsConfig, CC extends CtxConfig> = {
-  props?: PC
-  ctx?: CC
-  styles?: string | string[]
-  slots?: string[]
-  render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): any
-}
 
 type ExternalPropsOf<P extends PropsConfig> = Pick<
   { [K in keyof P]?: PropOf<P[K]> },
@@ -218,97 +130,58 @@ type CtxTypeOf<C extends CtxConfig> = C extends (
   : never
 */
 
-type FunctionDefineElementLitHtml = {
-  (name: string, main: (c: Ctrl) => () => TemplateResult): void
-  (name: string, render: () => TemplateResult): void
+type FunctionDefineElement<O, R> = {
+  (name: string, main: (c: Ctrl) => () => O): R
+  (name: string, render: () => O): R
 
   <PC extends PropsConfig, CC extends CtxConfig>(
     name: string,
-    config: ConfigStateful1LitHtml<PC, CC>
-  ): void
+
+    config: {
+      props?: PC
+      ctx?: CC
+      styles?: string | (() => string)
+      slots?: string[]
+      methods?: string[]
+
+      main(c: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>): () => O
+    }
+  ): R
 
   <PC extends PropsConfig, CC extends CtxConfig>(
     name: string,
-    config: ConfigStateful2LitHtml<PC, CC>
-  ): void
+
+    config: {
+      props?: PC
+      ctx?: CC
+      styles?: string | (() => string)
+      slots?: string[]
+      methods?: string[]
+      view(
+        c: Ctrl,
+        getProps: () => InternalPropsOf<PC>,
+        getCtx: () => CtxOf<CC>
+      ): () => O
+    }
+  ): R
 
   <PC extends PropsConfig, CC extends CtxConfig>(
     name: string,
-    config: ConfigStatelessLitHtml<PC, CC>
-  ): void
+    config: {
+      props?: PC
+      ctx?: CC
+      styles?: string | string[]
+      slots?: string[]
+      render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): O
+    }
+  ): R
 }
 
-type FunctionDefineElementSuperfine = {
-  (name: string, main: (c: Ctrl) => () => any): Component<any>
-  (name: string, render: () => any): Component<any>
+// === createAdaption ================================================
 
-  <PC extends PropsConfig, CC extends CtxConfig>(
-    name: string,
-    config: ConfigStateful1Superfine<PC, CC>
-  ): Component<any>
-
-  <PC extends PropsConfig, CC extends CtxConfig>(
-    name: string,
-    config: ConfigStateful2Superfine<PC, CC>
-  ): Component<any>
-
-  <PC extends PropsConfig, CC extends CtxConfig>(
-    name: string,
-    config: ConfigStatelessSuperfine<PC, CC>
-  ): Component<any>
-}
-
-// === defineElement =================================================
-
-const defineElement: FunctionDefineElementLitHtml = (
-  name: string,
-  config: any
-) => defineElementWithRenderer(name, config, renderLit)
-
-// === component ======================================================
-
-function superfineRenderer(content: any, target: Element) {
-  if (target.hasChildNodes()) {
-    patch(target.firstChild, content)
-  } else {
-    const newTarget = document.createElement('span')
-
-    target.appendChild(newTarget)
-    patch(newTarget, content)
-  }
-}
-
-export default function h(type: any, ...rest: any[]): any {
-  // TODO
-  const second = rest[0]
-
-  if (typeof type === 'function') {
-    type = (type as any)['js-elements:type']
-  }
-
-  if (
-    (second !== undefined && second !== null && typeof second !== 'object') ||
-    isElement(second)
-  ) {
-    rest.unshift(null)
-  }
-
-  return (createElement as any)(type, ...rest) // TODO
-}
-
-const component: FunctionDefineElementSuperfine = (
-  name: string,
-  config: any
-) => {
-  defineElementWithRenderer(name, config, superfineRenderer)
-
-  const ret = h.bind(null, name)
-
-  Object.defineProperty(ret, 'js-elements:type', {
-    value: name
-  })
-
-  return ret
+function createAdaption<O, R>(renderer: any): FunctionDefineElement<O, R> {
+  return (name: string, config: any) =>
+    defineElementWithRenderer(name, config, renderer) as any // TODO
 }
 
 // === defineElementWithRenderer =====================================
@@ -622,9 +495,7 @@ const createCustomElementClass = (
           const fn = config.view(this._ctrl, getProps, getCtx)
 
           this._render = () => {
-            console.log(222)
             let ret = fn(getProps(), getCtx())
-            console.log(2, ret)
             return ret
           }
         }
@@ -1051,37 +922,6 @@ const propConfigBuilder = (Object.freeze({
   func: typedProp(Function),
   ...reqAndOpt(null, false)
 }) as any) as G
-
-// === render ========================================================
-
-function render(content: VElement, container: Element | string) {
-  if (content !== null && (!content || content.kind !== 'virtual-element')) {
-    throw new TypeError(
-      'First argument "content" of function "render" must be a virtual element or null'
-    )
-  }
-
-  if (!container || (typeof container !== 'string' && !container.tagName)) {
-    throw new TypeError(
-      'Second argument "container" of funtion "render" must either be a DOM element or selector string for the DOM element'
-    )
-  }
-
-  const target =
-    typeof container === 'string'
-      ? document.querySelector(container)
-      : container
-
-  if (!target) {
-    throw new TypeError(`Could not find container DOM element "${container}"`)
-  }
-
-  target.innerHTML = ''
-
-  if (content !== null) {
-    patch(target, content)
-  }
-}
 
 // === component configuration validation ============================
 

@@ -1,3 +1,4 @@
+/*
 import {
   component,
   h,
@@ -75,3 +76,4 @@ function convertFromCrankComponent(fn) {
 }
 
 const GeneratorFunction = function* () {}.constructor
+*/

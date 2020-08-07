@@ -8,9 +8,11 @@ import gzip from 'rollup-plugin-gzip'
 
 const configs = []
 
-for (const format of ['umd', 'cjs', 'amd', 'esm']) {
-  for (const productive of [false, true]) {
-    configs.push(createConfig(format, productive))
+for (const pkg of ['core', 'common', 'lit-html', 'ext', 'preact', 'crank']) {
+  for (const format of ['umd', 'cjs', 'amd', 'esm']) {
+    for (const productive of [false, true]) {
+      configs.push(createConfig(pkg, format, productive))
+    }
   }
 }
 
@@ -18,24 +20,23 @@ export default configs
 
 // --- locals -------------------------------------------------------
 
-function createConfig(moduleFormat, productive) {
+function createConfig(pkg, moduleFormat, productive) {
   return {
-    input: 'src/main/index.ts',
+    input: `src/main/js-elements-${pkg}.ts`,
 
     output: {
       file: productive
-        ? `dist/js-elements.${moduleFormat}.production.js`
-        : `dist/js-elements.${moduleFormat}.development.js`,
+        ? `dist/js-elements.${pkg}.${moduleFormat}.production.js`
+        : `dist/js-elements.${pkg}.${moduleFormat}.development.js`,
 
       format: moduleFormat,
       sourcemap: false, // productive ? false : 'inline', // TODO
-
-      name: 'jsElements',
+      name: 'jsElements.' + pkg,
 
       globals: {}
     },
 
-    external: [],
+    external: ['lit-html', 'preact', 'crank'],
 
     plugins: [
       resolve(),

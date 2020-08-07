@@ -1,4 +1,4 @@
-import { defineElement, html } from '../../main/js-elements'
+import { defineElement, html } from '../../main/js-elements-lit-html'
 import { useTime } from '../../main/js-elements-ext'
 
 defineElement('clock-demo', (c) => {

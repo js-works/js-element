@@ -1,4 +1,5 @@
 /** @jsx h */
+/*
 import { component, h, prop, provision, render } from './crank-webcomponents'
 
 // This should normally be in an extra file and be included
@@ -96,3 +97,4 @@ const CrankyDemo = component('cranky-demo', function* () {
     yield h(Card, { headline: 'Counter demo' }, h(Counter))
   }
 })
+*/

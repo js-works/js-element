@@ -1,0 +1,11 @@
+{
+  "name": "js-elements.preact",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Web component wrapper for preact components",
+  "main": "../dist/js-elements.preact.cjs.production.js",
+  "module": "../dist/js-elements.preact.esm.production.js",
+  "umd:main": "../dist/js-elements.preact.umd.production.js",
+  "types": "../src/types/js-elements.preact.d.ts",
+  "license": "LGPL-3.0"
+}

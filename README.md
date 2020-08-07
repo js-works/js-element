@@ -10,7 +10,7 @@ and btw: It is currently not meant to be used in production.
 ## Example
 
 ```js
-import { defineElement, html, prop } from 'js-elements'
+import { defineElement, html, prop } from 'js-elements/lit-html'
 import simpleCounterStyles from './simple-counter.css'
 
 defineElement('simple-counter', {

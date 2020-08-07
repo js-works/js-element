@@ -1,0 +1,11 @@
+{
+  "name": "js-elements.common",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Just another web component library",
+  "main": "../dist/js-elements.common.cjs.production.js",
+  "module": "../dist/js-elements.common.esm.production.js",
+  "umd:main": "../dist/js-elements.common.umd.production.js",
+  "types": "../src/types/js-elements.common.d.ts",
+  "license": "LGPL-3.0"
+}

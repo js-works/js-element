@@ -1,0 +1,11 @@
+{
+  "name": "js-elements.crank",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Web component wrapper for crank components",
+  "main": "../dist/js-elements.crank.cjs.production.js",
+  "module": "../dist/js-elements.crank.esm.production.js",
+  "umd:main": "../dist/js-elements.crank.umd.production.js",
+  "types": "../src/types/js-elements.crank.d.ts",
+  "license": "LGPL-3.0"
+}

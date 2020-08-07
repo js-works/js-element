@@ -1,5 +1,5 @@
 /** @jsx h */
-import { defineElement, html } from '../../main/js-elements'
+import { defineElement, html } from '../../main/js-elements-lit-html'
 import { useMousePosition } from '../../main/js-elements-ext'
 
 defineElement('mouse-demo', (c) => {

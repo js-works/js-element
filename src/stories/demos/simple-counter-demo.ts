@@ -1,4 +1,4 @@
-import { defineElement, html, prop } from '../../main/js-elements'
+import { defineElement, html, prop } from '../../main/js-elements-lit-html'
 
 defineElement('simple-counter', {
   props: {
