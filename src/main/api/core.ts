@@ -60,6 +60,8 @@ type PropConfig<T> = {
     ? FunctionConstructor
     : T extends undefined
     ? any
+    : T extends unknown
+    ? any
     : never
 
   nullable?: boolean
@@ -109,11 +111,15 @@ type PropOf<P extends PropConfig<any>> = P extends { type: infer T }
           ? boolean
           : T extends Number
           ? number
-          : T extends String // ? string // : T extends Array
+          : T extends String
+          ? string
+          : T extends ArrayConstructor
           ? any[]
           : T extends Date
           ? Date
-          : never)
+          : T extends undefined
+          ? any
+          : any) // TODO!!!!!!!!!!! Must be <never>!!!!
       | (P extends { nullable: true } ? null : never)
   : never
 
