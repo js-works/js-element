@@ -619,11 +619,13 @@ const createCustomElementClass = (
           // TODO: This is ugly and buggy as hell - fix as soon as possible
           const getProps = () => ({ ...this._propsObject })
           const getCtx = () => ({ ...this._ctxObject })
+          const fn = config.view(this._ctrl, getProps, getCtx)
 
           this._render = () => {
-            const fn = config.view(this._ctrl, getProps, getCtx)
-
-            return () => fn(getProps(), getCtx())
+            console.log(222)
+            let ret = fn(getProps(), getCtx())
+            console.log(2, ret)
+            return ret
           }
         }
 

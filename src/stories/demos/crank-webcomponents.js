@@ -66,7 +66,7 @@ function convertFromCrankComponent(fn) {
     const gen = fn.call(context, getProps())
 
     return () => {
-      const content = gen.next(getProps())
+      const content = gen.next(getProps()).value
 
       console.log('content', content)
       return content

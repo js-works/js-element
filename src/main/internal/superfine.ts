@@ -55,6 +55,7 @@ var patchProperty = function (
 }
 
 var createNode = function (vnode: any, isSvg: any) {
+  console.log(1111, vnode.type, vnode)
   // TODO
   var node =
     vnode.type === TEXT_NODE

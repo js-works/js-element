@@ -80,7 +80,7 @@ const Counter = component('demo-counter', {
           'label',
           props.label,
           ': ',
-          h('button', { onclick: onDecrement }, '-')
+          h('button', { onclick: onIncrement }, '-')
         ),
         h('span', ' ', count),
         h('button', { onclick: onDecrement }, '+')
@@ -90,7 +90,7 @@ const Counter = component('demo-counter', {
 })
 
 const CrankyDemo = component('cranky-demo', function* () {
-  provideTheme(this, 'light')
+  //  provideTheme(this, 'light')
   console.log('generator 2')
   while (true) {
     yield h(Card, { headline: 'Counter demo' }, h(Counter))
