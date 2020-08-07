@@ -33,7 +33,8 @@ const TileRow = component('x-tile-row', {
   props: {
     tileWidth: prop.num.opt(3),
     columnCount: prop.num.opt(prefs.columnCount),
-    colors: prop.obj.opt(prefs.colors as any) // TODO!!!!
+    colors: prop.obj.opt(prefs.colors as any), // TODO!!!!
+    loop: prop.num.req() // TODO!!!
   },
 
   render(props) {
@@ -60,6 +61,8 @@ const SpeedTest = component('x-speed-test', {
   },
 
   main(c, props) {
+    let loop = 0
+
     let intervalId = null as any,
       startTime = Date.now(),
       frameCount = 0,
@@ -96,6 +99,7 @@ const SpeedTest = component('x-speed-test', {
             tileWidth={props.tileWidth}
             columnCount={props.columnCount}
             key={y}
+            loop={loop++}
           />
         )
       }
