@@ -16,6 +16,7 @@ const Tile = component('x-tile', {
   },
 
   render(props) {
+    /*
     const style = {
       float: 'left',
       width: props.width + 'px',
@@ -24,6 +25,15 @@ const Tile = component('x-tile', {
       padding: 0,
       margin: 0
     }
+    */
+    const style = `
+      float: left;
+      width: ${props.width}px;
+      height: ${props.width}px;
+      background-color: ${props.color};
+      padding: 0;
+      margin: 0;
+    `
 
     return <div style={style as any} /> // TODO
   }
@@ -47,7 +57,7 @@ const TileRow = component('x-tile-row', {
       tiles.push(<Tile width={props.tileWidth} color={color} key={x} />)
     }
 
-    return <div style={{ clear: 'both' }}>{tiles}</div>
+    return <div style="clear: both">{tiles}</div>
   }
 })
 
@@ -68,10 +78,14 @@ const SpeedTest = component('x-speed-test', {
       frameCount = 0,
       actualFramesPerSecond = '0'
 
+    /*
     const style = {
       marginTop: 40,
       marginLeft: 40
     }
+    */
+
+    const style = 'margin-top: 40px; margin-left: 40px'
 
     c.effect(() => {
       intervalId = setInterval(() => {
@@ -111,7 +125,7 @@ const SpeedTest = component('x-speed-test', {
             <div style={style}>{rows}</div>
           </div>
           <br />
-          <div style={{ clear: 'both' }}>
+          <div style="clear: both">
             (actual frames per second: {actualFramesPerSecond})
           </div>
         </div>

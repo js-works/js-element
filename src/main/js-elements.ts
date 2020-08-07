@@ -6,13 +6,14 @@ import {
   Methods
 } from './api/core'
 
-//import { h as createElement, patch, isElement } from './internal/superfine'
+import { h as createElement, patch, isElement } from './internal/superfine'
+/*
 import {
   createElement,
   isValidElement as isElement,
   render as patch
 } from './internal/preact'
-
+*/
 // === exports =======================================================
 
 export { component, provision, prop, h, Html, Svg, VElement, VNode }
@@ -38,7 +39,7 @@ type Component<P extends Props = {}, M extends Methods = {}> = (
 
 // === defineElement =================================================
 
-const defineElement = createAdaption(patch)
+const defineElement = createAdaption(superfineRenderer)
 
 // === render ========================================================
 
@@ -67,7 +68,6 @@ function render(content: VElement, container: Element | string) {
   target.innerHTML = ''
 
   if (content !== null) {
-    console.log(1111, content)
     patch(content, target)
   }
 }
