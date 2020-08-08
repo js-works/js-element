@@ -6,7 +6,56 @@ import {
   Methods
 } from './api/core'
 
-import { h as createElement, patch, isElement } from './internal/superfine'
+import { h as createElement, text, patch } from './internal/superfine'
+
+const EMPTY_OBJ = {}
+/*
+function h(type: any, props: any) {
+  // TODO
+  for (var vnode, rest = [], children = [], i = arguments.length; i-- > 2; ) {
+    rest.push(arguments[i])
+  }
+
+  while (rest.length > 0) {
+    if (Array.isArray((vnode = rest.pop()))) {
+      let i: any // TODO
+      for (i = vnode.length; i-- > 0; ) {
+        // TODO
+        rest.push(vnode[i])
+      }
+    } else if (vnode === false || vnode === true || vnode == null) {
+    } else {
+      children.push(typeof vnode === 'object' ? vnode : createTextVNode(vnode))
+    }
+  }
+
+  props = props || {}
+
+  return typeof name === 'function'
+    ? type(props, children)
+    : createVNode(name, props, children, null, props.key)
+}
+*/
+
+function h(type: any, props?: any, ...children: any[]): any {
+  const ret =
+    typeof type === 'function'
+      ? type(props, children)
+      : createElement(
+          type,
+          props || {},
+          []
+            .concat(...children)
+            .map((any) =>
+              typeof any === 'string' || typeof any === 'number'
+                ? text(any)
+                : any
+            )
+        )
+
+  return ret
+}
+
 /*
 import {
   createElement,
@@ -83,24 +132,6 @@ function superfineRenderer(content: VElement, target: Element) {
     target.appendChild(newTarget)
     patch(newTarget, content)
   }
-}
-
-function h(type: any, ...rest: any[]): any {
-  // TODO
-  const second = rest[0]
-
-  if (typeof type === 'function') {
-    type = (type as any)['js-elements:type']
-  }
-
-  if (
-    (second !== undefined && second !== null && typeof second !== 'object') ||
-    isElement(second)
-  ) {
-    rest.unshift(null)
-  }
-
-  return (createElement as any)(type, ...rest) // TODO
 }
 
 const component: FunctionDefineElement<VNode, Component<any>> = (
