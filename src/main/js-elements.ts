@@ -37,32 +37,46 @@ function h(type: any, props: any) {
 }
 */
 
-function h(type: any, props?: any, ...children: any[]): any {
-  const ret =
-    typeof type === 'function'
-      ? type(props, children)
-      : createElement(
-          type,
-          props || {},
-          []
-            .concat(...children)
-            .map((any) =>
-              typeof any === 'string' || typeof any === 'number'
-                ? text(any)
-                : any
-            )
-        )
+function h(
+  type: string | Component,
+  props?: Props | null | undefined,
+  ...children: VNode[]
+): VNode
 
+function h(t: string | Component, p?: null | Props | VNode): VNode {
+  const args = arguments
+  const argc = args.length
+  const type = typeof t === 'function' ? (t as any)['js-elements:type'] : t
+  const props = p && typeof p === 'object' && !p.isVElement ? p : EMPTY_OBJ
+
+  const firstChildIdx =
+    p === undefined || p === null || props !== EMPTY_OBJ ? 2 : 1
+
+  let children = null
+
+  if (firstChildIdx === argc - 1) {
+    children = args[firstChildIdx]
+  } else if (firstChildIdx < argc - 1) {
+    children = []
+
+    for (let i = firstChildIdx; i < argc; ++i) {
+      const child = args[i]
+
+      if (child !== undefined && child !== null && typeof child !== 'boolean') {
+        if (typeof child !== 'object') {
+          children.push(text(child))
+        } else {
+          children.push(child)
+        }
+      }
+    }
+  }
+
+  const ret: any = createElement(type, props, children)
+  ret.isVElement = true
   return ret
 }
 
-/*
-import {
-  createElement,
-  isValidElement as isElement,
-  render as patch
-} from './internal/preact'
-*/
 // === exports =======================================================
 
 export { component, provision, prop, h, Html, Svg, VElement, VNode }

@@ -1,5 +1,5 @@
 /* 
-  This is a fork of the base functionality of "superfine"
+  This code is copied 1:1 from "superfine".
   See: https://github.com/jorgebucaran/superfine
   Many thanks to Jorge for that great and very helpful superfine project.
 */
