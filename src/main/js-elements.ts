@@ -1,10 +1,6 @@
-import {
-  createAdaption,
-  prop,
-  provision,
-  FunctionDefineElement,
-  Methods
-} from './core/core'
+import { createAdaption, prop, provision } from './core/core'
+
+import { FunctionDefineElement, Methods } from './core/types'
 
 import { h as createElement, text, patch } from './libs/superfine'
 

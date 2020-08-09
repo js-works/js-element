@@ -1,171 +1,26 @@
-import { Action, AnyElement, Ctrl, Message, Methods } from '../libs/types'
+import {
+  Action,
+  AnyElement,
+  Class,
+  Ctrl,
+  FunctionDefineElement,
+  Message,
+  Methods,
+  Notifier,
+  PropConfig,
+  Renderer
+} from './types'
+
 import { isEqualArray } from './utils'
 import { checkComponentConfig, isValidTagName } from './validation'
 
 // === exports =======================================================
 
-export {
-  createAdaption,
-  provision,
-  propConfigBuilder as prop,
-  FunctionDefineElement,
-  Methods
-}
+export { createAdaption, provision, propConfigBuilder as prop }
 
 // === constants =====================================================
 
-// --- general constants ---
-
 const MESSAGE_EVENT_TYPE = 'js-element:###message###'
-
-// === types =========================================================
-
-type Class<T> = {
-  new (...arg: any[]): T
-}
-
-type Renderer = (content: any, target: Element) => void
-
-type Notifier = {
-  subscribe(subscriber: () => void): void
-  notify(): void
-}
-
-type PropConfig<T> = {
-  type?: T extends boolean
-    ? BooleanConstructor
-    : T extends number
-    ? NumberConstructor
-    : T extends string
-    ? StringConstructor
-    : T extends object
-    ? ObjectConstructor
-    : T extends Function
-    ? FunctionConstructor
-    : T extends undefined
-    ? any
-    : T extends unknown
-    ? any
-    : never
-
-  nullable?: boolean
-  required?: boolean
-  defaultValue?: T
-}
-
-type PropsConfig = {
-  [key: string]: PropConfig<any>
-}
-
-type CtxConfig = Record<string, (c: Ctrl) => any>
-
-type ExternalPropsOf<P extends PropsConfig> = Pick<
-  { [K in keyof P]?: PropOf<P[K]> },
-  { [K in keyof P]: P[K] extends { required: true } ? never : K }[keyof P]
-> &
-  Pick<
-    { [K in keyof P]: PropOf<P[K]> },
-    { [K in keyof P]: P[K] extends { required: true } ? K : never }[keyof P]
-  >
-
-type InternalPropsOf<PC extends PropsConfig> = Pick<
-  { [K in keyof PC]: PropOf<PC[K]> },
-  {
-    [K in keyof PC]: PC[K] extends { defaultValue: any }
-      ? K
-      : PC[K] extends { required: true }
-      ? K
-      : never
-  }[keyof PC]
-> &
-  Pick<
-    { [K in keyof PC]?: PropOf<PC[K]> },
-    {
-      [K in keyof PC]: PC[K] extends { defaultValue: any }
-        ? never
-        : PC[K] extends { required: true }
-        ? never
-        : K
-    }[keyof PC]
-  >
-
-type PropOf<P extends PropConfig<any>> = P extends { type: infer T }
-  ?
-      | (T extends Boolean
-          ? boolean
-          : T extends Number
-          ? number
-          : T extends String
-          ? string
-          : T extends ArrayConstructor
-          ? any[]
-          : T extends Date
-          ? Date
-          : T extends undefined
-          ? any
-          : any) // TODO!!!!!!!!!!! Must be <never>!!!!
-      | (P extends { nullable: true } ? null : never)
-  : never
-
-type CtxOf<CC extends CtxConfig> = {
-  [K in keyof CC]: ReturnType<CC[K]>
-}
-/*
-type CtxTypeOf<C extends CtxConfig> = C extends (
-  c: Ctrl
-) => Record<infer K, () => infer R>
-  ? Record<K, R>
-  : C extends Record<infer K, () => infer R>
-  ? Record<K, R>
-  : never
-*/
-
-type FunctionDefineElement<O, R> = {
-  (name: string, main: (c: Ctrl) => () => O): R
-  (name: string, render: () => O): R
-
-  <PC extends PropsConfig, CC extends CtxConfig>(
-    name: string,
-
-    config: {
-      props?: PC
-      ctx?: CC
-      styles?: string | (() => string)
-      slots?: string[]
-      methods?: string[]
-
-      main(c: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>): () => O
-    }
-  ): R
-
-  <PC extends PropsConfig, CC extends CtxConfig>(
-    name: string,
-
-    config: {
-      props?: PC
-      ctx?: CC
-      styles?: string | (() => string)
-      slots?: string[]
-      methods?: string[]
-      view(
-        c: Ctrl,
-        getProps: () => InternalPropsOf<PC>,
-        getCtx: () => CtxOf<CC>
-      ): () => O
-    }
-  ): R
-
-  <PC extends PropsConfig, CC extends CtxConfig>(
-    name: string,
-    config: {
-      props?: PC
-      ctx?: CC
-      styles?: string | string[]
-      slots?: string[]
-      render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): O
-    }
-  ): R
-}
 
 // === createAdaption ================================================
 
