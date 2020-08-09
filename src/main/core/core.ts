@@ -11,6 +11,7 @@ import {
   Renderer
 } from './types'
 
+import { PropNameManager } from './PropNameManager'
 import { createNotifier, isEqualArray } from './utils'
 import { checkComponentConfig, isValidTagName } from './validation'
 
@@ -90,34 +91,25 @@ const createCustomElementClass = (
   renderer: Renderer
 ) => {
   const propNames = config.props ? Object.keys(config.props) : []
-  const ctxKeys = config.ctx ? Object.keys(config.ctx) : []
-  const eventPropNames = propNames.filter(isEventPropName)
 
-  const eventNames = new Set(
-    eventPropNames.map((it) => eventPropNameToEventName(it))
-  )
-
-  const attrNameToPropNameMap = new Map<string, string>()
-
-  for (const propName of propNames) {
-    if (!isEventPropName(propName)) {
-      attrNameToPropNameMap.set(propNameToAttrName(propName), propName)
-    }
-  }
-
-  const observedAttributes = propNames
-    .filter((propName) => {
+  const propNameMgr = new PropNameManager(
+    propNames.reduce((acc: Map<string, boolean>, propName) => {
       const type = config.props[propName].type
-
-      return (
+      const alsoAsAttribute =
         type &&
         type !== Object &&
         type !== Array &&
-        type !== Date &&
-        !isEventPropName(propName)
-      )
-    })
-    .map(propNameToAttrName)
+        (propName.substr(0, 2) !== 'on' ||
+          propName[3] < 'A' ||
+          propName[3] > 'Z')
+
+      acc.set(propName, alsoAsAttribute)
+      return acc
+    }, new Map())
+  )
+
+  const ctxKeys = config.ctx ? Object.keys(config.ctx) : []
+  const observedAttributes = Array.from(propNameMgr.getAttributNames())
 
   const customElementClass = class extends HTMLElement {
     private _ctrl: Ctrl
@@ -141,7 +133,7 @@ const createCustomElementClass = (
       super()
       const self = this
 
-      for (const propName of propNames.filter((it) => !isEventPropName(it))) {
+      for (const propName of propNameMgr.getEventPropNames()) {
         Object.defineProperty(this, propName, {
           get() {
             this._propsObject[propName]
@@ -391,7 +383,7 @@ const createCustomElementClass = (
     }
 
     attributeChangedCallback(attrName: string, _: any, value: any) {
-      const normalizedPropName = attrNameToPropNameMap.get(
+      const normalizedPropName = propNameMgr.attrNameToPropName(
         attrName.toLocaleLowerCase()
       )
 
@@ -403,7 +395,7 @@ const createCustomElementClass = (
     }
 
     addEventListener(this: any, eventName: string, callback: any) {
-      if (eventNames.has(eventName)) {
+      if (propNameMgr.getEventNames().has(eventName)) {
         this._listenersByEventName = this._listenersByEventName || {}
 
         this._listenersByEventName[eventName] =
@@ -441,8 +433,8 @@ const createCustomElementClass = (
       for (const propName of propNames) {
         ret[propName] = config.props[propName].defaultValue
 
-        if (isEventPropName(propName)) {
-          const eventName = eventPropNameToEventName(propName)
+        if (propNameMgr.isEventPropName(propName)) {
+          const eventName = propNameMgr.eventPropNameToEventName(propName)
 
           Object.defineProperty(ret, propName, {
             get() {
@@ -518,20 +510,3 @@ defineElement('store-provider', {
   }
 })
 */
-
-// === helpers =======================================================
-
-function isEventPropName(name: string) {
-  return name.match(/^on[A-Z][a-z0-9]*/)
-}
-
-function eventPropNameToEventName(eventPropName: string) {
-  return eventPropName[2].toLowerCase() + eventPropName.substr(3)
-}
-
-function propNameToAttrName(propName: string) {
-  return propName
-    .replace(/(.)([A-Z])([A-Z]+)([A-Z])/g, '$1-$2$3-$4')
-    .replace(/([a-z0-0])([A-Z])/g, '$1-$2')
-    .toLowerCase()
-}
