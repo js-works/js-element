@@ -11,12 +11,12 @@ import {
   Renderer
 } from './types'
 
-import { isEqualArray } from './utils'
+import { createNotifier, isEqualArray } from './utils'
 import { checkComponentConfig, isValidTagName } from './validation'
 
 // === exports =======================================================
 
-export { createAdaption, provision, propConfigBuilder as prop }
+export { createAdaption }
 
 // === constants =====================================================
 
@@ -482,112 +482,6 @@ const createCustomElementClass = (
   return customElementClass
 }
 
-// === provision =====================================================
-
-type ProvisionSubscriber<T> = {
-  notifyChange(newValue: T): void
-}
-
-let counter = 0
-
-function getNewEventType(): string {
-  return `$$provision$$_${++counter}`
-}
-
-function provision<T>(
-  name: string,
-  defaultValue: T
-): [(c: Ctrl, value: T) => void, (c: Ctrl) => T] {
-  const subscribeEventType = getNewEventType()
-  const providersMap = new Map<Ctrl, [T, Set<ProvisionSubscriber<any>>]>()
-  const consumersMap = new Map<Ctrl, () => T>()
-
-  const provideProvision = (c: Ctrl, value: T) => {
-    if (!providersMap.has(c)) {
-      if (c.isMounted()) {
-        throw new Error(
-          'First invocation of provision provider function must be performed before first component rendering'
-        )
-      }
-
-      const onSubscribe = (ev: any) => {
-        ev.stopPropagation()
-        const subscriber = ev.detail
-        const [value, subscribers] = providersMap.get(c)!
-
-        subscribers.add(subscriber)
-
-        subscriber.cancelled.then(() => {
-          subscribers.delete(subscriber)
-        })
-
-        subscriber.notifyChange(value)
-      }
-
-      providersMap.set(c, [value, new Set()])
-      c.getContentElement().addEventListener(subscribeEventType, onSubscribe)
-
-      c.beforeUnmount(() => {
-        c.getContentElement().removeEventListener(
-          subscribeEventType,
-          onSubscribe
-        )
-        providersMap.delete(c)
-      })
-    } else {
-      const data = providersMap.get(c)!
-
-      if (value !== data[0]) {
-        data[0] = value
-
-        data[1].forEach((subscriber) => {
-          subscriber.notifyChange(value)
-        })
-      }
-    }
-  }
-
-  const consumeProvision = function (c: Ctrl) {
-    let currentValue: T
-    let getter = consumersMap.get(c)
-
-    if (!getter) {
-      if (c.isMounted()) {
-        throw new Error(
-          'First invocation of provision consumer function must be performed before first component rendering'
-        )
-      }
-
-      getter = () => (currentValue !== undefined ? currentValue : defaultValue)
-      consumersMap.set(c, getter)
-
-      let cancel: any = null // will be set below // TODO
-
-      c.beforeUnmount(() => cancel && cancel())
-
-      c.getElement().dispatchEvent(
-        new CustomEvent(subscribeEventType, {
-          bubbles: true,
-          detail: {
-            notifyChange(newValue) {
-              currentValue = newValue
-              c.refresh() // TODO: optimize
-            },
-
-            cancelled: new Promise((resolve) => {
-              cancel = resolve
-            })
-          } as ProvisionSubscriber<T>
-        })
-      )
-    }
-
-    return getter()
-  }
-
-  return [provideProvision, consumeProvision]
-}
-
 /*
 // === StoreProvider =================================================
 
@@ -624,21 +518,6 @@ defineElement('store-provider', {
   }
 })
 */
-// === createNotifier ================================================
-
-function createNotifier(): Notifier {
-  const subscribers: (() => void)[] = []
-
-  return {
-    subscribe(subscriber: () => void) {
-      subscribers.push(subscriber)
-    },
-
-    notify() {
-      subscribers.forEach((subscriber) => subscriber())
-    }
-  }
-}
 
 // === helpers =======================================================
 
@@ -656,96 +535,3 @@ function propNameToAttrName(propName: string) {
     .replace(/([a-z0-0])([A-Z])/g, '$1-$2')
     .toLowerCase()
 }
-
-// === propConfigBuilder =============================================
-
-type F<C, T> = Readonly<{
-  nul: Readonly<{
-    req(): { type: C; nullable: true; required: true }
-
-    opt: {
-      (): { type: C; nullable: true }
-      (defaultValue: T): { type: C; nullable: true; defaultValue: T }
-    }
-  }>
-
-  req(): { type: C; required: true }
-
-  opt: {
-    (): { type: T }
-    (defaultValue: T): { type: C; defaultValue: T }
-  }
-}>
-
-type G = Readonly<{
-  bool: F<Boolean, boolean>
-  num: F<Number, number>
-  str: F<String, string>
-  obj: F<Object, object>
-  func: F<Function, (...args: any[]) => any>
-
-  req(): { required: true }
-
-  opt: {
-    (): {}
-    (defaultValue: any): { defaultValue: any }
-  }
-}>
-
-const reqAndOpt = <T>(
-  type: PropConfig<any>['type'] | null,
-  nullable: boolean
-) => ({
-  req: () => propConfig(type, nullable, true, undefined, false),
-
-  opt: (defaultValue?: T, isGetter: boolean = false) =>
-    propConfig(type, nullable, false, defaultValue, isGetter)
-})
-
-const typedProp = <T extends Class<any>>(type: T) => ({
-  nul: reqAndOpt(type, true),
-  ...reqAndOpt(type, false)
-})
-
-const propConfig = <T>(
-  type: PropConfig<any>['type'],
-
-  //  | BooleanConstructor
-  //  | NumberConstructor
-  //  | StringConstructor
-  //  | ObjectConstructor
-  //  | FunctionConstructor,
-  // | ArrayConstructor
-  // | DateConstructor,
-  nullable: boolean,
-  required: boolean,
-  defaultValue: T | undefined,
-  defaultValueIsGetter: boolean
-): PropConfig<T> => {
-  const ret: PropConfig<T> = {}
-
-  type && (ret.type = type)
-  nullable && (ret.nullable = true)
-  required && (ret.required = true)
-
-  if (defaultValue !== undefined) {
-    if (defaultValueIsGetter && typeof defaultValue === 'function') {
-      Object.defineProperty(ret, 'defaultValue', {
-        get: defaultValue as any // TODO
-      })
-    } else {
-      ret.defaultValue = defaultValue
-    }
-  }
-
-  return Object.freeze(ret)
-}
-
-const propConfigBuilder = (Object.freeze({
-  bool: typedProp(Boolean),
-  num: typedProp(Number),
-  str: typedProp(String),
-  obj: typedProp(Object),
-  func: typedProp(Function),
-  ...reqAndOpt(null, false)
-}) as any) as G

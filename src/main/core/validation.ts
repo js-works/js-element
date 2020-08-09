@@ -30,7 +30,7 @@ function isValidTagName(name: string): boolean {
   return typeof name === 'string' && REGEX_TAG_NAME.test(name)
 }
 
-// === component configuration validation ============================
+// === checkComponentConfig ==========================================
 
 function checkComponentConfig(config: any) {
   if (config === undefined) {

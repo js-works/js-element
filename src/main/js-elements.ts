@@ -1,4 +1,6 @@
-import { createAdaption, prop, provision } from './core/core'
+import { createAdaption } from './core/core'
+import { propConfigBuilder } from './core/propConfigBuilder'
+import { provision } from './core/provision'
 
 import { FunctionDefineElement, Methods } from './core/types'
 
@@ -75,7 +77,16 @@ function h(t: string | Component, p?: null | Props | VNode): VNode {
 
 // === exports =======================================================
 
-export { component, provision, prop, h, Html, Svg, VElement, VNode }
+export {
+  component,
+  provision,
+  propConfigBuilder as prop,
+  h,
+  Html,
+  Svg,
+  VElement,
+  VNode
+}
 
 // ===================================================================
 

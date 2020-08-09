@@ -1,9 +1,17 @@
 import { html, render, TemplateResult } from './libs/lit-html'
-import { createAdaption, prop, provision } from './core/core'
+import { createAdaption } from './core/core'
+import { propConfigBuilder } from './core/propConfigBuilder'
+import { provision } from './core/provision'
 
 // === exports =======================================================
 
-export { defineElement, html, prop, provision, TemplateResult }
+export {
+  defineElement,
+  html,
+  propConfigBuilder as prop,
+  provision,
+  TemplateResult
+}
 
 // === defineElement =================================================
 
