@@ -1,5 +1,5 @@
-import { html, render, TemplateResult } from './internal/lit-html'
-import { createAdaption, prop, provision } from './api/core'
+import { html, render, TemplateResult } from './libs/lit-html'
+import { createAdaption, prop, provision } from './core/core'
 
 // === exports =======================================================
 

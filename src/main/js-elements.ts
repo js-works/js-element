@@ -4,9 +4,9 @@ import {
   provision,
   FunctionDefineElement,
   Methods
-} from './api/core'
+} from './core/core'
 
-import { h as createElement, text, patch } from './internal/superfine'
+import { h as createElement, text, patch } from './libs/superfine'
 
 const EMPTY_OBJ = {}
 /*

@@ -1,4 +1,4 @@
-import { createElement as h } from '../../main/internal/crank'
+import { createElement as h } from '../../main/libs/crank'
 import { defineCrankElement, prop } from '../../main/js-elements-crank'
 
 function* Counter(this: any, props: any) {
