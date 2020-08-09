@@ -11,8 +11,9 @@ import {
   Renderer
 } from './types'
 
-import { PropNameManager } from './PropNameManager'
-import { createNotifier, isEqualArray } from './utils'
+import { createNotifier } from './notifiers'
+import { PropNamesManager } from './prop-names'
+import { isEqualArray } from './utils'
 import { checkComponentConfig, isValidTagName } from './validation'
 
 // === exports =======================================================
@@ -92,7 +93,7 @@ const createCustomElementClass = (
 ) => {
   const propNames = config.props ? Object.keys(config.props) : []
 
-  const propNameMgr = new PropNameManager(
+  const propNamesMgr = new PropNamesManager(
     propNames.reduce((acc: Map<string, boolean>, propName) => {
       const type = config.props[propName].type
       const alsoAsAttribute =
@@ -109,7 +110,7 @@ const createCustomElementClass = (
   )
 
   const ctxKeys = config.ctx ? Object.keys(config.ctx) : []
-  const observedAttributes = Array.from(propNameMgr.getAttributNames())
+  const observedAttributes = Array.from(propNamesMgr.getAttributNames())
 
   const customElementClass = class extends HTMLElement {
     private _ctrl: Ctrl
@@ -133,7 +134,7 @@ const createCustomElementClass = (
       super()
       const self = this
 
-      for (const propName of propNameMgr.getEventPropNames()) {
+      for (const propName of propNamesMgr.getEventPropNames()) {
         Object.defineProperty(this, propName, {
           get() {
             this._propsObject[propName]
@@ -383,7 +384,7 @@ const createCustomElementClass = (
     }
 
     attributeChangedCallback(attrName: string, _: any, value: any) {
-      const normalizedPropName = propNameMgr.attrNameToPropName(
+      const normalizedPropName = propNamesMgr.attrNameToPropName(
         attrName.toLocaleLowerCase()
       )
 
@@ -395,7 +396,7 @@ const createCustomElementClass = (
     }
 
     addEventListener(this: any, eventName: string, callback: any) {
-      if (propNameMgr.getEventNames().has(eventName)) {
+      if (propNamesMgr.getEventNames().has(eventName)) {
         this._listenersByEventName = this._listenersByEventName || {}
 
         this._listenersByEventName[eventName] =
@@ -433,8 +434,8 @@ const createCustomElementClass = (
       for (const propName of propNames) {
         ret[propName] = config.props[propName].defaultValue
 
-        if (propNameMgr.isEventPropName(propName)) {
-          const eventName = propNameMgr.eventPropNameToEventName(propName)
+        if (propNamesMgr.isEventPropName(propName)) {
+          const eventName = propNamesMgr.eventPropNameToEventName(propName)
 
           Object.defineProperty(ret, propName, {
             get() {
@@ -473,40 +474,3 @@ const createCustomElementClass = (
 
   return customElementClass
 }
-
-/*
-// === StoreProvider =================================================
-
-defineElement('store-provider', {
-  props: {
-    store: {
-      required: true
-    }
-  },
-
-  main(c, props) {
-    let key = 0
-
-    c.effect(
-      () => {
-        const unsubscribe1 = c.receive((msg: Message) => {
-          ;(props.store as any).dispatch(msg) // TODO
-        })
-
-        // TODO
-        const unsubscribe2 = (props.store as any).subscribe(() => {
-          c.refresh()
-        })
-
-        return () => {
-          unsubscribe1()
-          unsubscribe2()
-        }
-      },
-      () => [props.store]
-    )
-
-    return html`<slot></slot>`
-  }
-})
-*/

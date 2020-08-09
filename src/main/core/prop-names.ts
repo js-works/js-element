@@ -1,6 +1,6 @@
 // === exports =======================================================
 
-export { PropNameManager }
+export { PropNamesManager }
 
 // === name converters ===============================================
 
@@ -19,24 +19,24 @@ function propNameToAttrName(propName: string) {
     .toLowerCase()
 }
 
-// === PropNameManager ===============================================
+// === PropNamesManager ==============================================
 
-class PropNameManager {
+class PropNamesManager {
   private _propNames: Set<string> = new Set()
   private _attrNames: Set<string> = new Set()
   private _eventNames: Set<string> = new Set()
   private _eventPropNames: Set<string> = new Set()
-  private _attrNameToPropNameMap: Map<string, string> = new Map()
+  private _attrNameToPropNamesMap: Map<string, string> = new Map()
   private _eventPropNameToEventNameMap: Map<string, string> = new Map()
 
-  constructor(propNameMap: Map<string, boolean>) {
-    for (const [propName, isAttribute] of propNameMap.entries()) {
+  constructor(propNamesMap: Map<string, boolean>) {
+    for (const [propName, isAttribute] of propNamesMap.entries()) {
       this._propNames.add(propName)
 
       if (isAttribute) {
         const attrName = propNameToAttrName(propName)
         this._attrNames.add(attrName)
-        this._attrNameToPropNameMap.set(attrName, propName)
+        this._attrNameToPropNamesMap.set(attrName, propName)
       }
 
       if (isEventPropName(propName)) {
@@ -61,7 +61,7 @@ class PropNameManager {
   }
 
   attrNameToPropName(attrName: string): string {
-    let ret = this._attrNameToPropNameMap.get(attrName)
+    let ret = this._attrNameToPropNamesMap.get(attrName)
 
     if (!ret) {
       throw new Error(`Unknown attribute name "${attrName}"`)

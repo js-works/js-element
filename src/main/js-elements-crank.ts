@@ -1,6 +1,6 @@
 // === imports =================================================
 
-import { createAdaption } from './core/core'
+import { createAdaption } from './core/adaption'
 import { propConfigBuilder } from './core/propConfigBuilder'
 import { renderer, Element as CrankElement } from './libs/crank'
 

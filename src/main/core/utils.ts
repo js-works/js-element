@@ -4,7 +4,7 @@ import { Notifier } from './types'
 
 // === exports =======================================================
 
-export { createNotifier, isEqualArray, hasOwnProp }
+export { isEqualArray, hasOwnProp }
 
 // === utils =========================================================
 
@@ -26,20 +26,4 @@ function isEqualArray(arr1: any[], arr2: any[]) {
   }
 
   return ret
-}
-
-// === createNotifier ================================================
-
-function createNotifier(): Notifier {
-  const subscribers: (() => void)[] = []
-
-  return {
-    subscribe(subscriber: () => void) {
-      subscribers.push(subscriber)
-    },
-
-    notify() {
-      subscribers.forEach((subscriber) => subscriber())
-    }
-  }
 }
