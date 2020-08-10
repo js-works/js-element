@@ -21,7 +21,7 @@ export default configs
 // --- locals -------------------------------------------------------
 
 function createConfig(pkg, moduleFormat, productive) {
-  const env = productive ? 'productive' : 'development'
+  const env = productive ? 'production' : 'development'
 
   return {
     input:
