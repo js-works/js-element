@@ -135,12 +135,29 @@ const createCustomElementClass = (
       const self = this
 
       for (const propName of propNamesMgr.getPropNames()) {
+        const isEventProp = propNamesMgr.isEventPropName(propName)
+        const eventName = isEventProp
+          ? propNamesMgr.eventPropNameToEventName(propName)
+          : null
+
         Object.defineProperty(this, propName, {
           get() {
             this._propsObject[propName]
           },
 
           set(value: any) {
+            if (isEventProp) {
+              const oldValue = this._propsObject[propName]
+
+              if (typeof oldValue === 'function') {
+                this.removeEventListener(eventName, oldValue)
+              }
+
+              if (typeof value === 'function') {
+                this.addEventListener(eventName, value)
+              }
+            }
+
             // TODO: Validation?
             this._propsObject[propName] = value
             this._ctrl.refresh()

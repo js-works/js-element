@@ -21,20 +21,21 @@ const buttonDemoStyles = `
 defineElement('demo-button', {
   props: {
     text: prop.str.opt(''),
-    onButtonAction: prop.func.opt()
+    onClick: prop.func.opt()
   },
 
   styles: buttonDemoStyles,
 
   main(c, props) {
     const onClick = () => {
-      if (props.onButtonAction) {
-        //props.onButtonAction(new CustomEvent('buttonaction')) // TODO
+      console.log('click', props)
+      if (props.onClick) {
+        props.onClick(new CustomEvent('buttonaction')) // TODO
       }
     }
 
     return () => html`
-      <button class="demo-button" @click=${onClick}>${props.text}</button>
+      <button class="demo-button" onClick=${onClick}>${props.text}</button>
     `
   }
 })
@@ -45,7 +46,7 @@ defineElement('button-demo', () => {
   return html`
     <div>
       <h3>Button demo</h3>
-      <demo-button @buttonAction="${onButtonAction}" text="Click me" />
+      <demo-button @click="${onButtonAction}" text="Click me" />
     </div>
   `
 })
