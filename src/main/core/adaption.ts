@@ -134,7 +134,7 @@ const createCustomElementClass = (
       super()
       const self = this
 
-      for (const propName of propNamesMgr.getEventPropNames()) {
+      for (const propName of propNamesMgr.getPropNames()) {
         Object.defineProperty(this, propName, {
           get() {
             this._propsObject[propName]

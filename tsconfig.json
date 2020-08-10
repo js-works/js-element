@@ -25,8 +25,7 @@
     "src/main/js-elements.ts",
     "src/main/js-elements-lit-html.ts",
     "src/main/js-elements-ext.ts",
-    "src/main/js-elements-preact.ts",
-    "src/main/js-elements-crank.ts"
+    "src/main/js-elements-preact.ts"
   ],
 
   "include": ["./src/**/*.*"],

@@ -79,6 +79,7 @@ function h(t: string | Component, p?: null | Props | VNode): VNode {
 
 export {
   component,
+  createAdaption, // TODO - has to be removed later
   provision,
   propConfigBuilder as prop,
   h,

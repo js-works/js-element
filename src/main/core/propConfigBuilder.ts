@@ -1,6 +1,6 @@
 // === imports =======================================================
 
-import { Class, PropConfig } from 'types'
+import { Class, PropConfig } from './types'
 
 // === exports =======================================================
 

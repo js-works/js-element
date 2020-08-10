@@ -1,6 +1,6 @@
 {
   "name": "js-elements",
-  "version": "0.0.59",
+  "version": "0.0.61",
   "description": "",
   "main": "index.js",
   "module": "dist/js-elements.esm.producion.js",
@@ -12,8 +12,7 @@
     "dist",
     "ext",
     "lit-html",
-    "preact",
-    "crank"
+    "preact"
   ],
   "scripts": {
     "clean": "shx rm -rf ./build ./dist",
