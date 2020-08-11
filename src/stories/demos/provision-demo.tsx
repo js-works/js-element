@@ -20,12 +20,12 @@ component('provision-demo', (c) => {
     <div>
       <b>Value for theme will change every second:</b>
       <br />
-      <theme-info></theme-info>
+      <ThemeInfo />
     </div>
   )
 })
 
-component('theme-info', {
+const ThemeInfo = component('theme-info', {
   ctx: {
     theme: consumeTheme
   },

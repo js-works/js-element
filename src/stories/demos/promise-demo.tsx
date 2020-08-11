@@ -1,7 +1,7 @@
 import { component, h, prop } from '../../main/js-elements'
 import { usePromise, useState } from '../../main/js-elements-ext'
 
-component('data-loader', {
+const DataLoader = component('data-loader', {
   props: {
     loadingText: prop.str.opt('Loading...'),
     finishText: prop.str.opt('Finished!'),
@@ -46,10 +46,10 @@ component('promise-demo', (c) => {
     <div>
       <h3>Demo (last update {getTime()})</h3>
       <section>
-        <data-loader
+        <DataLoader
           key={state.key}
-          loading-text={state.loadingText}
-          finish-text={state.finishText}
+          loadingText={state.loadingText}
+          finishText={state.finishText}
         />
       </section>
       <br />
