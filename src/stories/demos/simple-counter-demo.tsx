@@ -1,6 +1,7 @@
-import { defineElement, html, prop } from '../../main/js-elements-lit-html'
+/** @jsx h */
+import { component, h, prop } from '../../main/js-elements'
 
-defineElement('simple-counter', {
+const SimpleCounter = component('simple-counter', {
   props: {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
@@ -23,23 +24,20 @@ defineElement('simple-counter', {
       () => [count]
     )
 
-    return () => html`
+    return () => (
       <div>
-        <label>${props.label}: </label>
-        <button @click=${onIncrement}>
-          ${count}
-        </button>
+        <label>{props.label}: </label>
+        <button onClick={onIncrement}>{count}</button>
       </div>
-    `
+    )
   }
 })
 
-defineElement(
-  'simple-counter-demo',
-  () => html`
+component('simple-counter-demo', () => (
+  <div>
+    <h3>Counter demo</h3>
     <div>
-      <h3>Counter demo</h3>
-      <div><simple-counter></simple-counter></div>
+      <SimpleCounter />
     </div>
-  `
-)
+  </div>
+))

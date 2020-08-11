@@ -1,7 +1,7 @@
 /** @jsx h */
 import { component, h, prop } from '../../main/js-elements'
 
-component('simple-counter-jsx', {
+const SimpleCounterJsx = component('simple-counter-jsx', {
   props: {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
@@ -24,20 +24,20 @@ component('simple-counter-jsx', {
       () => [count]
     )
 
-    return () =>
-      h(
-        'div',
-        null,
-        h('label', null, props.label),
-        h('button', { onClick: onIncrement }, count)
-      )
+    return () => (
+      <div>
+        <label>{props.label}: </label>
+        <button onClick={onIncrement}>{count}</button>
+      </div>
+    )
   }
 })
 
-component('simple-counter-jsx-demo', () =>
-  h(
-    'div',
-    null,
-    h('h3', null, 'Counter demo', h('div', null, h('simple-counter')))
-  )
-)
+component('simple-counter-jsx-demo', () => (
+  <div>
+    <h3>Counter demo</h3>
+    <div>
+      <SimpleCounterJsx />
+    </div>
+  </div>
+))

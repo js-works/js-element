@@ -1,4 +1,4 @@
-import { defineElement, html, prop } from '../../main/js-elements-lit-html'
+import { component, h, prop } from '../../main/js-elements'
 
 const buttonDemoStyles = ` 
   .demo-button {
@@ -18,7 +18,7 @@ const buttonDemoStyles = `
   }
 `
 
-defineElement('demo-button', {
+const DemoButton = component('demo-button', {
   props: {
     text: prop.str.opt(''),
     onClick: prop.func.opt()
@@ -34,19 +34,21 @@ defineElement('demo-button', {
       }
     }
 
-    return () => html`
-      <button class="demo-button" onClick=${onClick}>${props.text}</button>
-    `
+    return () => (
+      <button className="demo-button" onClick={onClick}>
+        {props.text}
+      </button>
+    )
   }
 })
 
-defineElement('button-demo', () => {
+component('button-demo', () => {
   const onButtonAction = (e: any) => alert(e.type) // TODO
 
-  return html`
+  return (
     <div>
       <h3>Button demo</h3>
-      <demo-button @click="${onButtonAction}" text="Click me" />
+      <DemoButton onClick={onButtonAction} text="Click me" />
     </div>
-  `
+  )
 })

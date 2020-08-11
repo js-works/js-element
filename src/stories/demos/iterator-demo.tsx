@@ -1,4 +1,4 @@
-import { defineElement, html } from '../../main/js-elements-lit-html'
+import { component, h } from '../../main/js-elements'
 
 const demoContent = {
   *[Symbol.iterator]() {
@@ -39,16 +39,15 @@ const demoContent = {
   }
 }
 
-defineElement('iterator-demo', () => {
-  return html`
+component('iterator-demo', () => {
+  return (
     <div>
       <div>
-        If everything works fine then the following line should be: "<i
-          >Iterators seem to work properly!</i
-        >"
+        If everything works fine then the following line should be: "
+        <i>Iterators seem to work properly!</i>"
       </div>
       <br />
-      <div>&gt;&gt; ${demoContent}</div>
+      <div>&gt;&gt; {demoContent}</div>
     </div>
-  `
+  )
 })

@@ -43,7 +43,7 @@ type Ctrl = {
 
   // js-elements specific control functions
   update(action: Action): void
-  updateFn<A extends any[]>(fn: (...args: A) => void): void
+  updateFn<A extends any[]>(fn: (...args: A) => void): (...args: A) => void
   getElement(): Element
   getContentElement(): Element
   effect(action: Action, getDeps?: null | (() => any[])): void

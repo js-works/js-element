@@ -1,11 +1,11 @@
-import { defineElement, html, prop } from '../../main/js-elements-lit-html'
+import { component, h, prop } from '../../main/js-elements'
 import { useState } from '../../main/js-elements-ext'
 
 type CounterMethods = {
   reset(n: number): void
 }
 
-defineElement('complex-counter', {
+const ComplexCounter = component('complex-counter', {
   props: {
     initialValue: prop.num.opt(0),
     label: prop.str.opt('Counter'),
@@ -41,29 +41,29 @@ defineElement('complex-counter', {
       () => [state.count]
     )
 
-    return () => html`
+    return () => (
       <div>
-        <label>${props.label}: </label>
-        <button @click=${onDecrement}>-</button>
-        <span>${state.count} </span>
-        <button @click=${onIncrement}>+</button>
+        <label>{props.label}: </label>
+        <button onClick={onDecrement}>-</button>
+        <span> {state.count} </span>
+        <button onClick={onIncrement}>+</button>
       </div>
-    `
+    )
   }
 })
 
-defineElement('complex-counter-demo', (c) => {
+component('complex-counter-demo', (c) => {
   const findCounter = () => c.find<CounterMethods>('[data-counter]')!
   const onSetTo0 = () => findCounter().reset(0)
   const onSetTo100 = () => findCounter().reset(100)
 
-  return () => html`
+  return () => (
     <div>
       <h3>Complex counter demo</h3>
-      <complex-counter data-counter></complex-counter>
+      <ComplexCounter data-counter></ComplexCounter>
       <br />
-      <button @click=${onSetTo0}>Set to 0</button>
-      <button @click=${onSetTo100}>Set to 100</button>
+      <button onClick={onSetTo0}>Set to 0</button>
+      <button onClick={onSetTo100}>Set to 100</button>
     </div>
-  `
+  )
 })

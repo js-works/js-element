@@ -1,9 +1,9 @@
-import { defineElement, provision, html } from '../../main/js-elements-lit-html'
+import { component, provision, h } from '../../main/js-elements'
 import { useInterval } from '../../main/js-elements-ext'
 
 const [provideTheme, consumeTheme] = provision('theme', 'light')
 
-defineElement('provision-demo', (c) => {
+component('provision-demo', (c) => {
   let theme = 'light'
   provideTheme(c, theme)
 
@@ -16,21 +16,21 @@ defineElement('provision-demo', (c) => {
     1000
   )
 
-  return () => html`
+  return () => (
     <div>
       <b>Value for theme will change every second:</b>
       <br />
       <theme-info></theme-info>
     </div>
-  `
+  )
 })
 
-defineElement('theme-info', {
+component('theme-info', {
   ctx: {
     theme: consumeTheme
   },
 
   render(_, ctx) {
-    return html`<div>Current theme: ${ctx.theme}</div>`
+    return <div>Current theme: {ctx.theme}</div>
   }
 })

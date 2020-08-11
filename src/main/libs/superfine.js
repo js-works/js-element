@@ -21,10 +21,12 @@ var listener = function (event) {
 var patchProp = (dom, key, oldVal, newVal, isSvg) => {
   if (key === 'key') {
   } else if (key[0] === 'o' && key[1] === 'n') {
-    if (!((dom.tag || (dom.tag = {}))[(key = key.slice(2))] = newVal)) {
-      dom.removeEventListener(key, listener)
+    const k = key.slice(2).toLowerCase() // TODO: PATCHED!!!
+
+    if (!((dom.tag || (dom.tag = {}))[(key = k)] = newVal)) {
+      dom.removeEventListener(k, listener)
     } else if (!oldVal) {
-      dom.addEventListener(key, listener)
+      dom.addEventListener(k, listener)
     }
   } else if (!isSvg && key !== 'list' && key !== 'form' && key in dom) {
     dom[key] = newVal == null ? '' : newVal

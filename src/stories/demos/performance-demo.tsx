@@ -1,4 +1,3 @@
-/** @jsx h */
 import { component, h, prop, VNode } from '../../main/js-elements'
 
 const prefs = {

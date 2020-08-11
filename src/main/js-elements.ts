@@ -6,34 +6,8 @@ import { FunctionDefineElement, Methods } from './core/types'
 
 import { h as createElement, text, patch } from './libs/superfine'
 
+const EMPTY_ARR = [] as any[]
 const EMPTY_OBJ = {}
-/*
-function h(type: any, props: any) {
-  // TODO
-  for (var vnode, rest = [], children = [], i = arguments.length; i-- > 2; ) {
-    rest.push(arguments[i])
-  }
-
-  while (rest.length > 0) {
-    if (Array.isArray((vnode = rest.pop()))) {
-      let i: any // TODO
-      for (i = vnode.length; i-- > 0; ) {
-        // TODO
-        rest.push(vnode[i])
-      }
-    } else if (vnode === false || vnode === true || vnode == null) {
-    } else {
-      children.push(typeof vnode === 'object' ? vnode : createTextVNode(vnode))
-    }
-  }
-
-  props = props || {}
-
-  return typeof name === 'function'
-    ? type(props, children)
-    : createVNode(name, props, children, null, props.key)
-}
-*/
 
 function h(
   type: string | Component,
@@ -41,7 +15,24 @@ function h(
   ...children: VNode[]
 ): VNode
 
-function h(t: string | Component, p?: null | Props | VNode): VNode {
+function h(
+  type: string | Component,
+  props?: null | Props,
+  ...children: VNode[]
+): VNode {
+  return typeof type === 'function'
+    ? (type as any)(props, children)
+    : createElement(
+        type,
+        props || {},
+        []
+          .concat(...children)
+          .map((any) =>
+            typeof any === 'string' || typeof any === 'number' ? text(any) : any
+          )
+      )
+}
+function h2(t: string | Component, p?: null | Props | VNode): VNode {
   const args = arguments
   const argc = args.length
   const type = typeof t === 'function' ? (t as any)['js-elements:type'] : t
@@ -50,11 +41,9 @@ function h(t: string | Component, p?: null | Props | VNode): VNode {
   const firstChildIdx =
     p === undefined || p === null || props !== EMPTY_OBJ ? 2 : 1
 
-  let children = null
+  let children = EMPTY_ARR
 
-  if (firstChildIdx === argc - 1) {
-    children = args[firstChildIdx]
-  } else if (firstChildIdx < argc - 1) {
+  if (firstChildIdx < argc) {
     children = []
 
     for (let i = firstChildIdx; i < argc; ++i) {
