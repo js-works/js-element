@@ -4,7 +4,7 @@ import { hasOwnProp } from './utils'
 
 // === exports =======================================================
 
-export { checkComponentConfig, isValidTagName }
+export { checkComponentOptions, isValidTagName }
 
 // === constants =====================================================
 
@@ -22,7 +22,6 @@ const REGEX_TAG_NAME = /^[a-z][a-z0-9]*(-[a-z][a-z0-9]*)+$/
 const REGEX_PROP_NAME = /^[a-z][a-zA-Z0-9]*$/
 const REGEX_METHOD_NAME = /^[a-z][a-z0-9]*$/
 const REGEX_SLOT_NAME = /^[a-z][a-z0-9]*$/
-const REGEX_CTX_KEY = /^[a-z][a-z0-9]*$/
 
 // === isValidTagName ================================================
 
@@ -30,46 +29,32 @@ function isValidTagName(name: string): boolean {
   return typeof name === 'string' && REGEX_TAG_NAME.test(name)
 }
 
-// === checkComponentConfig ==========================================
+// === checkComponentOptions =========================================
 
-function checkComponentConfig(config: any) {
-  if (config === undefined) {
+function checkComponentOptions(options: any) {
+  if (options === null) {
     return
   }
 
-  if (!config || typeof config !== 'object') {
-    throw 'Component configuration must be an object'
-  }
-
-  if (
-    Number(hasOwnProp(config, 'render')) +
-      Number(hasOwnProp(config, 'main')) +
-      Number(hasOwnProp(config, 'view')) >
-    1
-  ) {
-    throw 'Component configuration can only have one of the parameters "render", "main" or "view"'
+  if (!options || typeof options !== 'object') {
+    throw 'Component options must configured by an object or set to null'
   }
 
   const checkParam = (key: string, pred: (it: any) => boolean) => {
-    if (!pred(config[key])) {
+    if (!pred(options[key])) {
       throw `Invalid option parameter "${key}"`
     }
   }
 
-  for (const key of Object.keys(config)) {
+  for (const key of Object.keys(options)) {
     switch (key) {
       case 'props': {
-        const propNames = Object.keys(config.props)
+        const propNames = Object.keys(options.props)
 
         for (const propName of propNames) {
-          checkPropConfig(propName, config.props[propName])
+          checkPropConfig(propName, options.props[propName])
         }
 
-        break
-      }
-
-      case 'ctx': {
-        checkCtxConfig(config.ctx)
         break
       }
 
@@ -81,7 +66,7 @@ function checkComponentConfig(config: any) {
 
       case 'styles':
         if (
-          typeof Object.getOwnPropertyDescriptor(config, 'styles')?.get !==
+          typeof Object.getOwnPropertyDescriptor(options, 'styles')?.get !==
           'function'
         ) {
           checkParam('styles', validateStringOrStringArray)
@@ -93,18 +78,6 @@ function checkComponentConfig(config: any) {
         checkParam('slots', (it) =>
           validateStringArray(it, true, REGEX_SLOT_NAME)
         )
-        break
-
-      case 'render':
-        checkParam('render', validateFunction)
-        break
-
-      case 'main':
-        checkParam('main', validateFunction)
-        break
-
-      case 'view':
-        checkParam('view', validateFunction)
         break
 
       default:
@@ -166,24 +139,6 @@ function checkPropConfig(propName: string, propConfig: any) {
 
       default:
         throw `Illegal parameter "${key}" for prop "${propName}"`
-    }
-  }
-}
-
-function checkCtxConfig(ctxConfig: any) {
-  if (!ctxConfig || typeof ctxConfig !== 'object') {
-    throw 'Component config parameter "ctx" must be an object'
-  }
-
-  const ctxKeys = Object.keys(ctxConfig)
-
-  for (const ctxKey of ctxKeys) {
-    if (!ctxKey.match(REGEX_CTX_KEY)) {
-      throw `Illegal component context key "${ctxKey}"`
-    }
-
-    if (typeof ctxConfig[ctxKey] !== 'function') {
-      throw `Parameter "${ctxKey}" of "ctx" object must be a function`
     }
   }
 }

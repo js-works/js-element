@@ -65,8 +65,7 @@ const SpeedTest = component('x-speed-test', {
     columnCount: prop.num.opt(prefs.columnCount),
     rowCount: prop.num.opt(prefs.rowCount),
     tileWidth: prop.num.opt(3),
-    framesPerSecond: prop.num.opt(prefs.framesPerSecond),
-    frameCount: prop.num.req()
+    framesPerSecond: prop.num.opt(prefs.framesPerSecond)
   },
 
   main(c, props) {

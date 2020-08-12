@@ -1,4 +1,4 @@
-import { defineElement, html, prop } from '../../main/js-elements-lit-html'
+import { component, h, prop } from '../../main/js-elements'
 
 function createStore() {
   const data = {
@@ -34,21 +34,22 @@ function createStore() {
   }
 }
 
-const StoreDemo = defineElement('store-demo', (c) => {
+const StoreDemo = component('store-demo', (c) => {
   const store = createStore()
 
-  return () => html`
-    <store-provider .store=${store}>
+  return () => <div>TODO!!!</div>
+  /*
+    <store-provider store={store}>
       <h3>Current store state</h3>
-      <pre>${JSON.stringify(store.getState(), null, 2)}</pre>
+      <pre>{JSON.stringify(store.getState(), null, 2)}</pre>
       <hr />
-      <dispatch-button />
+      <DispatchButton />
     </store-provider>
-  `
+  */
 })
 
-const DispatchButton = defineElement('dispatch-button', (c) => {
+const DispatchButton = component('dispatch-button', (c) => {
   const onClick = () => c.send({ type: 'some.message' })
 
-  return () => html`<button @click="{onClick}">Send event</button>`
+  return () => <button onClick={onClick}>Send event</button>
 })

@@ -1,15 +1,16 @@
-import { defineElement, html, prop } from '../../main/js-elements-lit-html'
+/*
+import { component, h, prop } from '../../main/js-elements'
 import { useState } from '../../main/js-elements-ext'
 
 const ENTER_KEY = 13
 const ESC_KEY = 27
 
-defineElement('todo-header', (c) => {
-  const root = c.getRoot()
+const Header = component('todo-header', (c) => {
+  const root = c.getContentElement()
   const [state, setState] = useState(c, { title: '' })
-  const onInput = (ev) => setState({ title: ev.target.value })
+  const onInput = (ev: any) => setState({ title: ev.target.value })
 
-  const onKeyDown = (ev) => {
+  const onKeyDown = (ev: any) => {
     if (ev.keyCode === ENTER_KEY && state.title.trim()) {
       const title1 = state.title.trim()
 
@@ -26,34 +27,34 @@ defineElement('todo-header', (c) => {
     }
   }
 
-  return () => html`
+  return () => (
     <header class="header">
       <h1>todos (not working!)</h1>
       <input
         class="new-todo"
         placeholder="What needs to be done?"
         autofocus
-        value=${state.title}
-        @input=${onInput}
-        @keydown=${onKeyDown}
+        value={state.title}
+        onInput={onInput}
+        onKeyDown={onKeyDown}
       />
     </header>
-  `
+  )
 })
 
-defineElement('todo-item', {
+const Item = component('todo-item', {
   props: {
     todo: prop.obj.req()
   },
 
   main(c, props) {
-    const root = c.getRoot()
+    const root = c.getContentElement()
     const [state, setState] = c.addState({
       active: false,
       title: props.todo.title
     })
 
-    const onToggle = (ev) => {
+    const onToggle = (ev: any) => {
       root.dispatchEvent(
         new CustomEvent('todo.toggle', {
           bubbles: true,
@@ -71,14 +72,14 @@ defineElement('todo-item', {
       )
     }
 
-    const onDoubleClick = (ev) => {
+    const onDoubleClick = (ev: any) => {
       setState({ active: true })
       ev.target.parentElement.nextSibling.focus()
     }
 
-    const onInput = (ev) => setState({ title: ev.target.value })
+    const onInput = (ev: any) => setState({ title: ev.target.value })
 
-    const onKeyDown = (ev) => {
+    const onKeyDown = (ev: any) => {
       if (ev.keyCode === ENTER_KEY || ev.keyCode === ESC_KEY) {
         setState({
           active: false,
@@ -134,41 +135,39 @@ defineElement('todo-item', {
         classes.push('completed')
       }
 
-      return html`
-        <li class=${classes.join(' ')}>
+      return (
+        <li class={classes.join(' ')}>
           <div class="view">
             <input
               class="toggle"
               type="checkbox"
-              checked=${props.todo.completed}
-              @click=${onToggle}
+              checked={props.todo.completed}
+              onClick={onToggle}
             />
-            <label @dblclick=${onDoubleClick}>
-              ${props.todo.title}
-            </label>
-            <button class="destroy" onClick=${onDestroy}></button>
+            <label onDblClick={onDoubleClick}>{props.todo.title}</label>
+            <button class="destroy" onClick={onDestroy} />
           </div>
           <input
             class="edit"
-            value=${state.title}
-            @input=${onInput}
-            @keydown=${onKeyDown}
-            @blur=${onBlur}
+            value={state.title}
+            onInput={onInput}
+            onKeydown={onKeyDown}
+            onBlur={onBlur}
           />
         </li>
-      `
+      )
     }
   }
 })
 
-defineElement('todo-main', {
+const Main = component('todo-main', {
   props: {
     todos: prop.obj.req(),
     filter: prop.str.req()
   },
 
   main(c, props) {
-    const root = c.getRoot()
+    const root = c.getContentElement()
     const completed = props.todos.every((todo) => todo.completed)
 
     const onToggleAll = () => {
@@ -187,36 +186,37 @@ defineElement('todo-main', {
         ? props.todos.filter((todo) => todo.completed)
         : props.todos
 
-    return () => html`
+    return () => (
       <section class="main">
         <input
           id="toggle-all"
           class="toggle-all"
           type="checkbox"
-          @click=${onToggleAll}
-          checked=${completed}
+          onClick={onToggleAll}
+          checked={completed}
         />
         <label for="toggle-all">Mark all as complete</label>
         <ul class="todo-list">
-          ${filteredTodos.map(
-            (todo) => html`<todo-item todo=${todo}></todo-item>`
-          )}
+          $
+          {filteredTodos.map((todo) => (
+            <Item todo={todo} />
+          ))}
         </ul>
       </section>
-    `
+    )
   }
 })
 
-defineElement('todo-filters', {
+const Filters = component('todo-filters', {
   props: {
     filter: prop.str.req()
   },
 
   main(c, props) {
-    const root = c.getRoot()
-    const onActiveFilter = (ev) => setFilter('active', ev)
-    const onCompletedFilter = (ev) => setFilter('completed', ev)
-    const onNoFilter = (ev) => setFilter('', ev)
+    const root = c.getContentElement()
+    const onActiveFilter = (ev: any) => setFilter('active', ev)
+    const onCompletedFilter = (ev: any) => setFilter('completed', ev)
+    const onNoFilter = (ev: any) => setFilter('', ev)
 
     const setFilter = (filter, ev) => {
       ev.preventDefault()
@@ -229,12 +229,12 @@ defineElement('todo-filters', {
       )
     }
 
-    return () => html`
+    return () => (
       <ul class="filters">
         <li>
           <a
-            class=${props.filter === '' ? 'selected' : ''}
-            @click=${onNoFilter}
+            class={props.filter === '' ? 'selected' : ''}
+            onClick={onNoFilter}
             href="#/"
           >
             All
@@ -242,8 +242,8 @@ defineElement('todo-filters', {
         </li>
         <li>
           <a
-            class=${props.filter === 'active' ? 'selected' : ''}
-            @click=${onActiveFilter}
+            class={props.filter === 'active' ? 'selected' : ''}
+            onClick={onActiveFilter}
             href="#/active"
           >
             Active
@@ -251,26 +251,26 @@ defineElement('todo-filters', {
         </li>
         <li>
           <a
-            class=${props.filter === 'completed' ? 'selected' : ''}
-            @click=${onCompletedFilter}
+            class={props.filter === 'completed' ? 'selected' : ''}
+            onClick={onCompletedFilter}
             href="#/completed"
           >
             Completed
           </a>
         </li>
       </ul>
-    `
+    )
   }
 })
 
-defineElement('todo-footer', {
+const Footer = component('todo-footer', {
   props: {
     todos: prop.obj.req(),
     filter: prop.str.req()
   },
 
   main(c, props) {
-    const root = c.getRoot()
+    const root = c.getContentElement()
     const completed = props.todos.filter((todo) => todo.completed).length
     const remaining = props.todos.length - completed
 
@@ -279,46 +279,27 @@ defineElement('todo-footer', {
         new CustomEvent('todo.clearCompleted', { bubbles: true })
       )
 
-    return () => html`
+    return () => (
       <footer class="footer">
         <span class="todo-count">
           <strong>${remaining}</strong> ${remaining === 1 ? 'item' : 'items'}
           left
         </span>
-        <todo-filters filter=${props.filter}></todo-filters>
-        ${!completed
-          ? ''
-          : html`
-              <button class="clear-completed" @click=${onClearCompleted}>
-                Clear completed
-              </button>
-            `}
-      </footer>
-    `
-    /*
-    return () => html` 
-      <footer class="footer">
-        <span class="todo-count">
-          <strong>${remaining}</strong><span> ${remaining === 1 ? 'item' : 'items'}<span> left</span><span>
-        </span>
-        <todo-filters filter=${props.filter}></todo-filters>
-        ${!completed ? (
-          '' 
+        <Filters filter={props.filter} />
+        {!completed ? (
+          ''
         ) : (
-          html` 
-            <button class="clear-completed" @click=${onClearCompleted}>
-              Clear completed
-            </button>
-          `
+          <button class="clear-completed" onClick={onClearCompleted}>
+            Clear completed
+          </button>
         )}
       </footer>
-    ´
-    */
+    )
   }
 })
 
-defineElement('todo-mvc', (c) => {
-  const root = c.getRoot(),
+const TodoMvc = component('todo-mvc', (c) => {
+  const root = c.getContentElement(),
     [state, setState] = c.addState({
       todos: [],
       filter: ''
@@ -340,7 +321,7 @@ defineElement('todo-mvc', (c) => {
       localStorage.removeItem(STORAGE_KEY)
     }
 
-    root.addEventListener('todo.create', (ev) => {
+    root.addEventListener('todo.create', (ev: any) => {
       const newTodos = [...state.todos]
       newTodos.push({
         id: nextTodoId++,
@@ -351,7 +332,7 @@ defineElement('todo-mvc', (c) => {
       save(state.todos)
     })
 
-    root.addEventListener('todo.edit', (ev) => {
+    root.addEventListener('todo.edit', (ev: any) => {
       const i = state.todos.findIndex((todo) => todo.id === ev.detail.id)
       const newTodos = [...state.todos]
       newTodos[i] = { ...newTodos[i], title: ev.detail.title }
@@ -359,7 +340,7 @@ defineElement('todo-mvc', (c) => {
       save(state.todos)
     })
 
-    root.addEventListener('todo.toggle', (ev) => {
+    root.addEventListener('todo.toggle', (ev: any) => {
       const i = state.todos.findIndex((todo) => todo.id === ev.detail.id)
       const newTodos = [...state.todos]
       newTodos[i] = { ...state.todos[i], completed: ev.detail.completed }
@@ -367,7 +348,7 @@ defineElement('todo-mvc', (c) => {
       save(state.todos)
     })
 
-    root.addEventListener('todo.toggleAll', (ev) => {
+    root.addEventListener('todo.toggleAll', (ev: any) => {
       setState({
         todos: state.todos.map((todo) => ({
           ...todo,
@@ -382,14 +363,14 @@ defineElement('todo-mvc', (c) => {
       save(state.todos)
     })
 
-    root.addEventListener('todo.destroy', (ev) => {
+    root.addEventListener('todo.destroy', (ev: any) => {
       setState({
         todos: state.todos.filter((todo) => todo.id !== ev.detail.id)
       })
       save(state.todos)
     })
 
-    root.addEventListener('todo.setFilter', (ev) => {
+    root.addEventListener('todo.setFilter', (ev: any) => {
       setState({ filter: ev.detail.filter })
     })
   }, null)
@@ -398,23 +379,20 @@ defineElement('todo-mvc', (c) => {
     let todoBody
 
     if (state.todos.length > 0) {
-      todoBody = html`
+      todoBody = (
         <div>
-          <todo-main todos=${state.todos} filter=${state.filter}></todo-main>
-          <todo-footer
-            todos=${state.todos}
-            filter=${state.filter}
-          ></todo-footer>
+          <Main todos={state.todos} filter={state.filter} />
+          <Footer todos={state.todos} filter={state.filter} />
         </div>
-      `
+      )
     }
 
-    return html`
+    return (
       <div>
-        <todo-header></todo-header>
-        ${todoBody}
+        <Header />
+        {todoBody}
       </div>
-    `
+    )
   }
 })
 
@@ -423,3 +401,4 @@ const STORAGE_KEY = 'todo-mvc'
 function save(todos) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
 }
+*/

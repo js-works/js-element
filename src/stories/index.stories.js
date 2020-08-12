@@ -5,7 +5,6 @@ import './demos/styles/todomvc-app.css'
 
 import './demos/button-demo'
 import './demos/simple-counter-demo'
-import './demos/simple-counter-jsx-demo'
 import './demos/complex-counter-demo'
 import './demos/clock-demo'
 import './demos/iterator-demo'
@@ -24,8 +23,6 @@ export default {
 
 export const Button = () => '<button-demo></button-demo>'
 export const SimpleCounter = () => '<simple-counter-demo></simple-counter-demo>'
-export const SimpleCounterJsx = () =>
-  '<simple-counter-jsx-demo></simple-counter-jsx-demo>'
 export const ComplexCounter = () =>
   '<complex-counter-demo></complex-counter-demo>'
 export const Clock = () => '<clock-demo></clock-demo>'

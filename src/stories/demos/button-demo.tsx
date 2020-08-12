@@ -28,7 +28,6 @@ const DemoButton = component('demo-button', {
 
   main(c, props) {
     const onClick = () => {
-      console.log('click', props)
       if (props.onClick) {
         props.onClick(new CustomEvent('buttonaction')) // TODO
       }

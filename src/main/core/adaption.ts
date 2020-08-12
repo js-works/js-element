@@ -8,13 +8,14 @@ import {
   Methods,
   Notifier,
   PropConfig,
-  Renderer
+  Renderer,
+  VNode
 } from './types'
 
 import { createNotifier } from './notifiers'
 import { PropNamesManager } from './prop-names'
 import { isEqualArray } from './utils'
-import { checkComponentConfig, isValidTagName } from './validation'
+import { checkComponentOptions, isValidTagName } from './validation'
 
 // === exports =======================================================
 
@@ -29,15 +30,16 @@ const MESSAGE_EVENT_TYPE = 'js-element:###message###'
 function createAdaption<O, R>(
   renderer: (content: O, target: Element) => void
 ): FunctionDefineElement<O, R> {
-  return (name: string, config: any) =>
-    defineElementWithRenderer(name, config, renderer) as any // TODO
+  return (name: string, options: any, init: any) =>
+    defineElementWithRenderer(name, options, init, renderer) as any // TODO
 }
 
 // === defineElementWithRenderer =====================================
 
 function defineElementWithRenderer(
   name: string,
-  config: any,
+  options: any,
+  init: (c: Ctrl, props: any) => () => VNode,
   renderer: any
 ): void {
   if (process.env.NODE_ENV === ('development' as any)) {
@@ -49,38 +51,16 @@ function defineElementWithRenderer(
       throw new Error(`Illegal tag name for custom element: "${name}"`)
     }
 
-    if (typeof config !== 'function') {
-      try {
-        checkComponentConfig(config)
-      } catch (errorMsg) {
-        throw new TypeError(
-          `Invalid configuration for custom element "${name}": ${errorMsg}`
-        )
-      }
+    try {
+      checkComponentOptions(options)
+    } catch (errorMsg) {
+      throw new TypeError(
+        `Invalid options for custom element "${name}": ${errorMsg}`
+      )
     }
   }
 
-  if (typeof config === 'function') {
-    const fn = config
-
-    if (config.length > 0) {
-      config = { main: fn }
-    } else {
-      config = {
-        main: () => {
-          let ret = fn()
-
-          if (typeof ret !== 'function') {
-            ret = fn
-          }
-
-          return ret
-        }
-      }
-    }
-  }
-
-  const CustomElement = createCustomElementClass(config.name, config, renderer)
+  const CustomElement = createCustomElementClass(name, options, init, renderer)
   customElements.define(name, CustomElement)
 }
 
@@ -88,28 +68,31 @@ function defineElementWithRenderer(
 
 const createCustomElementClass = (
   name: string,
-  config: any,
+  options: any,
+  init: any,
   renderer: Renderer
 ) => {
-  const propNames = config.props ? Object.keys(config.props) : []
+  const propNames = options && options.props ? Object.keys(options.props) : []
 
   const propNamesMgr = new PropNamesManager(
-    propNames.reduce((acc: Map<string, boolean>, propName) => {
-      const type = config.props[propName].type
-      const alsoAsAttribute =
-        type &&
-        type !== Object &&
-        type !== Array &&
-        (propName.substr(0, 2) !== 'on' ||
-          propName[3] < 'A' ||
-          propName[3] > 'Z')
+    !options || !options.props
+      ? null
+      : propNames.reduce((acc: Map<string, boolean>, propName) => {
+          const type = options.props[propName].type
+          const alsoAsAttribute =
+            type &&
+            type !== Object &&
+            type !== Array &&
+            (propName[0] !== 'o' ||
+              propName[1] !== 'n' ||
+              propName[2] < 'A' ||
+              propName[2] > 'Z')
 
-      acc.set(propName, alsoAsAttribute)
-      return acc
-    }, new Map())
+          acc.set(propName, alsoAsAttribute)
+          return acc
+        }, new Map())
   )
 
-  const ctxKeys = config.ctx ? Object.keys(config.ctx) : []
   const observedAttributes = Array.from(propNamesMgr.getAttributNames())
 
   const customElementClass = class extends HTMLElement {
@@ -120,7 +103,6 @@ const createCustomElementClass = (
     private _initialized = false
     private _mounted = false
     private _propsObject = this._createPropsObject()
-    private _ctxObject = {} as any // TODO
     private _listenersByEventName?: any // TODO!!!!!!!
     private _afterMountNotifier?: Notifier
     private _afterUpdateNotifier?: Notifier
@@ -332,36 +314,13 @@ const createCustomElementClass = (
         }
       }
 
-      for (const ctxKey of ctxKeys) {
-        this._ctxObject[ctxKey] = config.ctx[ctxKey](this._ctrl)
-      }
-
       if (!this._render) {
-        if (config.render) {
-          this._render = () => config.render(this._propsObject, this._ctxObject)
-        } else if (config.main) {
-          this._render = config.main(
-            this._ctrl,
-            this._propsObject,
-            this._ctxObject
-          )
-        } else {
-          // TODO: This is ugly and buggy as hell - fix as soon as possible
-          const getProps = () => ({ ...this._propsObject })
-          const getCtx = () => ({ ...this._ctxObject })
-          const fn = config.view(this._ctrl, getProps, getCtx)
-
-          this._render = () => {
-            let ret = fn(getProps(), getCtx())
-            return ret
-          }
-        }
-
-        this._initialized = true
+        this._render = init(this._ctrl, this._propsObject)
       }
 
       const content = this._render!()
       renderer(content, this._contentElem!)
+      this._initialized = true
 
       if (!this._mounted) {
         this._mounted = true
@@ -385,8 +344,8 @@ const createCustomElementClass = (
       root.appendChild(contentElem)
       this._contentElem = contentElem
 
-      if (config.styles) {
-        const styles = config.styles
+      if (options && options.styles) {
+        const styles = options.styles
 
         const css = Array.isArray(styles)
           ? styles.join('\n\n/* =============== */\n\n')
@@ -449,7 +408,7 @@ const createCustomElementClass = (
       const ret = {} as any
 
       for (const propName of propNames) {
-        ret[propName] = config.props[propName].defaultValue
+        ret[propName] = options.props[propName].defaultValue
 
         if (propNamesMgr.isEventPropName(propName)) {
           const eventName = propNamesMgr.eventPropNameToEventName(propName)
@@ -471,8 +430,9 @@ const createCustomElementClass = (
       return ret
     }
   }
-  if (config.methods && config.methods.length > 0) {
-    config.methods.forEach((methodName: any) => {
+
+  if (options && options.methods && options.methods.length > 0) {
+    options.methods.forEach((methodName: any) => {
       // TODO
       ;(customElementClass as any).prototype[methodName] = function () {
         // TODO

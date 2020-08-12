@@ -29,21 +29,23 @@ class PropNamesManager {
   private _attrNameToPropNamesMap: Map<string, string> = new Map()
   private _eventPropNameToEventNameMap: Map<string, string> = new Map()
 
-  constructor(propNamesMap: Map<string, boolean>) {
-    for (const [propName, isAttribute] of propNamesMap.entries()) {
-      this._propNames.add(propName)
+  constructor(propNamesMap: Map<string, boolean> | null) {
+    if (propNamesMap) {
+      for (const [propName, isAttribute] of propNamesMap.entries()) {
+        this._propNames.add(propName)
 
-      if (isAttribute) {
-        const attrName = propNameToAttrName(propName)
-        this._attrNames.add(attrName)
-        this._attrNameToPropNamesMap.set(attrName, propName)
-      }
+        if (isAttribute) {
+          const attrName = propNameToAttrName(propName)
+          this._attrNames.add(attrName)
+          this._attrNameToPropNamesMap.set(attrName, propName)
+        }
 
-      if (isEventPropName(propName)) {
-        const eventName = eventPropNameToEventName(propName)
-        this._eventPropNames.add(propName)
-        this._eventNames.add(eventName)
-        this._eventPropNameToEventNameMap.set(propName, eventName)
+        if (isEventPropName(propName)) {
+          const eventName = eventPropNameToEventName(propName)
+          this._eventPropNames.add(propName)
+          this._eventNames.add(eventName)
+          this._eventPropNameToEventNameMap.set(propName, eventName)
+        }
       }
     }
   }

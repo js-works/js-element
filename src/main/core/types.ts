@@ -4,18 +4,44 @@ export {
   Action,
   AnyElement,
   Class,
+  Component,
+  ComponentOptions,
   Ctrl,
+  ExternalPropsOf,
   FunctionDefineElement,
+  InternalPropsOf,
+  Key,
   Message,
   Methods,
   Notifier,
+  Props,
   PropConfig,
+  PropsConfig,
   Renderer,
   State,
-  StateUpdater
+  StateUpdater,
+  VElement,
+  VNode
 }
 
 // === types =========================================================
+
+type Key = string | number
+type Props = Record<string, any> & { key?: never; children?: VNode }
+type VElement<T extends Props = Props> = any // TODO !!!!!!!!
+
+type VNode =
+  | undefined
+  | null
+  | boolean
+  | number
+  | string
+  | VElement
+  | Iterable<VNode>
+
+type Component<P extends Props = {}, M extends Methods = {}> = (
+  props?: P & { key?: Key }
+) => VNode // TODO
 
 type Action = () => void
 type Message = { type: string } & Record<string, any>
@@ -67,6 +93,13 @@ type Notifier = {
   notify(): void
 }
 
+type ComponentOptions = {
+  props?: PropsConfig
+  slots?: string[]
+  styles?: string | string[]
+  methods?: string[] // TODO
+}
+
 type PropConfig<T> = {
   type?: T extends boolean
     ? BooleanConstructor
@@ -92,8 +125,6 @@ type PropConfig<T> = {
 type PropsConfig = {
   [key: string]: PropConfig<any>
 }
-
-type CtxConfig = Record<string, (c: Ctrl) => any>
 
 type ExternalPropsOf<P extends PropsConfig> = Pick<
   { [K in keyof P]?: PropOf<P[K]> },
@@ -143,62 +174,17 @@ type PropOf<P extends PropConfig<any>> = P extends { type: infer T }
       | (P extends { nullable: true } ? null : never)
   : never
 
-type CtxOf<CC extends CtxConfig> = {
-  [K in keyof CC]: ReturnType<CC[K]>
-}
-/*
-type CtxTypeOf<C extends CtxConfig> = C extends (
-  c: Ctrl
-) => Record<infer K, () => infer R>
-  ? Record<K, R>
-  : C extends Record<infer K, () => infer R>
-  ? Record<K, R>
-  : never
-*/
-
 type FunctionDefineElement<O, R> = {
-  (name: string, main: (c: Ctrl) => () => O): R
-  (name: string, render: () => O): R
-
-  <PC extends PropsConfig, CC extends CtxConfig>(
+  <PC extends PropsConfig>(
     name: string,
 
-    config: {
+    options: null | {
       props?: PC
-      ctx?: CC
       styles?: string | (() => string)
       slots?: string[]
       methods?: string[]
+    },
 
-      main(c: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>): () => O
-    }
-  ): R
-
-  <PC extends PropsConfig, CC extends CtxConfig>(
-    name: string,
-
-    config: {
-      props?: PC
-      ctx?: CC
-      styles?: string | (() => string)
-      slots?: string[]
-      methods?: string[]
-      view(
-        c: Ctrl,
-        getProps: () => InternalPropsOf<PC>,
-        getCtx: () => CtxOf<CC>
-      ): () => O
-    }
-  ): R
-
-  <PC extends PropsConfig, CC extends CtxConfig>(
-    name: string,
-    config: {
-      props?: PC
-      ctx?: CC
-      styles?: string | string[]
-      slots?: string[]
-      render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): O
-    }
+    init: (c: Ctrl, props: InternalPropsOf<PC>) => () => O
   ): R
 }
