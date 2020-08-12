@@ -21,12 +21,7 @@
     "typeRoots": ["node_modules/@types"],
     "types": ["node", "mocha", "chai", "react"]
   },
-  "files": [
-    "src/main/js-elements.ts",
-    "src/main/js-elements-lit-html.ts",
-    "src/main/js-elements-ext.ts",
-    "src/main/js-elements-preact.ts"
-  ],
+  "files": ["src/main/js-elements.ts", "src/main/js-elements-ext.ts"],
 
   "include": ["./src/**/*.*"],
 

@@ -20,7 +20,6 @@ import { h as createElement, text, patch } from './libs/superfine'
 
 export {
   component,
-  createAdaption, // TODO - has to be removed later
   provision,
   propConfigBuilder as prop,
   h,

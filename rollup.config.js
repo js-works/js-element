@@ -8,7 +8,7 @@ import gzip from 'rollup-plugin-gzip'
 
 const configs = []
 
-for (const pkg of ['root', 'lit-html', 'ext', 'preact']) {
+for (const pkg of ['root', 'ext']) {
   for (const format of ['umd', 'cjs', 'amd', 'esm']) {
     for (const productive of [false, true]) {
       configs.push(createConfig(pkg, format, productive))
@@ -37,14 +37,8 @@ function createConfig(pkg, moduleFormat, productive) {
 
       format: moduleFormat,
       sourcemap: false, // productive ? false : 'inline', // TODO
-      name: pkg === 'root' ? 'jsElements' : 'jsElements.' + pkg,
-
-      globals: {
-        'lit-html': 'litHtml'
-      }
+      name: pkg === 'root' ? 'jsElements' : 'jsElements.' + pkg
     },
-
-    external: ['lit-html', 'preact'],
 
     plugins: [
       resolve(),
