@@ -48,6 +48,7 @@ export function createCustomElementClass(
     _render: null | (() => VNode) = null
     _initialized = false
     _mounted = false
+    _refreshRequested = false
     _methods: Methods = {} // TODO
     _afterMountNotifier?: Notifier
     _beforeUpdateNotifier?: Notifier
@@ -59,9 +60,14 @@ export function createCustomElementClass(
       super(
         (propName: string, value: any) => (this._props[propName] = value),
         (contentElement: Element) => (this._contentElement = contentElement),
-        () => this._refresh(),
+        () => this._mounted && this._refresh(),
         (methodName: string) => getOwnProp(this._methods, methodName) || null
       )
+    }
+
+    connectedCallback() {
+      super.connectedCallback()
+      this._refresh()
     }
 
     disconnectedCallback() {
@@ -130,7 +136,16 @@ export function createCustomElementClass(
           this._beforeUnmountNotifier.subscribe(action)
         },
 
-        refresh: () => this._refresh(),
+        refresh: () => {
+          if (!this._refreshRequested) {
+            this._refreshRequested = true
+
+            requestAnimationFrame(() => {
+              this._refreshRequested = false
+              this._refresh()
+            })
+          }
+        },
 
         update: (action: Action) => {
           action()

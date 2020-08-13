@@ -55,6 +55,7 @@ export function createBaseElementClass(
           setter = (value) => {
             this._properties[propName] = value
             this._onPropChange(propName, value)
+            this._performRefresh()
           }
         } else {
           const eventName = eventPropNameToEventName(propName)
@@ -70,6 +71,8 @@ export function createBaseElementClass(
             if (value) {
               this.addEventListener(eventName, value)
             }
+
+            this._performRefresh()
           }
         }
 
@@ -134,6 +137,8 @@ export function createBaseElementClass(
           this._onPropChange(propName, (ev: any) => {
             listenerSet!.forEach((listener) => listener(ev))
           })
+
+          this._performRefresh()
         }
       }
 
@@ -150,6 +155,7 @@ export function createBaseElementClass(
           if (listenerSet.size === 0) {
             const propName = eventNameToPropNameMap.get(eventName)!
             this._onPropChange(propName, undefined)
+            this._performRefresh()
           }
         }
       }

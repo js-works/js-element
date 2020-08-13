@@ -42,10 +42,6 @@ component('promise-demo', (c) => {
   const onToggleFinishText = () =>
     setState('finishText', (it) => (it === 'Finished!' ? 'Done!' : 'Finished!'))
 
-  c.effect(() => {
-    console.log(state)
-  })
-
   return () => (
     <div>
       <h3>Demo (last update {getTime()})</h3>
