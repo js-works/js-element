@@ -39,6 +39,7 @@ var patchProp = (dom, key, oldVal, newVal, isSvg) => {
 
 var createNode = (vdom, isSvg) => {
   var props = vdom.props
+  console.log(555, props, vdom)
   var dom =
     vdom.tag === TEXT_NODE
       ? document.createTextNode(vdom.type)

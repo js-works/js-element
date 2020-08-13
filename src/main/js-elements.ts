@@ -142,7 +142,7 @@ function component(name: string, configOrFunc: any): Component<any> {
   )
 
   customElements.define(name, customElementClass)
-  const ret = createElement.bind(null, name)
+  const ret = h.bind(null, name)
 
   Object.defineProperty(ret, 'js-elements:type', {
     value: name
@@ -162,7 +162,8 @@ function h(
   ...children: VNode[]
 ): VNode
 
-function h(
+/*
+function h2(
   type: string | Component,
   props?: null | Props,
   ...children: VNode[]
@@ -179,10 +180,55 @@ function h(
           )
       )
 }
+*/
 
-function h2(t: string | Component, p?: null | Props | VNode): VNode {
-  const args = arguments
+function h(
+  type: string | Component,
+  props?: null | Props,
+  ...children: VNode[]
+): VNode
+
+function h(t: any, p: any) {
+  const argc = arguments.length
+  const type = typeof t === 'function' ? t['js-elements:type'] : t
+
+  const props =
+    p === undefined ||
+    p === null ||
+    typeof p !== 'object' ||
+    p.isVElement === true ||
+    typeof p[Symbol.iterator] === 'function'
+      ? EMPTY_OBJ
+      : p
+
+  const firstChildIdx =
+    p === undefined || p === null || props !== EMPTY_OBJ ? 2 : 1
+
+  let children = EMPTY_ARR
+
+  if (firstChildIdx === argc - 1) {
+    children = asVNode(arguments[firstChildIdx])
+  } else if (firstChildIdx < argc - 1) {
+    children = []
+
+    for (let i = firstChildIdx; i < argc; ++i) {
+      children.push(asVNode(arguments[i]))
+    }
+  }
+
+  const ret: any = createElement(type, props, children)
+  ret.isVElement = true
+  return ret
+}
+
+function asVNode(x: any): any {
+  return typeof x === 'number' || typeof x === 'string' ? text(x) : x
+}
+
+function h3(t: string | Component, p?: null | Props | VNode): VNode {
+  const args = [...arguments]
   const argc = args.length
+
   const type = typeof t === 'function' ? (t as any)['js-elements:type'] : t
   const props = p && typeof p === 'object' && !p.isVElement ? p : EMPTY_OBJ
 
@@ -263,7 +309,7 @@ const Svg = createDomFactoryObject()
 function createDomFactoryObject() {
   const handler = {
     get(target: object, propName: string) {
-      const factory = createElement.bind(null, propName)
+      const factory = h.bind(null, propName)
       ret[propName] = factory
       return factory
     }
