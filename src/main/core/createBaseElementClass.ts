@@ -1,4 +1,21 @@
-import { Action, PropsConfig, PropConfig } from './types'
+import { Action, PropsConfig, PropConfig, PropConverter } from './types'
+
+const commonPropConverters: Record<string, PropConverter<any>> = {
+  String: {
+    fromPropToString: (it: string) => it,
+    fromStringToProp: (it: string) => it
+  },
+
+  Number: {
+    fromPropToString: (it: number) => String(it),
+    fromStringToProp: (it: string) => Number.parseFloat(it)
+  },
+
+  Boolean: {
+    fromPropToString: (it: boolean) => (it ? 'true' : 'false'),
+    fromStringToProp: (it: string) => (it === 'true' ? true : false)
+  }
+}
 
 export function createBaseElementClass(
   name: string,
@@ -11,17 +28,21 @@ export function createBaseElementClass(
   const attrNameToPropNameMap: Map<string, string> = new Map()
   const eventNameSet = new Set()
   const eventNameToPropNameMap = new Map<string, string>()
+  const propConverters = new Map<string, PropConverter<any>>()
 
   if (propNames.length > 0) {
     for (const propName of propNames) {
+      const propConfig = propsConfig![propName]
+
       if (isEventPropName(propName)) {
         const eventName = eventPropNameToEventName(propName)
         eventNameSet.add(eventName)
         eventNameToPropNameMap.set(eventName, propName)
-      } else if (isAttr(propsConfig![propName])) {
+      } else if (isAttr(propConfig)) {
         const attrName = propNameToAttrName(propName)
         attrNames.push(attrName)
         attrNameToPropNameMap.set(attrName, propName)
+        propConverters.set(propName, commonPropConverters[propConfig.type.name])
       }
     }
   }
@@ -110,14 +131,28 @@ export function createBaseElementClass(
       this._performRefresh()
     }
 
-    attributeChangedCallback(attrName: string, _: any, value: any) {
+    attributeChangedCallback(attrName: string, _: any, value: string) {
       const propName = attrNameToPropNameMap.get(attrName.toLowerCase())
 
       if (propName) {
-        ;(this as any)[propName] = value
+        ;(this as any)[propName] = propConverters
+          .get(propName)!
+          .fromStringToProp(value)
       }
 
       this._performRefresh()
+    }
+
+    getAttribute(attrName: string): string | null {
+      const propName = attrNameToPropNameMap.get(attrName)
+
+      if (propName) {
+        return propConverters
+          .get(propName)!
+          .fromPropToString(this._properties[propName])
+      }
+
+      return super.getAttribute(attrName)
     }
 
     addEventListener(eventName: string, listener: any) {

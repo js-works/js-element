@@ -8,7 +8,6 @@ export {
   ComponentOptions,
   Ctrl,
   ExternalPropsOf,
-  FunctionDefineElement,
   InternalPropsOf,
   Key,
   Message,
@@ -16,6 +15,7 @@ export {
   Notifier,
   Props,
   PropConfig,
+  PropConverter,
   PropsConfig,
   Renderer,
   State,
@@ -175,17 +175,7 @@ type PropOf<P extends PropConfig<any>> = P extends { type: infer T }
       | (P extends { nullable: true } ? null : never)
   : never
 
-type FunctionDefineElement<O, R> = {
-  <PC extends PropsConfig>(
-    name: string,
-
-    options: null | {
-      props?: PC
-      styles?: string | (() => string)
-      slots?: string[]
-      methods?: string[]
-    },
-
-    init: (c: Ctrl, props: InternalPropsOf<PC>) => () => O
-  ): R
+type PropConverter<T> = {
+  fromPropToString(value: T): string
+  fromStringToProp(value: string): T
 }
