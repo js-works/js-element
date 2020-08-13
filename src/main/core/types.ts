@@ -64,6 +64,7 @@ type Ctrl = {
   refresh(): void
   afterMount(action: Action): void
   onceBeforeUpdate(action: Action): void
+  beforeUpdate(action: Action): void
   afterUpdate(action: Action): void
   beforeUnmount(action: Action): void
 

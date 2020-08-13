@@ -76,17 +76,19 @@ export function createCustomElementClass(
     }
 
     _refresh() {
-      if (
-        this._mounted &&
-        this._onceBeforeUpdateActions &&
-        this._onceBeforeUpdateActions.length
-      ) {
-        try {
-          this._onceBeforeUpdateActions.forEach((action) => action())
-          this._beforeUpdateNotifier && this._beforeUpdateNotifier.notify()
-        } finally {
-          this._onceBeforeUpdateActions.length = 0
+      if (this._mounted) {
+        if (
+          this._onceBeforeUpdateActions &&
+          this._onceBeforeUpdateActions.length
+        ) {
+          try {
+            this._onceBeforeUpdateActions.forEach((action) => action())
+          } finally {
+            this._onceBeforeUpdateActions.length = 0
+          }
         }
+
+        this._beforeUpdateNotifier && this._beforeUpdateNotifier.notify()
       }
 
       if (!this._render) {
@@ -124,6 +126,12 @@ export function createCustomElementClass(
           this._onceBeforeUpdateActions.push(action)
         },
 
+        beforeUpdate: (action: Action) => {
+          this._beforeUpdateNotifier ||
+            (this._beforeUpdateNotifier = createNotifier())
+          this._beforeUpdateNotifier.subscribe(action)
+        },
+
         afterUpdate: (action: Action) => {
           this._afterUpdateNotifier ||
             (this._afterUpdateNotifier = createNotifier())
@@ -133,6 +141,7 @@ export function createCustomElementClass(
         beforeUnmount: (action: Action) => {
           this._beforeUnmountNotifier ||
             (this._beforeUnmountNotifier = createNotifier())
+
           this._beforeUnmountNotifier.subscribe(action)
         },
 
@@ -201,6 +210,7 @@ export function createCustomElementClass(
 
             ctrl.afterMount(callback)
             ctrl.afterUpdate(callback)
+            ctrl.beforeUnmount(() => cleanup && cleanup())
           } else {
             throw new TypeError(
               'Third argument of "effect" method must either be undefined, null or a function'

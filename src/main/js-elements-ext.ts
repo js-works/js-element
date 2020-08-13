@@ -157,6 +157,7 @@ export const useEffect = createExtension('useEffect', function (
     c.afterMount(() => {
       cleanup = action()
     })
+
     c.beforeUnmount(() => {
       cleanup && cleanup()
     })
@@ -182,6 +183,8 @@ export const useEffect = createExtension('useEffect', function (
 
     c.afterMount(callback)
     c.afterUpdate(callback)
+
+    c.beforeUnmount(() => cleanup && cleanup())
   } else {
     throw new TypeError(
       '[useEffect] Third argument must either be undefined, null or a function'

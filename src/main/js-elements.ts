@@ -105,12 +105,14 @@ function component(name: string, configOrFunc: any): Component<any> {
     const initCtx = !ctxConfig
       ? NOOP
       : (ctrl: Ctrl) => {
-          for (let key of ctxKeys!) {
-            Object.defineProperty(ctx, key, {
-              enumerable: true,
-              get: () => ctxConfig[key](ctrl)
-            })
+          const updateCtx = () => {
+            for (let key of ctxKeys!) {
+              ctx[key] = ctxConfig[key](ctrl)
+            }
           }
+
+          ctrl.beforeUpdate(updateCtx)
+          updateCtx()
         }
 
     if (hasRender && hasMain) {
