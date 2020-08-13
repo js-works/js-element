@@ -70,10 +70,6 @@ export function createCustomElementClass(
     }
 
     _refresh() {
-      if (!this._contentElement) {
-        return // TODO!!!!!!!!!!!!!!!!!!!!!
-      }
-
       if (
         this._mounted &&
         this._onceBeforeUpdateActions &&
@@ -103,7 +99,7 @@ export function createCustomElementClass(
       }
     }
 
-    /* private */ _createCtrl(): Ctrl {
+    _createCtrl(): Ctrl {
       let ctrl: Ctrl
 
       return (ctrl = {

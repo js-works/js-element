@@ -1,4 +1,4 @@
-import { createAdaption } from './core/createAdaption'
+import { createCustomElementClass } from './core/createCustomElementClass'
 import { propConfigBuilder } from './core/propConfigBuilder'
 import { provision } from './core/provision'
 
@@ -13,7 +13,7 @@ import {
   VElement
 } from './core/types'
 
-import { hasOwnProp } from './core/utils'
+import { getOwnProp, hasOwnProp } from './core/utils'
 import { h as createElement, text, patch } from './libs/superfine'
 
 // === exports =======================================================
@@ -72,13 +72,12 @@ function component<PC extends PropsConfig, CC extends CtxConfig>(
   }
 ): Component<ExternalPropsOf<PC>>
 
-function component(arg1: any, arg2: any): Component<any> {
-  const name = arg1 as string
+function component(name: string, configOrFunc: any): Component<any> {
   let options: any = null
   let init: any
 
-  if (typeof arg2 === 'function') {
-    const fn = arg2
+  if (typeof configOrFunc === 'function') {
+    const fn = configOrFunc
 
     if (fn.length === 0) {
       init = (ctrl: Ctrl, props: Props) => {
@@ -90,7 +89,7 @@ function component(arg1: any, arg2: any): Component<any> {
       init = fn
     }
   } else {
-    const config = arg2
+    const config = configOrFunc
     const hasRender = hasOwnProp(config, 'render')
     const hasMain = hasOwnProp(config, 'main')
 
@@ -99,7 +98,7 @@ function component(arg1: any, arg2: any): Component<any> {
     delete options.main
     delete options.ctx
 
-    const ctxConfig = hasOwnProp(arg2, 'ctx') ? config.ctx : null
+    const ctxConfig = getOwnProp(config, 'ctx', null)
     const ctxKeys = ctxConfig ? Object.keys(ctxConfig) : null
     const ctx = {} as any
 
@@ -133,9 +132,17 @@ function component(arg1: any, arg2: any): Component<any> {
     }
   }
 
-  defineElement(name, options, init)
+  const customElementClass = createCustomElementClass(
+    name,
+    (options && options.props) || null,
+    (options && options.styles) || null,
+    (options && options.methods) || null,
+    init,
+    renderer
+  )
 
-  const ret = h.bind(null, name)
+  customElements.define(name, customElementClass)
+  const ret = createElement.bind(null, name)
 
   Object.defineProperty(ret, 'js-elements:type', {
     value: name
@@ -172,6 +179,7 @@ function h(
           )
       )
 }
+
 function h2(t: string | Component, p?: null | Props | VNode): VNode {
   const args = arguments
   const argc = args.length
@@ -204,9 +212,9 @@ function h2(t: string | Component, p?: null | Props | VNode): VNode {
   return ret
 }
 
-// === defineElement =================================================
+// === renderer =================================================
 
-const defineElement = createAdaption((content: VElement, target: Element) => {
+const renderer = (content: VElement, target: Element) => {
   if (target.hasChildNodes()) {
     patch(target.firstChild, content)
   } else {
@@ -215,21 +223,20 @@ const defineElement = createAdaption((content: VElement, target: Element) => {
     target.appendChild(newTarget)
     patch(newTarget, content)
   }
-})
+}
 
 // === render ========================================================
 
 function render(content: VElement, container: Element | string) {
   if (content !== null && (!content || content.kind !== 'virtual-element')) {
-    throw new TypeError(
-      'First argument "content" of function "render" must be a virtual element or null'
-    )
+    //throw new TypeError()
+    //      'First argument "content" of function "render" must be a virtual element or null'
   }
 
   if (!container || (typeof container !== 'string' && !container.tagName)) {
-    throw new TypeError(
-      'Second argument "container" of funtion "render" must either be a DOM element or selector string for the DOM element'
-    )
+    //throw new TypeError(
+    //  'Second argument "container" of funtion "render" must either be a DOM element or selector string for the DOM element'
+    // )
   }
 
   const target =
@@ -256,7 +263,7 @@ const Svg = createDomFactoryObject()
 function createDomFactoryObject() {
   const handler = {
     get(target: object, propName: string) {
-      const factory = h.bind(null, propName)
+      const factory = createElement.bind(null, propName)
       ret[propName] = factory
       return factory
     }

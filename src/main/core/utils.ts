@@ -16,8 +16,8 @@ function hasOwnProp(obj: object, propName: string) {
   )
 }
 
-function getOwnProp(obj: any, propName: string): any {
-  return hasOwnProp(obj, propName) ? obj[propName] : undefined
+function getOwnProp(obj: any, propName: string, defaultValue?: any): any {
+  return hasOwnProp(obj, propName) ? obj[propName] : defaultValue
 }
 
 function isEqualArray(arr1: any[], arr2: any[]) {
