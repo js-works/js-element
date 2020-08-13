@@ -4,12 +4,20 @@ import { Notifier } from './types'
 
 // === exports =======================================================
 
-export { isEqualArray, hasOwnProp }
+export { isEqualArray, hasOwnProp, getOwnProp }
 
 // === utils =========================================================
 
 function hasOwnProp(obj: object, propName: string) {
-  return Object.prototype.hasOwnProperty.call(obj, propName)
+  return (
+    obj !== undefined &&
+    obj !== null &&
+    Object.prototype.hasOwnProperty.call(obj, propName)
+  )
+}
+
+function getOwnProp(obj: any, propName: string): any {
+  return hasOwnProp(obj, propName) ? obj[propName] : undefined
 }
 
 function isEqualArray(arr1: any[], arr2: any[]) {

@@ -21,15 +21,15 @@ const buttonDemoStyles = `
 const DemoButton = component('demo-button', {
   props: {
     text: prop.str.opt(''),
-    onClick: prop.func.opt()
+    onButtonClick: prop.func.opt()
   },
 
   styles: buttonDemoStyles,
 
   main(c, props) {
     const onClick = () => {
-      if (props.onClick) {
-        props.onClick(new CustomEvent('buttonaction')) // TODO
+      if (props.onButtonClick) {
+        props.onButtonClick(new CustomEvent('button-click')) // TODO
       }
     }
 
@@ -42,12 +42,12 @@ const DemoButton = component('demo-button', {
 })
 
 component('button-demo', () => {
-  const onButtonAction = (e: any) => alert(e.type) // TODO
+  const onClick = (e: any) => alert(e.type) // TODO
 
   return (
     <div>
       <h3>Button demo</h3>
-      <DemoButton onClick={onButtonAction} text="Click me" />
+      <DemoButton onButtonClick={onClick} text="Click me" />
     </div>
   )
 })

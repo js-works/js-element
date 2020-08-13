@@ -20,6 +20,8 @@ var listener = function (event) {
 
 var patchProp = (dom, key, oldVal, newVal, isSvg) => {
   if (key === 'key') {
+  } else if (!isSvg && key !== 'list' && key !== 'form' && key in dom) {
+    dom[key] = newVal == null ? '' : newVal
   } else if (key[0] === 'o' && key[1] === 'n') {
     const k = key.slice(2).toLowerCase() // TODO: PATCHED!!!
 
@@ -28,8 +30,6 @@ var patchProp = (dom, key, oldVal, newVal, isSvg) => {
     } else if (!oldVal) {
       dom.addEventListener(k, listener)
     }
-  } else if (!isSvg && key !== 'list' && key !== 'form' && key in dom) {
-    dom[key] = newVal == null ? '' : newVal
   } else if (newVal == null || newVal === false) {
     dom.removeAttribute(key)
   } else {

@@ -1,6 +1,6 @@
-import { createAdaption } from './core/adaption'
+import { createAdaption } from './core/createAdaption'
 import { propConfigBuilder } from './core/propConfigBuilder'
-import { provision } from './core/provisions'
+import { provision } from './core/provision'
 
 import {
   Component,
