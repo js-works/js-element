@@ -50,3 +50,16 @@ const Counter = stateful('demo-counter', {
 
 render(<Counter/>, '#app')
 ```
+
+*js-elements* also supports so-called "extensions" which are
+functions similar to React hooks (but without all the magic).
+The naming pattern for these "extensions" is `withXyz`.
+
+```jsx
+const Clock = stateful('demo-clock', (c) => {
+  const getTime = withTime(c, 1000,
+    () => new Date().toLocaleTimeString()) 
+
+  return () => <div>Current time: {getTime()}</div>
+})
+```
