@@ -1,14 +1,14 @@
 import { h, stateful } from '../../main/js-elements'
-import { useInterval, useState } from '../../main/js-elements-ext'
+import { withInterval, withState } from '../../main/js-elements-ext'
 
 stateful('interval-demo', (c) => {
-  const [state, setState] = useState(c, {
+  const [state, setState] = withState(c, {
       count: 0,
       delay: 1000
     }),
     onReset = () => setState('delay', 1000)
 
-  useInterval(
+  withInterval(
     c,
     () => {
       setState('count', (it: any) => it + 1) // TODO
@@ -16,7 +16,7 @@ stateful('interval-demo', (c) => {
     () => state.delay
   )
 
-  useInterval(
+  withInterval(
     c,
     () => {
       if (state.delay > 10) {

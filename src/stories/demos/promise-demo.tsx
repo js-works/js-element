@@ -1,5 +1,5 @@
 import { h, prop, stateful } from '../../main/js-elements'
-import { usePromise, useState } from '../../main/js-elements-ext'
+import { withPromise, withState } from '../../main/js-elements-ext'
 
 const DataLoader = stateful('data-loader', {
   props: {
@@ -9,7 +9,7 @@ const DataLoader = stateful('data-loader', {
   },
 
   main(c, props) {
-    const res = usePromise(
+    const res = withPromise(
       c,
       () => wait(4000),
       () => [props.key]
@@ -25,7 +25,7 @@ const DataLoader = stateful('data-loader', {
 })
 
 stateful('promise-demo', (c) => {
-  const [state, setState] = useState(c, {
+  const [state, setState] = withState(c, {
     key: 0,
     loadingText: 'Loading...',
     finishText: 'Finished!'

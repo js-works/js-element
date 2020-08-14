@@ -1,5 +1,5 @@
 import { h, prop, stateful } from '../../main/js-elements'
-import { useState } from '../../main/js-elements-ext'
+import { withState } from '../../main/js-elements-ext'
 
 type CounterMethods = {
   reset(n: number): void
@@ -15,7 +15,7 @@ const ComplexCounter = stateful('complex-counter', {
   methods: ['reset'],
 
   main(c, props) {
-    const [state, setState] = useState(c, {
+    const [state, setState] = withState(c, {
       count: props.initialValue
     })
 

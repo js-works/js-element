@@ -50,9 +50,9 @@ export function createExtension<T extends Ctrl, A extends [T, ...any[]], R>(
   return ret
 }
 
-// --- useValue ------------------------------------------------------
+// --- withValue ------------------------------------------------------
 
-export const useValue = createExtension('useValue', function <T>(
+export const withValue = createExtension('withValue', function <T>(
   c: Ctrl,
   initialValue: T
 ): [() => T, (updater: T | ((value: T) => T)) => void] {
@@ -73,7 +73,7 @@ export const useValue = createExtension('useValue', function <T>(
   return [() => value, setValue as any] // TODO
 })
 
-// --- useState ------------------------------------------------------
+// --- withState ------------------------------------------------------
 
 type StateUpdater<T extends Record<string, any>> = {
   (newState: Partial<T>): void
@@ -82,7 +82,7 @@ type StateUpdater<T extends Record<string, any>> = {
   (key: keyof T, valueUpdate: (oldValue: T[typeof key]) => T[typeof key]): void
 }
 
-export const useState = createExtension('useState', function <
+export const withState = createExtension('withState', function <
   T extends Record<string, any>
 >(c: Ctrl, initialState: T): [T, StateUpdater<T>] {
   let nextState: any, // TODO
@@ -116,11 +116,11 @@ export const useState = createExtension('useState', function <
   return [state, setState as any] // TODO
 })
 
-// --- useMemo -------------------------------------------------------
+// --- withMemo -------------------------------------------------------
 
 // TODO - this is not really optimized, is it?
 
-export const useMemo = createExtension('useMemo', function <
+export const withMemo = createExtension('withMemo', function <
   T,
   A extends any[],
   G extends () => A
@@ -143,9 +143,9 @@ export const useMemo = createExtension('useMemo', function <
   return memo
 })
 
-// --- useEffect -----------------------------------------------------
+// --- withEffect -----------------------------------------------------
 
-export const useEffect = createExtension('useEffect', function (
+export const withEffect = createExtension('withEffect', function (
   c,
   action: () => void | undefined | null | (() => void),
   getDeps?: null | (() => any[])
@@ -187,19 +187,19 @@ export const useEffect = createExtension('useEffect', function (
     c.beforeUnmount(() => cleanup && cleanup())
   } else {
     throw new TypeError(
-      '[useEffect] Third argument must either be undefined, null or a function'
+      '[withEffect] Third argument must either be undefined, null or a function'
     )
   }
 })
 
-// --- useInterval ---------------------------------------------------
+// --- withInterval ---------------------------------------------------
 
-export const useInterval = createExtension(
-  'useInterval',
+export const withInterval = createExtension(
+  'withInterval',
   (c, action: Action, delay: number | (() => number)) => {
     const getDelay = typeof delay === 'function' ? delay : () => delay
 
-    useEffect(
+    withEffect(
       c,
       () => {
         const id = setInterval(action, getDelay())
@@ -211,28 +211,28 @@ export const useInterval = createExtension(
   }
 )
 
-// === useTime ======================================================
+// === withTime ======================================================
 
-export const useTime = createExtension('useTime', useTimeFn)
+export const withTime = createExtension('withTime', withTimeFn)
 
-function useTimeFn(c: Ctrl, delay: number | (() => number)): () => Date
+function withTimeFn(c: Ctrl, delay: number | (() => number)): () => Date
 
-function useTimeFn<T>(
+function withTimeFn<T>(
   c: Ctrl,
   delay: number | (() => number),
   getter: () => T
 ): () => T
 
-function useTimeFn(
+function withTimeFn(
   c: Ctrl,
   delay: number | (() => number),
   getter: Function = getDate
 ): () => any {
   const getDelay = typeof delay === 'function' ? delay : () => delay
 
-  const [getValue, setValue] = useValue(c, getter())
+  const [getValue, setValue] = withValue(c, getter())
 
-  useInterval(
+  withInterval(
     c,
     () => {
       setValue(getter())
@@ -247,7 +247,7 @@ function getDate() {
   return new Date()
 }
 
-// --- usePromise ---------------------------------------------------
+// --- withPromise ---------------------------------------------------
 
 type PromiseRes<T> =
   | {
@@ -272,16 +272,16 @@ const initialState: PromiseRes<any> = {
   state: 'pending'
 }
 
-export const usePromise = createExtension('usePromise', function <T>(
+export const withPromise = createExtension('withPromise', function <T>(
   c: Ctrl,
   getPromise: () => Promise<T>,
   getDeps?: () => any[]
 ): PromiseRes<T> {
-  const [state, setState] = useState<PromiseRes<T>>(c, initialState)
+  const [state, setState] = withState<PromiseRes<T>>(c, initialState)
 
   let promiseIdx = -1
 
-  useEffect(
+  withEffect(
     c,
     () => {
       ++promiseIdx
@@ -316,31 +316,31 @@ export const usePromise = createExtension('usePromise', function <T>(
   return state
 })
 
-// === useMousePosition =============================================
+// === withMousePosition =============================================
 
-export const useMousePosition = createExtension(
-  'useMousePosition',
+export const withMousePosition = createExtension(
+  'withMousePosition',
   (c: Ctrl) => {
-    const [mousePos, setMousePos] = useState(c, { x: -1, y: -1 })
+    const [mowithPos, setMowithPos] = withState(c, { x: -1, y: -1 })
 
-    useEffect(
+    withEffect(
       c,
       () => {
         const listener = (ev: any) => {
           // TODO
-          setMousePos({ x: ev.pageX, y: ev.pageY })
+          setMowithPos({ x: ev.pageX, y: ev.pageY })
         }
 
-        window.addEventListener('mousemove', listener)
+        window.addEventListener('mowithmove', listener)
 
         return () => {
-          window.removeEventListener('mousemove', listener)
+          window.removeEventListener('mowithmove', listener)
         }
       },
       null
     )
 
-    return mousePos
+    return mowithPos
   }
 )
 

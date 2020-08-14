@@ -1,5 +1,5 @@
 import { html, prop, stateful } from '../../../../main/js-elements'
-import { useState } from '../../../../main/js-elements-ext'
+import { withState } from '../../../../main/js-elements-ext'
 import DataTable from './DataTable'
 import Paginator from '../pagination/Paginator'
 export default stateful('jsc-data-explorer', {
@@ -9,7 +9,7 @@ export default stateful('jsc-data-explorer', {
   },
 
   main(c, props) {
-    const [state, setState] = useState(c, {
+    const [state, setState] = withState(c, {
       pageIndex: 0,
       pageSize: 25,
       totalItemCount: 1253

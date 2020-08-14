@@ -1,5 +1,5 @@
 import { html, prop, stateful } from '../../../../main/js-elements'
-import { useState } from '../../../../main/js-elements-ext'
+import { withState } from '../../../../main/js-elements-ext'
 import '@vaadin/vaadin-grid'
 
 const dataTableMeta = {

@@ -1,5 +1,5 @@
 import { provision, h, stateful, stateless } from '../../main/js-elements'
-import { useInterval } from '../../main/js-elements-ext'
+import { withInterval } from '../../main/js-elements-ext'
 
 const [provideTheme, consumeTheme] = provision('theme', 'light')
 
@@ -7,7 +7,7 @@ stateful('provision-demo', (c) => {
   let theme = 'light'
   provideTheme(c, theme)
 
-  useInterval(
+  withInterval(
     c,
     () => {
       theme = theme === 'light' ? 'dark' : 'light'
