@@ -1,4 +1,3 @@
-/** @jsx h */
 import { component, h, prop } from '../../main/js-elements'
 
 const SimpleCounter = component('simple-counter', {

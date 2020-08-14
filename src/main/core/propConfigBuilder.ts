@@ -96,5 +96,6 @@ const propConfigBuilder = (Object.freeze({
   str: typedProp(String),
   obj: typedProp(Object),
   func: typedProp(Function),
+  arr: typedProp(Array),
   ...reqAndOpt(null, false)
 }) as any) as G

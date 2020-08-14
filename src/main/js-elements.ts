@@ -1,3 +1,4 @@
+import htm from './libs/htm'
 import { createCustomElementClass } from './core/createCustomElementClass'
 import { propConfigBuilder } from './core/propConfigBuilder'
 import { provision } from './core/provision'
@@ -23,6 +24,7 @@ export {
   provision,
   propConfigBuilder as prop,
   h,
+  html,
   render,
   Html,
   Svg,
@@ -302,6 +304,10 @@ function render(content: VElement, container: Element | string) {
     patch(content, target)
   }
 }
+
+// === html ==========================================================
+
+const html = htm.bind(h)
 
 // === Html + Svg ====================================================
 
