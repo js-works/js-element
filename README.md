@@ -57,8 +57,7 @@ The naming pattern for these "extensions" is `withXyz`.
 
 ```jsx
 const Clock = stateful('demo-clock', (c) => {
-  const getTime = withTime(c, 1000,
-    () => new Date().toLocaleTimeString()) 
+  const getTime = withTime(c, 1000, () => new Date().toLocaleTimeString()) 
 
   return () => <div>Current time: {getTime()}</div>
 })
