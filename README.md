@@ -10,10 +10,10 @@ and btw: It is currently not meant to be used in production.
 ## Example
 
 ```js
-import { defineElement, html, prop } from 'js-elements/lit-html'
-import simpleCounterStyles from './simple-counter.css'
+import { h, prop, render, stateful } from 'js-elements'
+import counterStyles from './counter.css'
 
-defineElement('simple-counter', {
+const Counter = stateful('demo-counter', {
   props: {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
@@ -38,14 +38,15 @@ defineElement('simple-counter', {
       () => [count]
     )
 
-    return () => html`
+    return () => 
       <div class="simple-counter">
-        <label class="simple-counter-label">${props.label}: </label>
-        <button class="simple-counter-button" @click=${onIncrement}>
-          ${count}
+        <label class="simple-counter-label">{props.label}: </label>
+        <button class="simple-counter-button" onClick={onIncrement}>
+          {count}
         </button>
       </div>
-    `
   }
 })
+
+render(<Counter/>, '#app')
 ```
