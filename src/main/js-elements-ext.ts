@@ -321,26 +321,26 @@ export const withPromise = createExtension('withPromise', function <T>(
 export const withMousePosition = createExtension(
   'withMousePosition',
   (c: Ctrl) => {
-    const [mowithPos, setMowithPos] = withState(c, { x: -1, y: -1 })
+    const [mousePos, setMousePos] = withState(c, { x: -1, y: -1 })
 
     withEffect(
       c,
       () => {
         const listener = (ev: any) => {
           // TODO
-          setMowithPos({ x: ev.pageX, y: ev.pageY })
+          setMousePos({ x: ev.pageX, y: ev.pageY })
         }
 
-        window.addEventListener('mowithmove', listener)
+        window.addEventListener('mousemove', listener)
 
         return () => {
-          window.removeEventListener('mowithmove', listener)
+          window.removeEventListener('mousemove', listener)
         }
       },
       null
     )
 
-    return mowithPos
+    return mousePos
   }
 )
 
