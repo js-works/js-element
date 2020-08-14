@@ -39,9 +39,9 @@ const Counter = stateful('demo-counter', {
     )
 
     return () => 
-      <div class="simple-counter">
-        <label class="simple-counter-label">{props.label}: </label>
-        <button class="simple-counter-button" onClick={onIncrement}>
+      <div class="counter">
+        <label class="label">{props.label}: </label>
+        <button class="button" onClick={onIncrement}>
           {count}
         </button>
       </div>
