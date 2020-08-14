@@ -1,7 +1,7 @@
-import { component, h } from '../../main/js-elements'
+import { h, stateful } from '../../main/js-elements'
 import { useInterval, useState } from '../../main/js-elements-ext'
 
-component('interval-demo', (c) => {
+stateful('interval-demo', (c) => {
   const [state, setState] = useState(c, {
       count: 0,
       delay: 1000

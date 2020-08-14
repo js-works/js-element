@@ -1,9 +1,9 @@
-import { component, provision, h } from '../../main/js-elements'
+import { provision, h, stateful, stateless } from '../../main/js-elements'
 import { useInterval } from '../../main/js-elements-ext'
 
 const [provideTheme, consumeTheme] = provision('theme', 'light')
 
-component('provision-demo', (c) => {
+stateful('provision-demo', (c) => {
   let theme = 'light'
   provideTheme(c, theme)
 
@@ -25,7 +25,7 @@ component('provision-demo', (c) => {
   )
 })
 
-const ThemeInfo = component('theme-info', {
+const ThemeInfo = stateless('theme-info', {
   ctx: {
     theme: consumeTheme
   },

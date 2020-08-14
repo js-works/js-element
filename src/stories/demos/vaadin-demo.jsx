@@ -1,4 +1,4 @@
-import { component, prop, html } from '../../main/js-elements'
+import { html, prop, stateful, stateless } from '../../main/js-elements'
 import DataExplorer from './components/data/DataExplorer'
 
 const dataExplorerProps = {
@@ -15,7 +15,7 @@ const dataExplorerProps = {
   ]
 }
 
-component('vaadin-demo', {
+stateless('vaadin-demo', {
   render() {
     return html`
       <div class="root">

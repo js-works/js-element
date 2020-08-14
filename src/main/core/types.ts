@@ -19,7 +19,6 @@ export {
   PropsConfig,
   Renderer,
   State,
-  StateUpdater,
   VElement,
   VNode
 }
@@ -48,13 +47,6 @@ type Message = { type: string } & Record<string, any>
 type Methods = Record<string, (...args: any[]) => any>
 type State = Record<string, any>
 type AnyElement = Element & Record<string, any>
-
-type StateUpdater<S extends State> = {
-  (newState: Partial<S>): void
-  (stateUpdate: (oldState: S) => Partial<S>): void
-  (key: keyof S, newValue: S[typeof key]): void
-  (key: keyof S, valueUpdate: (oldValue: S[typeof key]) => S[typeof key]): void
-}
 
 type Ctrl = {
   // library agnostic component control functions

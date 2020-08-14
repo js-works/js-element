@@ -1,4 +1,4 @@
-import { component, h, prop } from '../../main/js-elements'
+import { h, prop, stateful, stateless } from '../../main/js-elements'
 
 const buttonDemoStyles = ` 
   .demo-button {
@@ -18,7 +18,7 @@ const buttonDemoStyles = `
   }
 `
 
-const DemoButton = component('demo-button', {
+const DemoButton = stateful('demo-button', {
   props: {
     text: prop.str.opt(''),
     onButtonClick: prop.func.opt()
@@ -41,7 +41,7 @@ const DemoButton = component('demo-button', {
   }
 })
 
-component('button-demo', () => {
+stateless('button-demo', () => {
   const onClick = (e: any) => alert(e.type) // TODO
 
   return (

@@ -1,6 +1,6 @@
-import { component, h, prop } from '../../main/js-elements'
+import { h, prop, stateful, stateless } from '../../main/js-elements'
 
-const SimpleCounter = component('simple-counter', {
+const SimpleCounter = stateful('simple-counter', {
   props: {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
@@ -32,7 +32,7 @@ const SimpleCounter = component('simple-counter', {
   }
 })
 
-component('simple-counter-demo', () => (
+stateless('simple-counter-demo', () => (
   <div>
     <h3>Counter demo</h3>
     <div>

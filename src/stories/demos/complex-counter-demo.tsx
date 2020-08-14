@@ -1,11 +1,11 @@
-import { component, h, prop } from '../../main/js-elements'
+import { h, prop, stateful } from '../../main/js-elements'
 import { useState } from '../../main/js-elements-ext'
 
 type CounterMethods = {
   reset(n: number): void
 }
 
-const ComplexCounter = component('complex-counter', {
+const ComplexCounter = stateful('complex-counter', {
   props: {
     initialValue: prop.num.opt(0),
     label: prop.str.opt('Counter'),
@@ -52,7 +52,7 @@ const ComplexCounter = component('complex-counter', {
   }
 })
 
-component('complex-counter-demo', (c) => {
+stateful('complex-counter-demo', (c) => {
   const findCounter = () => c.find<CounterMethods>('[data-counter]')!
   const onSetTo0 = () => findCounter().reset(0)
   const onSetTo100 = () => findCounter().reset(100)

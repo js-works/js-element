@@ -14,20 +14,18 @@ import {
   VElement
 } from './core/types'
 
-import { getOwnProp, hasOwnProp } from './core/utils'
 import { h as createElement, text, patch } from './libs/superfine'
 
 // === exports =======================================================
 
 export {
-  component,
   provision,
   propConfigBuilder as prop,
   h,
   html,
   render,
-  Html,
-  Svg,
+  stateful,
+  stateless,
   VElement,
   VNode
 }
@@ -44,12 +42,11 @@ type CtxOf<CC extends CtxConfig> = {
 
 const NOOP = () => {}
 
-// === component =====================================================
+// === stateless =====================================================
 
-function component(name: string, init: (ctrl: Ctrl) => () => VNode): Component
-function component(name: string, render: () => VNode): Component
+function stateless(name: string, render: () => VNode): Component
 
-function component<PC extends PropsConfig, CC extends CtxConfig>(
+function stateless<PC extends PropsConfig, CC extends CtxConfig>(
   name: string,
 
   config: {
@@ -57,11 +54,46 @@ function component<PC extends PropsConfig, CC extends CtxConfig>(
     ctx?: CC
     styles?: string | string[]
     slots?: string[]
+    methods?: string[]
     render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): VNode
   }
 ): Component<ExternalPropsOf<PC>>
 
-function component<PC extends PropsConfig, CC extends CtxConfig>(
+function stateless<PC extends PropsConfig, CC extends CtxConfig>(
+  meta: {
+    name: string
+    props?: PC
+    ctx?: CC
+    styles?: string | string[]
+    slots?: string[]
+    methods?: string[]
+  },
+
+  render: (props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => VNode
+): Component<ExternalPropsOf<PC>>
+
+function stateless(arg1: any, arg2: any): any {
+  if (typeof arg1 === 'string') {
+    if (typeof arg2 === 'function') {
+      return stateful(arg1, {
+        main: () => () => arg2()
+      })
+    }
+
+    const { render, ...config } = arg2
+    config.main = (c: Ctrl, props: any, ctx: any) => () => render(props, ctx)
+    return stateful(arg1, config)
+  } else {
+    const { name, ...config } = arg1
+    config.main = (c: Ctrl, props: any, ctx: any) => () => arg2(props, ctx)
+    return stateful(name, config)
+  }
+}
+// === stateful ======================================================
+
+function stateful(name: string, init: (ctrl: Ctrl) => () => VNode): Component
+
+function stateful<PC extends PropsConfig, CC extends CtxConfig>(
   name: string,
 
   config: {
@@ -74,66 +106,65 @@ function component<PC extends PropsConfig, CC extends CtxConfig>(
   }
 ): Component<ExternalPropsOf<PC>>
 
-function component(name: string, configOrFunc: any): Component<any> {
+function stateful<PC extends PropsConfig, CC extends CtxConfig>(
+  meta: {
+    name: string
+    props?: PC
+    ctx?: CC
+    styles?: string | string[]
+    slots?: string[]
+    methods?: string[]
+  },
+
+  main: (ctrl: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => () => VNode
+): Component<ExternalPropsOf<PC>>
+
+function stateful(arg1: any, arg2: any): Component {
+  let name: string
   let options: any = null
-  let init: any
+  let main: any
+  let ctxConfig: any
 
-  if (typeof configOrFunc === 'function') {
-    const fn = configOrFunc
+  if (typeof arg1 === 'string') {
+    name = arg1
 
-    if (fn.length === 0) {
-      init = (ctrl: Ctrl, props: Props) => {
-        const result = fn(props)
-
-        return typeof result === 'function' ? result : fn
-      }
+    if (typeof arg2 === 'function') {
+      main = arg2
     } else {
-      init = fn
+      options = { ...arg2 }
+      main = options.main
+      ctxConfig = options.ctx
+      delete options.main
+      delete options.ctx
     }
   } else {
-    const config = configOrFunc
-    const hasRender = hasOwnProp(config, 'render')
-    const hasMain = hasOwnProp(config, 'main')
-
-    options = { ...config }
-    delete options.render
-    delete options.main
+    name = arg1.name
+    ctxConfig = arg1.ctx
+    options = { ...arg1 }
+    delete options.name
     delete options.ctx
+    main = arg2
+  }
 
-    const ctxConfig = getOwnProp(config, 'ctx', null)
-    const ctxKeys = ctxConfig ? Object.keys(ctxConfig) : null
-    const ctx = {} as any
+  const ctxKeys = ctxConfig ? Object.keys(ctxConfig) : null
+  const ctx = {} as any
 
-    const initCtx = !ctxConfig
-      ? NOOP
-      : (ctrl: Ctrl) => {
-          const updateCtx = () => {
-            for (let key of ctxKeys!) {
-              ctx[key] = ctxConfig[key](ctrl)
-            }
+  const initCtx = !ctxConfig
+    ? NOOP
+    : (ctrl: Ctrl) => {
+        const updateCtx = () => {
+          for (let key of ctxKeys!) {
+            ctx[key] = ctxConfig[key](ctrl)
           }
-
-          ctrl.beforeUpdate(updateCtx)
-          updateCtx()
         }
 
-    if (hasRender && hasMain) {
-      throw new TypeError(
-        'Illegal component configuration: Only one of the parameters "render" and "main" allowed'
-      )
-    } else if (hasMain) {
-      init = (ctrl: Ctrl, props: Props) => {
-        initCtx(ctrl)
-
-        return config.main(ctrl, props, ctx)
+        ctrl.beforeUpdate(updateCtx)
+        updateCtx()
       }
-    } else {
-      init = (ctrl: Ctrl, props: Props) => {
-        initCtx(ctrl)
 
-        return () => config.render(props, ctx)
-      }
-    }
+  const init = (ctrl: Ctrl, props: Props) => {
+    initCtx(ctrl)
+    return main(ctrl, props, ctx)
   }
 
   const customElementClass = createCustomElementClass(
@@ -308,23 +339,3 @@ function render(content: VElement, container: Element | string) {
 // === html ==========================================================
 
 const html = htm.bind(h)
-
-// === Html + Svg ====================================================
-
-const Html = createDomFactoryObject()
-const Svg = createDomFactoryObject()
-
-function createDomFactoryObject() {
-  const handler = {
-    get(target: object, propName: string) {
-      const factory = h.bind(null, propName)
-      ret[propName] = factory
-      return factory
-    }
-
-    // TODO: other handler methods?
-  }
-
-  const ret: any = new Proxy({}, handler)
-  return ret
-}
