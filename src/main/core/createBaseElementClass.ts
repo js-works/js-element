@@ -42,7 +42,12 @@ export function createBaseElementClass(
         const attrName = propNameToAttrName(propName)
         attrNames.push(attrName)
         attrNameToPropNameMap.set(attrName, propName)
-        propConverters.set(propName, commonPropConverters[propConfig.type.name])
+        propConverters.set(
+          propName,
+          commonPropConverters[
+            propConfig.type ? (propConfig.type as any).name : ''
+          ]
+        ) // TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       }
     }
   }

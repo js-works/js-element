@@ -1,6 +1,6 @@
 import htm from './libs/htm'
 import { createCustomElementClass } from './core/createCustomElementClass'
-import { propConfigBuilder } from './core/propConfigBuilder'
+import { prop } from './core/prop'
 import { provision } from './core/provision'
 
 import {
@@ -20,7 +20,7 @@ import { h as createElement, text, patch } from './libs/superfine'
 
 export {
   provision,
-  propConfigBuilder as prop,
+  prop,
   h,
   html,
   render,
@@ -176,7 +176,22 @@ function stateful(arg1: any, arg2: any): Component {
     renderer
   )
 
-  customElements.define(name, customElementClass)
+  try {
+    customElements.define(name, customElementClass)
+  } catch (e) {
+    let elem: Element | null = null
+
+    try {
+      elem = document.createElement(name)
+    } catch {}
+
+    if (!elem || elem.constructor === HTMLUnknownElement) {
+      throw e
+    }
+
+    location.reload()
+  }
+
   const ret = h.bind(null, name)
 
   Object.defineProperty(ret, 'js-elements:type', {

@@ -8,15 +8,18 @@ export {
   ComponentOptions,
   Ctrl,
   ExternalPropsOf,
+  Func,
   InternalPropsOf,
   Key,
   Message,
   Methods,
   Notifier,
+  Prop,
   Props,
   PropConfig,
   PropConverter,
   PropsConfig,
+  PropType,
   Renderer,
   State,
   VElement,
@@ -25,6 +28,7 @@ export {
 
 // === types =========================================================
 
+type Func = (...args: any[]) => any
 type Key = string | number
 type Props = Record<string, any> & { key?: never; children?: VNode }
 type VElement<T extends Props = Props> = any // TODO !!!!!!!!
@@ -73,8 +77,6 @@ type Ctrl = {
   receive(receiver: (message: Message) => void): () => void
 }
 
-// === types =========================================================
-
 type Class<T> = {
   new (...arg: any[]): T
 }
@@ -93,27 +95,94 @@ type ComponentOptions = {
   methods?: string[] // TODO
 }
 
-type PropConfig<T> = {
-  type?: T extends boolean
-    ? BooleanConstructor
-    : T extends number
-    ? NumberConstructor
-    : T extends string
-    ? StringConstructor
-    : T extends object
-    ? ObjectConstructor
-    : T extends Function
-    ? FunctionConstructor
-    : T extends undefined
-    ? any
-    : T extends unknown
-    ? any
-    : never
+type Prop<T> =
+  | (T extends boolean ? () => T : never)
+  | (T extends number ? () => T : never)
+  | (T extends string ? () => T : never)
+  | (T extends object ? () => T : never)
+  | (T extends (...args: any[]) => any ? () => T : never)
+  | (T extends any[] ? () => T : never)
+  | (
+      | (T extends boolean ? () => T : never)
+      | (T extends number ? () => T : never)
+      | (T extends string ? () => T : never)
+      | (T extends object ? () => T : never)
+      | (T extends (...args: any[]) => any ? () => T : never)
+      | (T extends any[] ? () => T : never)
+      | (T extends null ? null : never)
+    )[]
 
-  nullable?: boolean
-  required?: boolean
-  defaultValue?: T
-}
+type PropType<P> = P extends PropTypeConfig
+  ? PropTypeConfigType<P>
+  : P extends ((() => infer T) | null)[]
+  ? P extends (() => any)[]
+    ? T
+    : T | null
+  : never
+
+type PropTypeConfig =
+  | BooleanConstructor
+  | NumberConstructor
+  | StringConstructor
+  | ObjectConstructor
+  | FunctionConstructor
+  | ArrayConstructor
+  | (
+      | BooleanConstructor
+      | NumberConstructor
+      | StringConstructor
+      | ObjectConstructor
+      | FunctionConstructor
+      | ArrayConstructor
+      | null
+    )
+/* &
+      Prop<any>*/ ;[]
+
+type PropTypeConfigType<C> =
+  | (C extends BooleanConstructor ? boolean : never)
+  | (C extends NumberConstructor ? number : never)
+  | (C extends StringConstructor ? string : never)
+  | (C extends ObjectConstructor ? Record<any, any> : never)
+  | (C extends FunctionConstructor ? (...args: any[]) => any : never)
+  | (C extends ArrayConstructor ? any[] : never)
+  | (BooleanConstructor[] extends C ? boolean : never)
+  | (NumberConstructor[] extends C ? number : never)
+  | (StringConstructor[] extends C ? string : never)
+  | (ObjectConstructor[] extends C ? Record<any, any> : never)
+  | (FunctionConstructor[] extends C ? (...args: any[]) => any : never)
+  | (ArrayConstructor[] extends C ? any[] : never)
+  | (null[] extends C ? null : never)
+
+type TypeHint =
+  | BooleanConstructor
+  | NumberConstructor
+  | StringConstructor
+  | ObjectConstructor
+  | FunctionConstructor
+  | ArrayConstructor
+  | (
+      | BooleanConstructor
+      | NumberConstructor
+      | StringConstructor
+      | ObjectConstructor
+      | FunctionConstructor
+      | ArrayConstructor
+      | null
+    )[]
+
+type PropConfig<T> =
+  | {
+      type: TypeHint
+      defaultValue: T
+    }
+  | {
+      type: TypeHint
+    }
+  | {
+      type: TypeHint
+      required: true
+    }
 
 type PropsConfig = {
   [key: string]: PropConfig<any>
@@ -149,6 +218,12 @@ type InternalPropsOf<PC extends PropsConfig> = Pick<
     }[keyof PC]
   >
 
+// TODO!!!!!!!
+type PropOf<P extends PropConfig<any>> = P extends { type: infer T }
+  ? PropType<T>
+  : never
+
+/*
 type PropOf<P extends PropConfig<any>> = P extends { type: infer T }
   ?
       | (T extends Boolean
@@ -166,7 +241,7 @@ type PropOf<P extends PropConfig<any>> = P extends { type: infer T }
           : any) // TODO!!!!!!!!!!! Must be <never>!!!!
       | (P extends { nullable: true } ? null : never)
   : never
-
+*/
 type PropConverter<T> = {
   fromPropToString(value: T): string
   fromStringToProp(value: string): T

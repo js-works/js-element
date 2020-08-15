@@ -12,7 +12,7 @@ const dataTableMeta = {
 export default stateful(dataTableMeta, (c, props) => {
   return () => html`
     <div>
-      <h4>DataTable</h4>
+      <h4>xyDataTable</h4>
       <div>
         ${renderDataGrid()}
       </div>

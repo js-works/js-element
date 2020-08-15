@@ -12,6 +12,7 @@ const paginatorMeta = {
     totalItemCount: prop.num.req()
   }
 }
+
 export default stateless(paginatorMeta, (props) => {
   return html`
     <div>

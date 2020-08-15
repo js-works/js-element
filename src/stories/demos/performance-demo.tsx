@@ -40,7 +40,7 @@ const Tile = stateless('x-tile', {
 
 const TileRow = stateless('x-tile-row', {
   props: {
-    tileWidth: prop.num.opt(3),
+    tileWidth: prop(Number).opt(3),
     columnCount: prop.num.opt(prefs.columnCount),
     colors: prop.obj.opt(prefs.colors as any), // TODO!!!!
     loop: prop.num.req() // TODO!!!
@@ -50,8 +50,8 @@ const TileRow = stateless('x-tile-row', {
     const tiles = []
 
     for (let x = 0; x < props.columnCount; ++x) {
-      const colorIdx = Math.floor(Math.random() * props.colors.length),
-        color = props.colors[colorIdx]
+      const colorIdx = Math.floor(Math.random() * props.colors.length)
+      const color = props.colors[colorIdx]
 
       tiles.push(<Tile width={props.tileWidth} color={color} key={x} />)
     }

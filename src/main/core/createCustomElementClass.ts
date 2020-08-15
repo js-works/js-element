@@ -33,7 +33,7 @@ export function createCustomElementClass(
   const defaultProps: Props = {}
 
   for (const propName of propNames) {
-    defaultProps[propName] = propsConfig![propName].defaultValue
+    defaultProps[propName] = (propsConfig![propName] as any).defaultValue // TODO!!!!!!!!!!!! : ''
   }
 
   return class extends createBaseElementClass(
