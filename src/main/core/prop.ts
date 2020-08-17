@@ -1,14 +1,12 @@
 // === imports =======================================================
 
-import { Func, Prop, PropConfig } from './types'
+import { PropType } from './types'
 
 // === exports =======================================================
 
 export { prop }
 
-// === propConfigBuilder =============================================
-
-type AllowedConstructors =
+type Type =
   | BooleanConstructor
   | NumberConstructor
   | StringConstructor
@@ -16,122 +14,182 @@ type AllowedConstructors =
   | FunctionConstructor
   | ArrayConstructor
 
-type withAsFunc<T extends Record<string, any>> = T & { as: () => T }
+type TypeType<T extends Type | null> = T extends null
+  ? null
+  : T extends ObjectConstructor
+  ? Record<any, any>
+  : T extends FunctionConstructor
+  ? (...args: any[]) => any
+  : T extends ArrayConstructor
+  ? any[]
+  : ReturnType<Exclude<T, null>>
 
-type PropConfigBuilder<Type, TypeHint> = {
-  opt(): withAsFunc<{ type: TypeHint }>
-  opt(defaultValue: Type): withAsFunc<{ type: TypeHint; defaultValue: Type }>
-  req(): withAsFunc<{ type: TypeHint; required: true }>
+type PropTypeBuilder<T> = {
+  opt: {
+    (): PropType<T, false, false>
+    (defaultValue: T): PropType<T, true, false>
+  }
+
+  req: () => PropType<T, false, true>
 }
 
-type PropConfigBuilderWithoutTypeHint<Type> = {
-  opt(): withAsFunc<{}>
-  opt(defaultValue: Type): withAsFunc<{ defaultValue: Type }>
-  req(): withAsFunc<{ required: true }>
+type ExtPropTypeBuilder<T> = PropTypeBuilder<T> & {
+  as<T2 extends T>(): PropTypeBuilder<T2>
 }
 
-type ReturnTypesOrNulls<T extends (Func | null)[]> = T extends (infer U)[]
-  ? U extends ObjectConstructor
-    ? Record<any, any>
-    : U extends Func
-    ? ReturnType<U>
-    : null
-  : never
+type PropFunc = ExtPropTypeBuilder<any> & {
+  bool: ExtPropTypeBuilder<boolean>
+  num: ExtPropTypeBuilder<number>
+  str: ExtPropTypeBuilder<string>
+  obj: ExtPropTypeBuilder<Record<any, any>>
+  func: ExtPropTypeBuilder<(...args: any[]) => any>
+  arr: ExtPropTypeBuilder<any[]>
 
-type TupleTypeToArrayType<T> = T extends (infer U)[] ? U[] : never
+  nbool: ExtPropTypeBuilder<boolean | null>
+  nnum: ExtPropTypeBuilder<number | null>
+  nstr: ExtPropTypeBuilder<string | null>
+  nobj: ExtPropTypeBuilder<Record<any, any> | null>
+  nfunc: ExtPropTypeBuilder<((...args: any[]) => any) | null>
+  narr: ExtPropTypeBuilder<any[] | null>
 
-const prop: {
-  (): PropConfigBuilderWithoutTypeHint<any>
-  <A extends AllowedConstructors>(type: A): PropConfigBuilder<ReturnType<A>, A>
-  <A extends (AllowedConstructors | null)[]>(...types: A): PropConfigBuilder<
-    ReturnTypesOrNulls<A>,
-    TupleTypeToArrayType<A>
+  evt<T = any>(): PropType<(event: T) => void, false, false>
+
+  <T extends Type>(t: T): ExtPropTypeBuilder<TypeType<T>>
+
+  <T1 extends Type | null, T2 extends Exclude<Type | null, T1>>(
+    t1: T1,
+    t2: T2
+  ): ExtPropTypeBuilder<TypeType<T1> | TypeType<T2>>
+
+  <
+    T1 extends Type | null,
+    T2 extends Exclude<Type | null, T1>,
+    T3 extends Exclude<Type | null, T1 | T2>
+  >(
+    t1: T1,
+    t2: T2,
+    t3: T3
+  ): ExtPropTypeBuilder<TypeType<T1> | TypeType<T2> | TypeType<T3>>
+
+  <
+    T1 extends Type | null,
+    T2 extends Exclude<Type | null, T1>,
+    T3 extends Exclude<Type | null, T1 | T2>,
+    T4 extends Exclude<Type | null, T1 | T2 | T3>
+  >(
+    t1: T1,
+    t2: T2,
+    t3: T3,
+    t4: T4
+  ): ExtPropTypeBuilder<
+    TypeType<T1> | TypeType<T2> | TypeType<T3> | TypeType<T4>
   >
 
-  readonly bool: PropConfigBuilder<Boolean, BooleanConstructor>
-  readonly nbool: PropConfigBuilder<Boolean | null, [BooleanConstructor, null]>
-  readonly num: PropConfigBuilder<Number, NumberConstructor>
-  readonly nnum: PropConfigBuilder<Number | null, [NumberConstructor, null]>
-  readonly str: PropConfigBuilder<string, StringConstructor>
-  readonly nstr: PropConfigBuilder<string | null, [StringConstructor, null]>
-  readonly obj: PropConfigBuilder<Record<any, any>, ObjectConstructor>
-  readonly nobj: PropConfigBuilder<Record<any, any>, [ObjectConstructor, null]>
-  readonly func: PropConfigBuilder<Func, FunctionConstructor>
-  readonly nfunc: PropConfigBuilder<Func | null, [FunctionConstructor, null]>
-  readonly arr: PropConfigBuilder<any[], ArrayConstructor>
-  readonly narr: PropConfigBuilder<any[] | null, [ArrayConstructor, null]>
+  <
+    T1 extends Type | null,
+    T2 extends Exclude<Type | null, T1>,
+    T3 extends Exclude<Type | null, T1 | T2>,
+    T4 extends Exclude<Type | null, T1 | T2 | T3>,
+    T5 extends Exclude<Type | null, T1 | T2 | T3 | T4>
+  >(
+    t1: T1,
+    t2: T2,
+    t3: T3,
+    t4: T4,
+    t5: T5
+  ): ExtPropTypeBuilder<
+    TypeType<T1> | TypeType<T2> | TypeType<T3> | TypeType<T4> | TypeType<T5>
+  >
 
-  readonly evt: () => { type: Function }
+  <
+    T1 extends Type | null,
+    T2 extends Exclude<Type | null, T1>,
+    T3 extends Exclude<Type | null, T1 | T2>,
+    T4 extends Exclude<Type | null, T1 | T2 | T3>,
+    T5 extends Exclude<Type | null, T1 | T2 | T3 | T4>,
+    T6 extends Exclude<Type | null, T1 | T2 | T3 | T4 | T5>
+  >(
+    t1: T1,
+    t2: T2,
+    t3: T3,
+    t4: T4,
+    t5: T5
+  ): ExtPropTypeBuilder<
+    | TypeType<T1>
+    | TypeType<T2>
+    | TypeType<T3>
+    | TypeType<T4>
+    | TypeType<T5>
+    | TypeType<T6>
+  >
 
-  opt(): withAsFunc<{}>
-  opt<T>(defaultValue: T): withAsFunc<{ defaultValue: T }>
-  req(): withAsFunc<{ required: true }>
-} = (() => {
-  let prop: any = function (...args: any[]) {
-    const argc = args.length
-
-    if (argc === 0) {
-      return {
-        opt: (defaultValue: any) =>
-          defaultValue === undefined ? {} : { defaultValue },
-
-        req: () => ({
-          required: true
-        })
-      }
-    }
-
-    const types = argc === 1 ? args[0] : args
-
-    return {
-      opt: (defaultValue: any) =>
-        defaultValue === undefined
-          ? new ExtPropConfig({ type: types })
-          : new ExtPropConfig({
-              type: types,
-              defaultValue
-            }),
-
-      req: () =>
-        new ExtPropConfig({
-          type: types,
-          required: true
-        })
-    }
-  }
-
-  prop.bool = prop(Boolean)
-  prop.nbool = prop(Boolean, null)
-  prop.num = prop(Number)
-  prop.nnum = prop(Number, null)
-  prop.str = prop(String)
-  prop.nstr = prop(String, null)
-  prop.obj = prop(Object)
-  prop.nobj = prop(Object, null)
-  prop.func = prop(Function)
-  prop.nfunc = prop(Function, null)
-  prop.arr = prop(Array)
-  prop.narr = prop(Array, null)
-
-  prop.evt = () => prop.func.opt().as()
-
-  prop.opt = () => new ExtPropConfig({})
-  prop.req = () => new ExtPropConfig({ required: true })
-
-  return Object.freeze(prop)
-})()
-
-class ExtPropConfig<T> {
-  constructor(data: T) {
-    Object.assign(this, data)
-
-    Object.defineProperty(this, 'as', {
-      value: () => data
-    })
-  }
-
-  as(): T {
-    // Will be overridden in consructor
-    return null as any
-  }
+  <
+    T1 extends Type | null,
+    T2 extends Exclude<Type | null, T1>,
+    T3 extends Exclude<Type | null, T1 | T2>,
+    T4 extends Exclude<Type | null, T1 | T2 | T3>,
+    T5 extends Exclude<Type | null, T1 | T2 | T3 | T4>,
+    T6 extends Exclude<Type | null, T1 | T2 | T3 | T4 | T5>,
+    T7 extends Exclude<Type | null, T1 | T2 | T3 | T4 | T5 | T6>
+  >(
+    t1: T1,
+    t2: T2,
+    t3: T3,
+    t4: T4,
+    t5: T5
+  ): ExtPropTypeBuilder<
+    | TypeType<T1>
+    | TypeType<T2>
+    | TypeType<T3>
+    | TypeType<T4>
+    | TypeType<T5>
+    | TypeType<T6>
+    | TypeType<T7>
+  >
 }
+
+const prop: PropFunc = ((...args: any[]) => {
+  if (args.length === 0) {
+    throw new TypeError(
+      'Function "prop" must be called with at least one argument'
+    )
+  }
+
+  const typeHint = args.length === 1 ? args[0] : args
+
+  return {
+    opt: (defaultValue?: any) =>
+      defaultValue === undefined
+        ? { type: typeHint }
+        : { type: typeHint, defaultValue },
+
+    req: () => ({ type: typeHint, required: true })
+  }
+}) as any // TODO
+
+prop.opt = ((defaultValue?: any) =>
+  defaultValue === undefined ? {} : { defaultValue }) as any
+
+prop.req = () => ({ required: true } as any)
+
+prop.as = () =>
+  ({
+    opt: prop.opt,
+    req: prop.req
+  } as any) // TODO?
+
+prop.bool = prop(Boolean)
+prop.num = prop(Number)
+prop.str = prop(String)
+prop.obj = prop(Object)
+prop.func = prop(Function)
+prop.arr = prop(Array)
+
+prop.nbool = prop(Boolean, null)
+prop.nnum = prop(Number, null)
+prop.nstr = prop(String, null)
+prop.nobj = prop(Object, null)
+prop.nfunc = prop(Function, null)
+prop.narr = prop(Array, null)
+
+prop.evt = () => prop(Function).opt()

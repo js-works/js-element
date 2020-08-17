@@ -20,13 +20,14 @@ const buttonDemoStyles = `
 
 const DemoButton = stateful('demo-button', {
   props: {
-    text: prop.str.opt(''),
-    onButtonClick: prop.func.opt()
+    text: prop.str.opt(),
+    onButtonClick: prop.evt()
   },
 
   styles: buttonDemoStyles,
 
   main(c, props) {
+    props.text
     const onClick = () => {
       if (props.onButtonClick) {
         props.onButtonClick(new CustomEvent('button-click')) // TODO

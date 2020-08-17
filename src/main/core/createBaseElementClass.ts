@@ -32,7 +32,7 @@ export function createBaseElementClass(
 
   if (propNames.length > 0) {
     for (const propName of propNames) {
-      const propConfig = propsConfig![propName]
+      const propConfig = propsConfig![propName] as PropConfig
 
       if (isEventPropName(propName)) {
         const eventName = eventPropNameToEventName(propName)
@@ -225,7 +225,7 @@ export function createBaseElementClass(
   return baseClass
 }
 
-function isAttr(propConfig: PropConfig<any>) {
+function isAttr(propConfig: PropConfig) {
   return (
     propConfig.type == String ||
     propConfig.type === Boolean ||
