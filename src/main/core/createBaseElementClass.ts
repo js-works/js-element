@@ -60,7 +60,10 @@ export function createBaseElementClass(
     _performRefresh: Action
     _getMethodByName: (name: string) => Function | null
     _properties: Record<string, any> = {}
-    _listenersByEventName: Map<string, Set<Function>> = new Map()
+    _listenersByEventName: Map<
+      string,
+      Set<((ev: Event) => void) | { handleEvent(ev: Event): void }>
+    > = new Map()
 
     constructor(
       onPropChange: (propName: string, value: any) => void,
@@ -175,7 +178,20 @@ export function createBaseElementClass(
           const propName = eventNameToPropNameMap.get(eventName)!
 
           this._onPropChange(propName, (ev: any) => {
-            listenerSet!.forEach((listener) => listener(ev))
+            const listeners = Array.from(listenerSet!.values())
+
+            setTimeout(() => {
+              listeners.forEach((listener) => {
+                if (typeof listener === 'function') {
+                  listener(ev)
+                } else if (
+                  listener &&
+                  typeof listener.handleEvent === 'function'
+                ) {
+                  listener.handleEvent(ev)
+                }
+              }, 0)
+            })
           })
 
           this._performRefresh()
