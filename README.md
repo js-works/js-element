@@ -78,9 +78,9 @@ functions similar to React hooks (but without all the magic).
 The naming pattern for these "extensions" is `withXyz`.
 
 ```jsx
-const Clock = stateful('demo-clock', (c) => {
-  const getTime = withTime(c, 1000, () => new Date().toLocaleTimeString())
+const Clock = component('demo-clock', (c) => {
+  const getDate = withTime(c, 1000)
 
-  return () => <div>Current time: {getTime()}</div>
+  return () => <div>Current time: {getDate().toLocaleTimeString()}</div>
 })
 ```
