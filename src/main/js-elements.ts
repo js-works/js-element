@@ -2,6 +2,7 @@ import htm from './libs/htm'
 import { createCustomElementClass } from './core/createCustomElementClass'
 import { prop } from './core/prop'
 import { provision } from './core/provision'
+import { hasOwnProp } from './core/utils'
 
 import {
   Component,
@@ -18,17 +19,7 @@ import { h as createElement, text, patch } from './libs/superfine'
 
 // === exports =======================================================
 
-export {
-  provision,
-  prop,
-  h,
-  html,
-  render,
-  stateful,
-  stateless,
-  VElement,
-  VNode
-}
+export { component, provision, prop, h, html, render, VElement, VNode }
 
 // === types ========================================================
 
@@ -44,9 +35,10 @@ const NOOP = () => {}
 
 // === stateless =====================================================
 
-function stateless(name: string, render: () => VNode): Component
+function component(name: string, main: (c: Ctrl) => () => VNode): Component
+function component(name: string, render: () => VNode): Component
 
-function stateless<PC extends PropsConfig, CC extends CtxConfig>(
+function component<PC extends PropsConfig, CC extends CtxConfig>(
   name: string,
 
   config: {
@@ -59,41 +51,7 @@ function stateless<PC extends PropsConfig, CC extends CtxConfig>(
   }
 ): Component<ExternalPropsOf<PC>>
 
-function stateless<PC extends PropsConfig, CC extends CtxConfig>(
-  meta: {
-    name: string
-    props?: PC
-    ctx?: CC
-    styles?: string | string[]
-    slots?: string[]
-    methods?: string[]
-  },
-
-  render: (props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => VNode
-): Component<ExternalPropsOf<PC>>
-
-function stateless(arg1: any, arg2: any): any {
-  if (typeof arg1 === 'string') {
-    if (typeof arg2 === 'function') {
-      return stateful(arg1, {
-        main: () => () => arg2()
-      })
-    }
-
-    const { render, ...config } = arg2
-    config.main = (c: Ctrl, props: any, ctx: any) => () => render(props, ctx)
-    return stateful(arg1, config)
-  } else {
-    const { name, ...config } = arg1
-    config.main = (c: Ctrl, props: any, ctx: any) => () => arg2(props, ctx)
-    return stateful(name, config)
-  }
-}
-// === stateful ======================================================
-
-function stateful(name: string, init: (ctrl: Ctrl) => () => VNode): Component
-
-function stateful<PC extends PropsConfig, CC extends CtxConfig>(
+function component<PC extends PropsConfig, CC extends CtxConfig>(
   name: string,
 
   config: {
@@ -106,44 +64,82 @@ function stateful<PC extends PropsConfig, CC extends CtxConfig>(
   }
 ): Component<ExternalPropsOf<PC>>
 
-function stateful<PC extends PropsConfig, CC extends CtxConfig>(
-  meta: {
-    name: string
+function component<PC extends PropsConfig, CC extends CtxConfig>(
+  name: string,
+
+  config: {
     props?: PC
     ctx?: CC
     styles?: string | string[]
     slots?: string[]
     methods?: string[]
-  },
+  }
+): {
+  render: (
+    render: (props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => VNode
+  ) => Component<ExternalPropsOf<PC>>
 
-  main: (ctrl: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => () => VNode
-): Component<ExternalPropsOf<PC>>
+  main: (
+    main: (
+      ctrl: Ctrl,
+      props: InternalPropsOf<PC>,
+      ctx: CtxOf<CC>
+    ) => () => VNode
+  ) => Component<ExternalPropsOf<PC>>
+}
 
-function stateful(arg1: any, arg2: any): Component {
-  let name: string
+function component(name: string, sndArg: any): any {
+  if (typeof sndArg === 'function') {
+    if (sndArg.length > 0) {
+      return component(name, {
+        main: sndArg
+      })
+    }
+
+    return component(name, {
+      main() {
+        let result = sndArg()
+
+        if (typeof result === 'function') {
+          return result
+        }
+
+        let returnResult = true
+
+        return () => {
+          const ret = returnResult ? result : sndArg()
+          returnResult = false
+          return ret
+        }
+      }
+    })
+  }
+
+  if (!hasOwnProp(sndArg, 'render') && !hasOwnProp(sndArg, 'main')) {
+    return {
+      render: (render: Function) => component(name, { ...sndArg, render }),
+      main: (main: Function) => component(name, { ...sndArg, main })
+    }
+  }
+
+  if (hasOwnProp(sndArg, 'render')) {
+    const { render, ...config } = sndArg
+    config.main = (c: Ctrl, props: any, ctx: any) => () => render(props, ctx)
+    return component(name, config)
+  }
+
   let options: any = null
   let main: any
   let ctxConfig: any
 
-  if (typeof arg1 === 'string') {
-    name = arg1
-
-    if (typeof arg2 === 'function') {
-      main = arg2
-    } else {
-      options = { ...arg2 }
-      main = options.main
-      ctxConfig = options.ctx
-      delete options.main
-      delete options.ctx
-    }
-  } else {
-    name = arg1.name
-    ctxConfig = arg1.ctx
-    options = { ...arg1 }
-    delete options.name
+  if (typeof sndArg === 'function') {
+    main = sndArg
+  } else if (sndArg.main) {
+    options = { ...sndArg }
+    main = options.main
+    ctxConfig = options.ctx
+    delete options.main
     delete options.ctx
-    main = arg2
   }
 
   const ctxKeys = ctxConfig ? Object.keys(ctxConfig) : null

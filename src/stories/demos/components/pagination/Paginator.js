@@ -1,19 +1,15 @@
-import { html, prop, stateless } from '../../../../main/js-elements'
+import { component, html, prop } from '../../../../main/js-elements'
 import '@vaadin/vaadin-button'
 import '@vaadin/vaadin-icons'
 import TextField from '../form/TextField'
 
-const paginatorMeta = {
-  name: 'jsc-paginator',
-
+export default component('jsc-paginator', {
   prop: {
     pageIndex: prop.num.req(),
     pageSize: prop.num.req(),
     totalItemCount: prop.num.req()
   }
-}
-
-export default stateless(paginatorMeta, (props) => {
+}).render((props) => {
   return html`
     <div>
       <vaadin-button>

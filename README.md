@@ -9,11 +9,32 @@ and btw: It is currently not meant to be used in production.
 
 ## Example
 
+### Stateless component
+
 ```js
-import { h, prop, render, stateful } from 'js-elements'
+import { component, h, prop, render } from 'js-elements'
+
+const SayHello = component('say-hello', {
+  props: {
+    salutation: prop.str.opt('Hello')
+    name: prop.str.opt('World')
+  },
+
+  render(props) {
+    return <div>{props.salutation}, {props.name}!</div>
+  }
+})
+
+render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
+```
+
+### Stateful component
+
+```js
+import { component, h, prop, render } from 'js-elements'
 import counterStyles from './counter.css'
 
-const Counter = stateful('demo-counter', {
+const Counter = component('demo-counter', {
   props: {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
@@ -38,26 +59,27 @@ const Counter = stateful('demo-counter', {
       () => [count]
     )
 
-    return () => 
+    return () => (
       <div class="counter">
         <label class="label">{props.label}: </label>
         <button class="button" onClick={onIncrement}>
           {count}
         </button>
       </div>
+    )
   }
 })
 
-render(<Counter/>, '#app')
+render(<Counter />, '#app')
 ```
 
-*js-elements* also supports so-called "extensions" which are
+_js-elements_ also supports so-called "extensions" which are
 functions similar to React hooks (but without all the magic).
 The naming pattern for these "extensions" is `withXyz`.
 
 ```jsx
 const Clock = stateful('demo-clock', (c) => {
-  const getTime = withTime(c, 1000, () => new Date().toLocaleTimeString()) 
+  const getTime = withTime(c, 1000, () => new Date().toLocaleTimeString())
 
   return () => <div>Current time: {getTime()}</div>
 })

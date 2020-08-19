@@ -1,7 +1,7 @@
-import { h, prop, stateful } from '../../main/js-elements'
+import { component, h, prop } from '../../main/js-elements'
 import { withPromise, withState } from '../../main/js-elements-ext'
 
-const DataLoader = stateful('data-loader', {
+const DataLoader = component('data-loader', {
   props: {
     loadingText: prop.str.opt('Loading...'),
     finishText: prop.str.opt('Finished!'),
@@ -24,7 +24,7 @@ const DataLoader = stateful('data-loader', {
   }
 })
 
-stateful('promise-demo', (c) => {
+component('promise-demo', (c) => {
   const [state, setState] = withState(c, {
     key: 0,
     loadingText: 'Loading...',

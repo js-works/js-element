@@ -1,8 +1,8 @@
-import { html, prop, stateful } from '../../../../main/js-elements'
+import { component, html, prop } from '../../../../main/js-elements'
 import { withState } from '../../../../main/js-elements-ext'
 import DataTable from './DataTable'
 import Paginator from '../pagination/Paginator'
-export default stateful('jsc-data-explorer', {
+export default component('jsc-data-explorer', {
   props: {
     title: prop.str.opt(),
     columns: prop.arr.req()

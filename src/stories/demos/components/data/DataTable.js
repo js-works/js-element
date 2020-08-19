@@ -1,15 +1,12 @@
-import { html, prop, stateful } from '../../../../main/js-elements'
+import { component, html, prop } from '../../../../main/js-elements'
 import { withState } from '../../../../main/js-elements-ext'
 import '@vaadin/vaadin-grid'
 
-const dataTableMeta = {
-  name: 'jsc-data-table',
-
+export default component('jsc-data-table', {
   props: {
     columns: prop.arr.req()
   }
-}
-export default stateful(dataTableMeta, (c, props) => {
+}).main((c, props) => {
   return () => html`
     <div>
       <h4>xyDataTable</h4>
