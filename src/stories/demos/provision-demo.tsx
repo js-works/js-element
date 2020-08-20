@@ -1,5 +1,5 @@
 import { provision, h, component } from '../../main/js-elements'
-import { withInterval } from '../../main/js-elements-ext'
+import { $interval } from '../../main/js-elements-ext'
 
 const [provideTheme, consumeTheme] = provision('theme', 'light')
 
@@ -7,7 +7,7 @@ component('provision-demo', (c) => {
   let theme = 'light'
   provideTheme(c, theme)
 
-  withInterval(
+  $interval(
     c,
     () => {
       theme = theme === 'light' ? 'dark' : 'light'

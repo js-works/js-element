@@ -7,26 +7,25 @@ const SimpleCounter = component('simple-counter', {
   },
 
   main(c, props) {
-    let count = props.initialCount
-    const onIncrement = c.updateFn(() => ++count)
+    const [state, setState] = c.addState({ count: props.initialCount })
+    const onIncrement = () => setState('count', (it) => it + 1)
 
-    c.effect(() => {
+    c.afterMount(() =>
       console.log('Component "simple-counter" has been mounted')
-
-      return () => console.log('Component "simple-counter" will be umounted')
-    }, null)
+    )
+    c.beforeUnmount(() =>
+      console.log('Component "simple-counter" will be umounted')
+    )
 
     c.effect(
-      () => {
-        console.log(`Value of "${props.label}": ${count}`)
-      },
-      () => [count]
+      () => console.log(`Value of "${props.label}": ${state.count}`),
+      () => [state.count]
     )
 
     return () => (
       <div>
         <label>{props.label}: </label>
-        <button onClick={onIncrement}>{count}</button>
+        <button onClick={onIncrement}>{state.count}</button>
       </div>
     )
   }

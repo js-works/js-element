@@ -1,5 +1,5 @@
 import { component, html, prop } from '../../../../main/js-elements'
-import { withState } from '../../../../main/js-elements-ext'
+import { $state } from '../../../../main/js-elements-ext'
 import DataTable from './DataTable'
 import Paginator from '../pagination/Paginator'
 export default component('jsc-data-explorer', {
@@ -9,7 +9,7 @@ export default component('jsc-data-explorer', {
   },
 
   main(c, props) {
-    const [state, setState] = withState(c, {
+    const [state, setState] = $state(c, {
       pageIndex: 0,
       pageSize: 25,
       totalItemCount: 1253

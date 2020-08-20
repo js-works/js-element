@@ -32,6 +32,7 @@ render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
 
 ```js
 import { component, h, prop, render } from 'js-elements'
+import { $effect, $state } from 'js-elements/ext'
 import counterStyles from './counter.css'
 
 const Counter = component('demo-counter', {
@@ -43,16 +44,11 @@ const Counter = component('demo-counter', {
   styles: simpleCounterStyles,
 
   main(c, props) {
-    let count = props.initialCount
-    const onIncrement = c.updateFn(() => ++count)
+    const [state, setState] = c.addState({ count: props.initialCount })
+    const onIncrement = () => setState('count', it => it + 1)
 
-    c.afterMount(() => {
-      console.log(`"${props.label}" has been mounted`)
-    })
-
-    c.beforeUnmount(() => {
-      console.log(`Unmounting "${props.label}"`)
-    })
+    c.afterMount(() => console.log(`"${props.label}" has been mounted`)
+    c.beforeUnmount(() => console.log(`Unmounting "${props.label}"`)
 
     c.effect(
       () => console.log(`Value of "${props.label}": ${count}`),
@@ -75,12 +71,15 @@ render(<Counter />, '#app')
 
 _js-elements_ also supports so-called "extensions" which are
 functions similar to React hooks (but without all the magic).
-The naming pattern for these "extensions" is `withXyz`.
+The naming pattern for these "extensions" is `$xyz`.
 
 ```jsx
-const Clock = component('demo-clock', (c) => {
-  const getDate = withTime(c, 1000)
+import { h } from 'js-elements'
+import { $time } from 'js-elements/ext'
 
-  return () => <div>Current time: {getDate().toLocaleTimeString()}</div>
+const Clock = component('demo-clock', (c) => {
+  const getTime = $time(c, 1000, () => new Date().toLocaleTimeString())
+
+  return () => <div>Current time: {getTime()}</div>
 })
 ```

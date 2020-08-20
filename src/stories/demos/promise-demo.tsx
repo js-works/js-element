@@ -1,5 +1,5 @@
 import { component, h, prop } from '../../main/js-elements'
-import { withPromise, withState } from '../../main/js-elements-ext'
+import { $Promise, $state } from '../../main/js-elements-ext'
 
 const DataLoader = component('data-loader', {
   props: {
@@ -9,7 +9,7 @@ const DataLoader = component('data-loader', {
   },
 
   main(c, props) {
-    const res = withPromise(
+    const res = $Promise(
       c,
       () => wait(4000),
       () => [props.key]
@@ -25,7 +25,7 @@ const DataLoader = component('data-loader', {
 })
 
 component('promise-demo', (c) => {
-  const [state, setState] = withState(c, {
+  const [state, setState] = $state(c, {
     key: 0,
     loadingText: 'Loading...',
     finishText: 'Finished!'

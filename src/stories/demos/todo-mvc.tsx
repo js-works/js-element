@@ -1,13 +1,13 @@
 /*
 import { component, h, prop } from '../../main/js-elements'
-import { withState } from '../../main/js-elements-ext'
+import { $state } from '../../main/js-elements-ext'
 
 const ENTER_KEY = 13
 const ESC_KEY = 27
 
 const Header = component('todo-header', (c) => {
   const root = c.getContentElement()
-  const [state, setState] = withState(c, { title: '' })
+  const [state, setState] = $state(c, { title: '' })
   const onInput = (ev: any) => setState({ title: ev.target.value })
 
   const onKeyDown = (ev: any) => {

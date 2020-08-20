@@ -1,14 +1,14 @@
 import { h, component } from '../../main/js-elements'
-import { withInterval, withState } from '../../main/js-elements-ext'
+import { $interval, $state } from '../../main/js-elements-ext'
 
 component('interval-demo', (c) => {
-  const [state, setState] = withState(c, {
+  const [state, setState] = $state(c, {
       count: 0,
       delay: 1000
     }),
     onReset = () => setState('delay', 1000)
 
-  withInterval(
+  $interval(
     c,
     () => {
       setState('count', (it: any) => it + 1) // TODO
@@ -16,7 +16,7 @@ component('interval-demo', (c) => {
     () => state.delay
   )
 
-  withInterval(
+  $interval(
     c,
     () => {
       if (state.delay > 10) {

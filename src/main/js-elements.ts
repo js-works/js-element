@@ -64,17 +64,14 @@ function component<PC extends PropsConfig, CC extends CtxConfig>(
   }
 ): Component<ExternalPropsOf<PC>>
 
-function component<PC extends PropsConfig, CC extends CtxConfig>(
-  name: string,
-
-  config: {
-    props?: PC
-    ctx?: CC
-    styles?: string | string[]
-    slots?: string[]
-    methods?: string[]
-  }
-): {
+function component<PC extends PropsConfig, CC extends CtxConfig>(config: {
+  name: string
+  props?: PC
+  ctx?: CC
+  styles?: string | string[]
+  slots?: string[]
+  methods?: string[]
+}): {
   render: (
     render: (props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => VNode
   ) => Component<ExternalPropsOf<PC>>
@@ -88,7 +85,21 @@ function component<PC extends PropsConfig, CC extends CtxConfig>(
   ) => Component<ExternalPropsOf<PC>>
 }
 
-function component(name: string, sndArg: any): any {
+function component(firstArg: any, sndArg?: any): any {
+  const name = typeof firstArg === 'string' ? firstArg : firstArg.name
+  console.log('>>>>', name)
+  if (typeof firstArg !== 'string') {
+    if (!hasOwnProp(sndArg, 'render') && !hasOwnProp(sndArg, 'main')) {
+      const config = { ...firstArg }
+      delete config.name
+
+      return {
+        render: (render: Function) => component(name, { ...config, render }),
+        main: (main: Function) => component(name, { ...config, main })
+      }
+    }
+  }
+
   if (typeof sndArg === 'function') {
     if (sndArg.length > 0) {
       return component(name, {
@@ -113,13 +124,6 @@ function component(name: string, sndArg: any): any {
         }
       }
     })
-  }
-
-  if (!hasOwnProp(sndArg, 'render') && !hasOwnProp(sndArg, 'main')) {
-    return {
-      render: (render: Function) => component(name, { ...sndArg, render }),
-      main: (main: Function) => component(name, { ...sndArg, main })
-    }
   }
 
   if (hasOwnProp(sndArg, 'render')) {

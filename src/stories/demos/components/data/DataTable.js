@@ -1,8 +1,10 @@
 import { component, html, prop } from '../../../../main/js-elements'
-import { withState } from '../../../../main/js-elements-ext'
+import { $state } from '../../../../main/js-elements-ext'
 import '@vaadin/vaadin-grid'
 
-export default component('jsc-data-table', {
+export default component({
+  name: 'jsc-data-table',
+
   props: {
     columns: prop.arr.req()
   }

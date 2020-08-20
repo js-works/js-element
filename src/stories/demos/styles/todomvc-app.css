@@ -347,7 +347,7 @@
 
 /*
   Hack to remove background from Mobile Safari.
-  Can't with it globally since it destroys checkboxes in Firefox
+  Can't $ it globally since it destroys checkboxes in Firefox
 */
 @media screen and (-webkit-min-device-pixel-ratio: 0) {
   .toggle-all,

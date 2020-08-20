@@ -50,9 +50,9 @@ export function createExtension<T extends Ctrl, A extends [T, ...any[]], R>(
   return ret
 }
 
-// --- withValue ------------------------------------------------------
+// --- $value --------------------------------------------------------
 
-export const withValue = createExtension('withValue', function <T>(
+export const $value = createExtension('$value', function <T>(
   c: Ctrl,
   initialValue: T
 ): [() => T, (updater: T | ((value: T) => T)) => void] {
@@ -73,7 +73,7 @@ export const withValue = createExtension('withValue', function <T>(
   return [() => value, setValue as any] // TODO
 })
 
-// --- withState ------------------------------------------------------
+// --- $state --------------------------------------------------------
 
 type StateUpdater<T extends Record<string, any>> = {
   (newState: Partial<T>): void
@@ -82,7 +82,7 @@ type StateUpdater<T extends Record<string, any>> = {
   (key: keyof T, valueUpdate: (oldValue: T[typeof key]) => T[typeof key]): void
 }
 
-export const withState = createExtension('withState', function <
+export const $state = createExtension('$state', function <
   T extends Record<string, any>
 >(c: Ctrl, initialState: T): [T, StateUpdater<T>] {
   let nextState: any, // TODO
@@ -116,11 +116,11 @@ export const withState = createExtension('withState', function <
   return [state, setState as any] // TODO
 })
 
-// --- withMemo -------------------------------------------------------
+// --- $memo ---------------------------------------------------------
 
 // TODO - this is not really optimized, is it?
 
-export const withMemo = createExtension('withMemo', function <
+export const $memo = createExtension('$memo', function <
   T,
   A extends any[],
   G extends () => A
@@ -143,9 +143,9 @@ export const withMemo = createExtension('withMemo', function <
   return memo
 })
 
-// --- withEffect -----------------------------------------------------
+// --- $effect -------------------------------------------------------
 
-export const withEffect = createExtension('withEffect', function (
+export const $effect = createExtension('$effect', function (
   c,
   action: () => void | undefined | null | (() => void),
   getDeps?: null | (() => any[])
@@ -187,19 +187,19 @@ export const withEffect = createExtension('withEffect', function (
     c.beforeUnmount(() => cleanup && cleanup())
   } else {
     throw new TypeError(
-      '[withEffect] Third argument must either be undefined, null or a function'
+      '[$effect] Third argument must either be undefined, null or a function'
     )
   }
 })
 
-// --- withInterval ---------------------------------------------------
+// --- $interval ------------------------------------------------------
 
-export const withInterval = createExtension(
-  'withInterval',
+export const $interval = createExtension(
+  '$interval',
   (c, action: Action, delay: number | (() => number)) => {
     const getDelay = typeof delay === 'function' ? delay : () => delay
 
-    withEffect(
+    $effect(
       c,
       () => {
         const id = setInterval(action, getDelay())
@@ -211,28 +211,28 @@ export const withInterval = createExtension(
   }
 )
 
-// === withTime ======================================================
+// === $time =========================================================
 
-export const withTime = createExtension('withTime', withTimeFn)
+export const $time = createExtension('$time', timeFn)
 
-function withTimeFn(c: Ctrl, delay: number | (() => number)): () => Date
+function timeFn(c: Ctrl, delay: number | (() => number)): () => Date
 
-function withTimeFn<T>(
+function timeFn<T>(
   c: Ctrl,
   delay: number | (() => number),
   getter: () => T
 ): () => T
 
-function withTimeFn(
+function timeFn(
   c: Ctrl,
   delay: number | (() => number),
   getter: Function = getDate
 ): () => any {
   const getDelay = typeof delay === 'function' ? delay : () => delay
 
-  const [getValue, setValue] = withValue(c, getter())
+  const [getValue, setValue] = $value(c, getter())
 
-  withInterval(
+  $interval(
     c,
     () => {
       setValue(getter())
@@ -247,7 +247,7 @@ function getDate() {
   return new Date()
 }
 
-// --- withPromise ---------------------------------------------------
+// --- $Promise ---------------------------------------------------
 
 type PromiseRes<T> =
   | {
@@ -272,16 +272,16 @@ const initialState: PromiseRes<any> = {
   state: 'pending'
 }
 
-export const withPromise = createExtension('withPromise', function <T>(
+export const $Promise = createExtension('$Promise', function <T>(
   c: Ctrl,
   getPromise: () => Promise<T>,
   getDeps?: () => any[]
 ): PromiseRes<T> {
-  const [state, setState] = withState<PromiseRes<T>>(c, initialState)
+  const [state, setState] = $state<PromiseRes<T>>(c, initialState)
 
   let promiseIdx = -1
 
-  withEffect(
+  $effect(
     c,
     () => {
       ++promiseIdx
@@ -316,33 +316,30 @@ export const withPromise = createExtension('withPromise', function <T>(
   return state
 })
 
-// === withMousePosition =============================================
+// === $mousePosition ===============================================
 
-export const withMousePosition = createExtension(
-  'withMousePosition',
-  (c: Ctrl) => {
-    const [mousePos, setMousePos] = withState(c, { x: -1, y: -1 })
+export const $mousePosition = createExtension('$mousePosition', (c: Ctrl) => {
+  const [mousePos, setMousePos] = $state(c, { x: -1, y: -1 })
 
-    withEffect(
-      c,
-      () => {
-        const listener = (ev: any) => {
-          // TODO
-          setMousePos({ x: ev.pageX, y: ev.pageY })
-        }
+  $effect(
+    c,
+    () => {
+      const listener = (ev: any) => {
+        // TODO
+        setMousePos({ x: ev.pageX, y: ev.pageY })
+      }
 
-        window.addEventListener('mousemove', listener)
+      window.addEventListener('mousemove', listener)
 
-        return () => {
-          window.removeEventListener('mousemove', listener)
-        }
-      },
-      null
-    )
+      return () => {
+        window.removeEventListener('mousemove', listener)
+      }
+    },
+    null
+  )
 
-    return mousePos
-  }
-)
+  return mousePos
+})
 
 // --- locals --------------------------------------------------------
 

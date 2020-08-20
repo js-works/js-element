@@ -51,6 +51,13 @@ type Methods = Record<string, (...args: any[]) => any>
 type State = Record<string, any>
 type AnyElement = Element & Record<string, any>
 
+type StateUpdater<T extends Record<string, any>> = {
+  (newState: Partial<T>): void
+  (stateUpdate: (oldState: T) => Partial<T>): void
+  (key: keyof T, newValue: T[typeof key]): void
+  (key: keyof T, valueUpdate: (oldValue: T[typeof key]) => T[typeof key]): void
+}
+
 type OmitNevers<T extends Record<any, any>> = Pick<
   T,
   {
@@ -71,6 +78,8 @@ type Ctrl = {
   beforeUnmount(action: Action): void
 
   // js-elements specific control functions
+
+  addState<S extends State>(initialState: S): [S, StateUpdater<S>]
   update(action: Action): void
   updateFn<A extends any[]>(fn: (...args: A) => void): (...args: A) => void
   getElement(): Element
