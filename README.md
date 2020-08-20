@@ -44,10 +44,10 @@ const Counter = component('demo-counter', {
 
   main(c, props) {
     const [state, setState] = c.addState({ count: props.initialCount })
-    const onIncrement = () => setState('count', it => it + 1)
+    const onIncrement = () => setState('count', (it) => it + 1)
 
-    c.afterMount(() => console.log(`"${props.label}" has been mounted`)
-    c.beforeUnmount(() => console.log(`Unmounting "${props.label}"`)
+    c.afterMount(() => console.log(`"${props.label}" has been mounted`))
+    c.beforeUnmount(() => console.log(`Unmounting "${props.label}"`))
 
     c.effect(
       () => console.log(`Value of "${props.label}": ${count}`),
