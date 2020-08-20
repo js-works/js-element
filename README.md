@@ -32,7 +32,6 @@ render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
 
 ```js
 import { component, h, prop, render } from 'js-elements'
-import { $effect, $state } from 'js-elements/ext'
 import counterStyles from './counter.css'
 
 const Counter = component('demo-counter', {
@@ -74,7 +73,7 @@ functions similar to React hooks (but without all the magic).
 The naming pattern for these "extensions" is `$xyz`.
 
 ```jsx
-import { h } from 'js-elements'
+import { component, h } from 'js-elements'
 import { $time } from 'js-elements/ext'
 
 const Clock = component('demo-clock', (c) => {
