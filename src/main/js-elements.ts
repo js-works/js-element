@@ -42,7 +42,7 @@ function component<PC extends PropsConfig, CC extends CtxConfig>(config: {
   name: string
   props?: PC
   ctx?: CC
-  styles?: string | string[]
+  styles?: string | string[] | (() => string | string[])
   slots?: string[]
   methods?: string[]
   render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): VNode
@@ -54,7 +54,7 @@ function component<PC extends PropsConfig, CC extends CtxConfig>(
   config: {
     props?: PC
     ctx?: CC
-    styles?: string | string[]
+    styles?: string | string[] | (() => string | string[])
     slots?: string[]
     methods?: string[]
     render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): VNode
@@ -65,7 +65,7 @@ function component<PC extends PropsConfig, CC extends CtxConfig>(config: {
   name: string
   props?: PC
   ctx?: CC
-  styles?: string | string[]
+  styles?: string | string[] | (() => string | string[])
   slots?: string[]
   methods?: string[]
   main(ctrl: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>): () => VNode
@@ -77,7 +77,7 @@ function component<PC extends PropsConfig, CC extends CtxConfig>(
   config: {
     props?: PC
     ctx?: CC
-    styles?: string | string[]
+    styles?: string | string[] | (() => string | string[])
     slots?: string[]
     methods?: string[]
     main(ctrl: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>): () => VNode
@@ -88,7 +88,7 @@ function component<PC extends PropsConfig, CC extends CtxConfig>(config: {
   name: string
   props?: PC
   ctx?: CC
-  styles?: string | string[]
+  styles?: string | string[] | (() => string | string[])
   slots?: string[]
   methods?: string[]
 }): {
@@ -111,7 +111,7 @@ function component<PC extends PropsConfig, CC extends CtxConfig>(
   config: {
     props?: PC
     ctx?: CC
-    styles?: string | string[]
+    styles?: string | string[] | (() => string | string[])
     slots?: string[]
     methods?: string[]
   }

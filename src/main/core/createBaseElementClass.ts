@@ -20,7 +20,7 @@ const commonPropConverters: Record<string, PropConverter<any>> = {
 export function createBaseElementClass(
   name: string,
   propsConfig: PropsConfig | null,
-  styles: string | string[] | null,
+  styles: string | string[] | (() => string | string[]) | null,
   methodNames: string[] | null
 ) {
   const propNames = propsConfig ? Object.keys(propsConfig) : []
@@ -127,6 +127,10 @@ export function createBaseElementClass(
       this._onContentElementCreated(contentElem)
 
       if (styles) {
+        if (typeof styles === 'function') {
+          styles = styles()
+        }
+
         const css = Array.isArray(styles)
           ? styles.join('\n\n/* =============== */\n\n')
           : styles

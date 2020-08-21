@@ -116,7 +116,7 @@ type PropType<
 type ComponentOptions = {
   props?: PropsConfig
   slots?: string[]
-  styles?: string | string[]
+  styles?: string | string[] | (() => string | string[])
   methods?: string[] // TODO
 }
 

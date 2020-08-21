@@ -163,7 +163,12 @@ const prop: PropFunc = ((...args: any[]) => {
         ? { type: typeHint }
         : { type: typeHint, defaultValue },
 
-    req: () => ({ type: typeHint, required: true })
+    req: () => ({ type: typeHint, required: true }),
+
+    as: () => ({
+      opt: prop.opt,
+      req: prop.req
+    })
   }
 }) as any // TODO
 

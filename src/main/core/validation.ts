@@ -65,10 +65,7 @@ function checkComponentOptions(options: any) {
         break
 
       case 'styles':
-        if (
-          typeof Object.getOwnPropertyDescriptor(options, 'styles')?.get !==
-          'function'
-        ) {
+        if (typeof options.styles !== 'function') {
           checkParam('styles', validateStringOrStringArray)
         }
 
