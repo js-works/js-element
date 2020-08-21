@@ -11,7 +11,7 @@ export default component({
     pageSize: prop.num.req(),
     totalItemCount: prop.num.req()
   }
-}).render((props) => {
+}).stateless((props) => {
   return (
     <div>
       <vaadin-button>

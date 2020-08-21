@@ -2,7 +2,7 @@ import htm from './libs/htm'
 import { createCustomElementClass } from './core/createCustomElementClass'
 import { prop } from './core/prop'
 import { provision } from './core/provision'
-import { hasOwnProp } from './core/utils'
+import { getOwnProp } from './core/utils'
 
 import {
   Component,
@@ -38,6 +38,16 @@ const NOOP = () => {}
 function component(name: string, main: (c: Ctrl) => () => VNode): Component
 function component(name: string, render: () => VNode): Component
 
+function component<PC extends PropsConfig, CC extends CtxConfig>(config: {
+  name: string
+  props?: PC
+  ctx?: CC
+  styles?: string | string[]
+  slots?: string[]
+  methods?: string[]
+  render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): VNode
+}): Component<ExternalPropsOf<PC>>
+
 function component<PC extends PropsConfig, CC extends CtxConfig>(
   name: string,
 
@@ -50,6 +60,16 @@ function component<PC extends PropsConfig, CC extends CtxConfig>(
     render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): VNode
   }
 ): Component<ExternalPropsOf<PC>>
+
+function component<PC extends PropsConfig, CC extends CtxConfig>(config: {
+  name: string
+  props?: PC
+  ctx?: CC
+  styles?: string | string[]
+  slots?: string[]
+  methods?: string[]
+  main(ctrl: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>): () => VNode
+}): Component<ExternalPropsOf<PC>>
 
 function component<PC extends PropsConfig, CC extends CtxConfig>(
   name: string,
@@ -72,11 +92,35 @@ function component<PC extends PropsConfig, CC extends CtxConfig>(config: {
   slots?: string[]
   methods?: string[]
 }): {
-  render: (
+  stateless: (
     render: (props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => VNode
   ) => Component<ExternalPropsOf<PC>>
 
-  main: (
+  stateful: (
+    main: (
+      ctrl: Ctrl,
+      props: InternalPropsOf<PC>,
+      ctx: CtxOf<CC>
+    ) => () => VNode
+  ) => Component<ExternalPropsOf<PC>>
+}
+
+function component<PC extends PropsConfig, CC extends CtxConfig>(
+  name: string,
+
+  config: {
+    props?: PC
+    ctx?: CC
+    styles?: string | string[]
+    slots?: string[]
+    methods?: string[]
+  }
+): {
+  stateless: (
+    render: (props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => VNode
+  ) => Component<ExternalPropsOf<PC>>
+
+  stateful: (
     main: (
       ctrl: Ctrl,
       props: InternalPropsOf<PC>,
@@ -87,27 +131,15 @@ function component<PC extends PropsConfig, CC extends CtxConfig>(config: {
 
 function component(firstArg: any, sndArg?: any): any {
   const name = typeof firstArg === 'string' ? firstArg : firstArg.name
-  console.log('>>>>', name)
-  if (typeof firstArg !== 'string') {
-    if (!hasOwnProp(sndArg, 'render') && !hasOwnProp(sndArg, 'main')) {
-      const config = { ...firstArg }
-      delete config.name
-
-      return {
-        render: (render: Function) => component(name, { ...config, render }),
-        main: (main: Function) => component(name, { ...config, main })
-      }
-    }
-  }
 
   if (typeof sndArg === 'function') {
     if (sndArg.length > 0) {
-      return component(name, {
-        main: sndArg
-      })
+      return component({ name, main: sndArg })
     }
 
-    return component(name, {
+    return component({
+      name,
+
       main() {
         let result = sndArg()
 
@@ -126,26 +158,22 @@ function component(firstArg: any, sndArg?: any): any {
     })
   }
 
-  if (hasOwnProp(sndArg, 'render')) {
-    const { render, ...config } = sndArg
-    config.main = (c: Ctrl, props: any, ctx: any) => () => render(props, ctx)
-    return component(name, config)
+  const options = { ...(typeof firstArg !== 'string' ? firstArg : sndArg) }
+  const render = getOwnProp(options, 'render')
+  const main = getOwnProp(options, 'main')
+  delete options.name
+  delete options.main
+  delete options.render
+
+  if (!render && !main) {
+    return {
+      stateless: (render: Function) => component({ name, ...options, render }),
+      stateful: (main: Function) => component({ name, ...options, main })
+    }
   }
 
-  let options: any = null
-  let main: any
-  let ctxConfig: any
-
-  if (typeof sndArg === 'function') {
-    main = sndArg
-  } else if (sndArg.main) {
-    options = { ...sndArg }
-    main = options.main
-    ctxConfig = options.ctx
-    delete options.main
-    delete options.ctx
-  }
-
+  const ctxConfig = getOwnProp(options, 'ctx')
+  delete options.ctx
   const ctxKeys = ctxConfig ? Object.keys(ctxConfig) : null
   const ctx = {} as any
 
@@ -164,7 +192,7 @@ function component(firstArg: any, sndArg?: any): any {
 
   const init = (ctrl: Ctrl, props: Props) => {
     initCtx(ctrl)
-    return main(ctrl, props, ctx)
+    return render ? () => render(props, ctx) : main(ctrl, props, ctx)
   }
 
   const customElementClass = createCustomElementClass(
@@ -176,21 +204,14 @@ function component(firstArg: any, sndArg?: any): any {
     renderer
   )
 
-  try {
-    customElements.define(name, customElementClass)
-  } catch (e) {
-    let elem: Element | null = null
-
-    try {
-      elem = document.createElement(name)
-    } catch {}
-
-    if (!elem || elem.constructor === HTMLUnknownElement) {
-      throw e
-    }
-
+  if (
+    process.env.NODE_ENV === ('development' as any) &&
+    customElements.get(name)
+  ) {
     location.reload()
   }
+
+  customElements.define(name, customElementClass)
 
   const ret = h.bind(null, name)
 

@@ -8,7 +8,7 @@ export default component({
   props: {
     columns: prop.arr.req()
   }
-}).main((c, props) => {
+}).stateful((c, props) => {
   return () => html`
     <div>
       <h4>xyDataTable</h4>

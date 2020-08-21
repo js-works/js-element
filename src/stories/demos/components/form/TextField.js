@@ -8,6 +8,6 @@ export default component({
   props: {
     label: prop.str.opt()
   }
-}).main((c, props) => {
+}).stateful((c, props) => {
   return () => html`<vaadin-text-field label=${props.label} />`
 })

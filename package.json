@@ -1,6 +1,6 @@
 {
   "name": "js-elements",
-  "version": "0.0.70",
+  "version": "0.0.72",
   "description": "",
   "main": "index.js",
   "module": "dist/js-elements.esm.producion.js",
