@@ -14,7 +14,9 @@ and btw: It is currently not meant to be used in production.
 ```js
 import { h, prop, render, stateless } from 'js-elements'
 
-const SayHello = stateless('say-hello', {
+const SayHello = stateless({
+  name: 'say-hello',
+
   props: {
     salutation: prop.str.opt('Hello')
     name: prop.str.opt('World')
@@ -32,7 +34,9 @@ render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
 import { h, prop, render, stateful } from 'js-elements'
 import counterStyles from './counter.css'
 
-const Counter = stateful('demo-counter', {
+const Counter = stateful({
+  name: 'demo-counter',
+
   props: {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
