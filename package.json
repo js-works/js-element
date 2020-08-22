@@ -1,12 +1,12 @@
 {
   "name": "js-elements",
-  "version": "0.0.72",
+  "version": "0.0.76",
   "description": "",
   "main": "index.js",
   "module": "dist/js-elements.esm.producion.js",
   "unpkg": "dist/js-elements.umd.production.js",
   "jsdelivr": "dist/js-elements.umd.production.js",
-  "types": "dist/types/main/index.d.ts",
+  "types": "dist/types/js-elements.d.ts",
   "files": [
     "index.js",
     "dist",

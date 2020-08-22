@@ -33,7 +33,7 @@ function createConfig(pkg, moduleFormat, productive) {
       file:
         pkg === 'root'
           ? `dist/js-elements.${moduleFormat}.${env}.js`
-          : `dist/js-elements.${pkg}.${moduleFormat}.${env}.js`,
+          : `dist/js-elements-${pkg}.${moduleFormat}.${env}.js`,
 
       format: moduleFormat,
       sourcemap: false, // productive ? false : 'inline', // TODO

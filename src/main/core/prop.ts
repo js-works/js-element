@@ -26,11 +26,11 @@ type TypeType<T extends Type | null> = T extends null
 
 type PropTypeBuilder<T> = {
   opt: {
-    (): PropType<T, false, false>
-    (defaultValue: T): PropType<T, true, false>
+    (): PropType<T, 'optional'>
+    (defaultValue: T): PropType<T, 'optional-with-default'>
   }
 
-  req: () => PropType<T, false, true>
+  req: () => PropType<T, 'required'>
 }
 
 type ExtPropTypeBuilder<T> = PropTypeBuilder<T> & {
@@ -52,7 +52,7 @@ type PropFunc = ExtPropTypeBuilder<any> & {
   nfunc: ExtPropTypeBuilder<((...args: any[]) => any) | null>
   narr: ExtPropTypeBuilder<any[] | null>
 
-  evt<T = any>(): PropType<(event: T) => void, false, false>
+  evt<T = any>(): PropType<(event: T) => void, 'optional'>
 
   <T extends Type>(t: T): ExtPropTypeBuilder<TypeType<T>>
 

@@ -103,14 +103,13 @@ type Notifier = {
   notify(): void
 }
 
-declare const kind: unique symbol
+declare const tag: unique symbol
 
 type PropType<
   Type,
-  HasDefaultValue extends Boolean,
-  Required extends boolean
+  Kind extends 'optional' | 'optional-with-default' | 'required'
 > = {
-  readonly [kind]: 'PropType'
+  readonly [tag]: 'PropType'
 }
 
 type ComponentOptions = {
@@ -147,14 +146,14 @@ type PropConfig =
     }
 
 type PropsConfig = {
-  [key: string]: PropType<any, any, any>
+  [key: string]: PropType<any, any>
 }
 
 type ExternalPropsOf<PC extends PropsConfig> = Partial<
   OmitNevers<
     {
-      [K in keyof PC]: PC[K] extends PropType<infer T, infer D, infer R>
-        ? R extends true
+      [K in keyof PC]: PC[K] extends PropType<infer T, infer K>
+        ? K extends 'required'
           ? never
           : T
         : never
@@ -163,8 +162,8 @@ type ExternalPropsOf<PC extends PropsConfig> = Partial<
 > &
   OmitNevers<
     {
-      [K in keyof PC]: PC[K] extends PropType<infer T, infer D, infer R>
-        ? R extends true
+      [K in keyof PC]: PC[K] extends PropType<infer T, infer K>
+        ? K extends 'required'
           ? T
           : never
         : never
@@ -174,10 +173,10 @@ type ExternalPropsOf<PC extends PropsConfig> = Partial<
 type InternalPropsOf<PC extends PropsConfig> = Partial<
   OmitNevers<
     {
-      [K in keyof PC]: PC[K] extends PropType<infer T, infer D, infer R>
-        ? R extends true
+      [K in keyof PC]: PC[K] extends PropType<infer T, infer K>
+        ? K extends 'required'
           ? never
-          : D extends true
+          : K extends 'optional-with-default'
           ? never
           : T
         : never
@@ -186,10 +185,10 @@ type InternalPropsOf<PC extends PropsConfig> = Partial<
 > &
   OmitNevers<
     {
-      [K in keyof PC]: PC[K] extends PropType<infer T, infer D, infer R>
-        ? R extends true
+      [K in keyof PC]: PC[K] extends PropType<infer T, infer K>
+        ? K extends 'required'
           ? T
-          : D extends true
+          : K extends 'optional-with-default'
           ? T
           : never
         : never

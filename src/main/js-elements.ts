@@ -318,15 +318,15 @@ const renderer = (content: VElement, target: Element) => {
 // === render ========================================================
 
 function render(content: VElement, container: Element | string) {
-  if (content !== null && (!content || content.kind !== 'virtual-element')) {
-    //throw new TypeError()
-    //      'First argument "content" of function "render" must be a virtual element or null'
+  if (content !== null && (!content || content.isVElement !== true)) {
+    throw new TypeError()
+    'First argument "content" of function "render" must be a virtual element or null'
   }
 
   if (!container || (typeof container !== 'string' && !container.tagName)) {
-    //throw new TypeError(
-    //  'Second argument "container" of funtion "render" must either be a DOM element or selector string for the DOM element'
-    // )
+    throw new TypeError(
+      'Second argument "container" of function "render" must either be a DOM element or selector string for the DOM element'
+    )
   }
 
   const target =
@@ -341,7 +341,7 @@ function render(content: VElement, container: Element | string) {
   target.innerHTML = ''
 
   if (content !== null) {
-    patch(content, target)
+    renderer(content, target)
   }
 }
 
