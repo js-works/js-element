@@ -1,7 +1,7 @@
 //import { tslint } from 'rollup-plugin-tslint'
-import resolve from 'rollup-plugin-node-resolve'
-import replace from 'rollup-plugin-replace'
-import commonjs from 'rollup-plugin-commonjs'
+import resolve from '@rollup/plugin-node-resolve'
+import replace from '@rollup/plugin-replace'
+import commonjs from '@rollup/plugin-commonjs'
 import typescript from 'rollup-plugin-typescript2'
 import { terser } from 'rollup-plugin-terser'
 import gzip from 'rollup-plugin-gzip'
@@ -54,7 +54,7 @@ function createConfig(pkg, moduleFormat, productive) {
         }
       }),
       typescript({
-        exclude: 'node_modules/**'
+        tsconfig: './tsconfig.dist.json'
       }),
       productive && terser(),
       productive && gzip()

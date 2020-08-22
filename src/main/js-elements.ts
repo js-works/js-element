@@ -1,4 +1,4 @@
-import htm from './libs/htm'
+import htm from 'htm'
 import { createCustomElementClass } from './core/createCustomElementClass'
 import { prop } from './core/prop'
 import { provision } from './core/provision'

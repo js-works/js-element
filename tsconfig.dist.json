@@ -22,7 +22,7 @@
     "typeRoots": ["node_modules/@types"],
     "types": ["node", "mocha", "chai"]
   },
-  "files": ["src/main/js-elements.ts", "src/main/js-elements-ext.ts"],
-  "include": ["./src/main/**/*.*", "./src/stories/**/*.*"],
+  "files": ["./src/main/js-elements.ts", "./src/main/js-elements-ext.ts"],
+  "include": ["./src/main/**/*.*"],
   "exclude": ["node_modules"]
 }
