@@ -1,4 +1,4 @@
-import { component, h, prop } from '../../main/js-elements'
+import { h, prop, sfc, slc } from '../../main/js-elements'
 
 const buttonDemoStyles = ` 
   .demo-button {
@@ -18,7 +18,7 @@ const buttonDemoStyles = `
   }
 `
 
-const DemoButton = component('demo-button', {
+const DemoButton = sfc('demo-button', {
   props: {
     text: prop.str.opt(),
     onButtonClick: prop.evt()
@@ -42,7 +42,7 @@ const DemoButton = component('demo-button', {
   }
 })
 
-component('button-demo', () => {
+slc('button-demo', () => {
   const onClick = (e: any) => alert(e.type) // TODO
 
   return (

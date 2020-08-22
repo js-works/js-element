@@ -1,4 +1,4 @@
-import { component, h } from '../../main/js-elements'
+import { h, slc } from '../../main/js-elements'
 
 const demoContent = {
   *[Symbol.iterator]() {
@@ -39,7 +39,7 @@ const demoContent = {
   }
 }
 
-component('iterator-demo', () => {
+slc('iterator-demo', () => {
   return (
     <div>
       <div>

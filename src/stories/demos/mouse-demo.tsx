@@ -1,8 +1,8 @@
 /** @jsx h */
-import { h, component } from '../../main/js-elements'
+import { h, sfc } from '../../main/js-elements'
 import { $mousePosition } from '../../main/js-elements-ext'
 
-component('mouse-demo', (c) => {
+sfc('mouse-demo', (c) => {
   const mousePos = $mousePosition(c)
 
   return () =>

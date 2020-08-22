@@ -19,7 +19,7 @@ import { h as createElement, text, patch } from './libs/superfine'
 
 // === exports =======================================================
 
-export { component, provision, prop, h, html, render, VElement, VNode }
+export { provision, prop, h, html, render, sfc, slc, VElement, VNode }
 
 // === types ========================================================
 
@@ -33,162 +33,164 @@ type CtxOf<CC extends CtxConfig> = {
 
 const NOOP = () => {}
 
-// === stateless =====================================================
+// === slc =====================================================
 
-type ComponentFunction = {
-  (name: string, main: (c: Ctrl) => () => VNode): Component
-  (name: string, render: () => VNode): Component
+function slc(name: string, render: () => VNode): Component
 
-  <PC extends PropsConfig, CC extends CtxConfig>(config: {
-    name: string
+function slc<PC extends PropsConfig, CC extends CtxConfig>(config: {
+  name: string
+  props?: PC
+  ctx?: CC
+  styles?: string | string[] | (() => string | string[])
+  slots?: string[]
+  methods?: string[]
+  render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): VNode
+}): Component<ExternalPropsOf<PC>>
+
+function slc<PC extends PropsConfig, CC extends CtxConfig>(
+  name: string,
+
+  config: {
     props?: PC
     ctx?: CC
     styles?: string | string[] | (() => string | string[])
     slots?: string[]
     methods?: string[]
     render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): VNode
-  }): Component<ExternalPropsOf<PC>>
+  }
+): Component<ExternalPropsOf<PC>>
 
-  <PC extends PropsConfig, CC extends CtxConfig>(
-    name: string,
+function slc(name: string, render: () => VNode): Component<{}>
 
-    config: {
-      props?: PC
-      ctx?: CC
-      styles?: string | string[] | (() => string | string[])
-      slots?: string[]
-      methods?: string[]
-      render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): VNode
-    }
-  ): Component<ExternalPropsOf<PC>>
+function slc<PC extends PropsConfig, CC extends CtxConfig>(config: {
+  name: string
+  props?: PC
+  ctx?: CC
+  styles?: string | string[] | (() => string | string[])
+  slots?: string[]
+  methods?: string[]
+}): (
+  render: (props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => VNode
+) => Component<ExternalPropsOf<PC>>
 
-  <PC extends PropsConfig, CC extends CtxConfig>(config: {
-    name: string
+function slc<PC extends PropsConfig, CC extends CtxConfig>(
+  name: string,
+
+  config: {
+    props?: PC
+    ctx?: CC
+    styles?: string | string[] | (() => string | string[])
+    slots?: string[]
+    methods?: string[]
+  }
+): (
+  render: (props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => VNode
+) => Component<ExternalPropsOf<PC>>
+
+function slc(firstArg: any, sndArg?: any): any {
+  const firstArgIsString = typeof firstArg === 'string'
+  const sndArgIsFunction = typeof sndArg === 'function'
+  const name: string = firstArgIsString ? firstArg : firstArg.name
+
+  if (sndArgIsFunction) {
+    const main = (c: Ctrl, props: any, ctx: any) => () => sndArg(props, ctx)
+
+    return firstArgIsString ? sfc({ name, main }) : sfc({ ...firstArg, main })
+  }
+
+  const { render, ...options } = firstArgIsString ? sndArg : firstArg
+  delete options.name
+  delete options.render
+
+  if (render) {
+    return sfc({
+      name,
+      ...options,
+      main: (c, props, ctx) => () => render(props, ctx)
+    })
+  }
+
+  return (render: Function) =>
+    sfc({
+      name,
+      ...options,
+      main: (c, props, ctx) => () => render(props, ctx)
+    })
+}
+
+function sfc(name: string, main: (c: Ctrl) => () => VNode): Component
+
+function sfc<PC extends PropsConfig, CC extends CtxConfig>(config: {
+  name: string
+  props?: PC
+  ctx?: CC
+  styles?: string | string[] | (() => string | string[])
+  slots?: string[]
+  methods?: string[]
+  main(ctrl: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>): () => VNode
+}): Component<ExternalPropsOf<PC>>
+
+function sfc<PC extends PropsConfig, CC extends CtxConfig>(
+  name: string,
+
+  config: {
     props?: PC
     ctx?: CC
     styles?: string | string[] | (() => string | string[])
     slots?: string[]
     methods?: string[]
     main(ctrl: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>): () => VNode
-  }): Component<ExternalPropsOf<PC>>
+  }
+): Component<ExternalPropsOf<PC>>
 
-  <PC extends PropsConfig, CC extends CtxConfig>(
-    name: string,
+function sfc(name: string, main: (c: Ctrl) => () => VNode): Component<{}>
 
-    config: {
-      props?: PC
-      ctx?: CC
-      styles?: string | string[] | (() => string | string[])
-      slots?: string[]
-      methods?: string[]
-      main(ctrl: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>): () => VNode
-    }
-  ): Component<ExternalPropsOf<PC>>
+function sfc<PC extends PropsConfig, CC extends CtxConfig>(config: {
+  name: string
+  props?: PC
+  ctx?: CC
+  styles?: string | string[] | (() => string | string[])
+  slots?: string[]
+  methods?: string[]
+}): (
+  main: (ctrl: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => () => VNode
+) => Component<ExternalPropsOf<PC>>
 
-  readonly stateless: {
-    (name: string, render: () => VNode): Component<{}>
+function sfc<PC extends PropsConfig, CC extends CtxConfig>(
+  name: string,
 
-    <PC extends PropsConfig, CC extends CtxConfig>(config: {
-      name: string
-      props?: PC
-      ctx?: CC
-      styles?: string | string[] | (() => string | string[])
-      slots?: string[]
-      methods?: string[]
-    }): (
-      render: (props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => VNode
-    ) => Component<ExternalPropsOf<PC>>
+  config: {
+    props?: PC
+    ctx?: CC
+    styles?: string | string[] | (() => string | string[])
+    slots?: string[]
+    methods?: string[]
+  }
+): (
+  main: (ctrl: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => () => VNode
+) => Component<ExternalPropsOf<PC>>
 
-    <PC extends PropsConfig, CC extends CtxConfig>(
-      name: string,
+function sfc(firstArg: any, sndArg?: any): any {
+  const firstArgIsString = typeof firstArg === 'string'
+  const sndArgIsFunction = typeof sndArg === 'function'
+  const name: string = firstArgIsString ? firstArg : firstArg.name
 
-      config: {
-        props?: PC
-        ctx?: CC
-        styles?: string | string[] | (() => string | string[])
-        slots?: string[]
-        methods?: string[]
-      }
-    ): (
-      render: (props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => VNode
-    ) => Component<ExternalPropsOf<PC>>
+  if (sndArgIsFunction) {
+    return firstArgIsString
+      ? sfc({ name, main: sndArg })
+      : sfc({ ...firstArg, main: sndArg })
   }
 
-  readonly stateful: {
-    (name: string, main: (c: Ctrl) => () => VNode): Component<{}>
-
-    <PC extends PropsConfig, CC extends CtxConfig>(config: {
-      name: string
-      props?: PC
-      ctx?: CC
-      styles?: string | string[] | (() => string | string[])
-      slots?: string[]
-      methods?: string[]
-    }): (
-      main: (
-        ctrl: Ctrl,
-        props: InternalPropsOf<PC>,
-        ctx: CtxOf<CC>
-      ) => () => VNode
-    ) => Component<ExternalPropsOf<PC>>
-
-    <PC extends PropsConfig, CC extends CtxConfig>(
-      name: string,
-
-      config: {
-        props?: PC
-        ctx?: CC
-        styles?: string | string[] | (() => string | string[])
-        slots?: string[]
-        methods?: string[]
-      }
-    ): (
-      main: (
-        ctrl: Ctrl,
-        props: InternalPropsOf<PC>,
-        ctx: CtxOf<CC>
-      ) => () => VNode
-    ) => Component<ExternalPropsOf<PC>>
-  }
-}
-
-let component: ComponentFunction
-
-component = ((firstArg: any, sndArg: any) => {
-  const name = typeof firstArg === 'string' ? firstArg : firstArg.name
-
-  if (typeof sndArg === 'function') {
-    if (sndArg.length > 0) {
-      return component({ name, main: sndArg })
-    }
-
-    return component({
-      name,
-
-      main() {
-        let result = sndArg()
-
-        if (typeof result === 'function') {
-          return result
-        }
-
-        let returnResult = true
-
-        return () => {
-          const ret = returnResult ? result : sndArg()
-          returnResult = false
-          return ret
-        }
-      }
-    })
-  }
-
-  const options = { ...(typeof firstArg !== 'string' ? firstArg : sndArg) }
-  const render = getOwnProp(options, 'render')
-  const main = getOwnProp(options, 'main')
+  const { main, ...options } = firstArgIsString ? sndArg : firstArg
   delete options.name
   delete options.main
-  delete options.render
+
+  if (!main) {
+    return (main: Function) => sfc({ name, ...options, main })
+  }
+
+  delete options.name
+  delete options.main
 
   const ctxConfig = getOwnProp(options, 'ctx')
   delete options.ctx
@@ -210,7 +212,7 @@ component = ((firstArg: any, sndArg: any) => {
 
   const init = (ctrl: Ctrl, props: Props) => {
     initCtx(ctrl)
-    return render ? () => render(props, ctx) : main(ctrl, props, ctx)
+    return main(ctrl, props, ctx)
   }
 
   const customElementClass = createCustomElementClass(
@@ -238,40 +240,6 @@ component = ((firstArg: any, sndArg: any) => {
   })
 
   return ret as any
-}) as any
-
-;(component as any).stateless = (firstArg: any, sndArg?: any) => {
-  if (typeof firstArg === 'string') {
-    return (render: Function) =>
-      component({
-        name: firstArg,
-        ...sndArg,
-        render
-      })
-  }
-
-  return (render: Function) =>
-    component({
-      ...firstArg,
-      render
-    })
-}
-
-;(component as any).stateful = (firstArg: any, sndArg?: any) => {
-  if (typeof firstArg === 'string') {
-    return (main: Function) =>
-      component({
-        name: firstArg,
-        ...sndArg,
-        main
-      })
-  }
-
-  return (main: Function) =>
-    component({
-      ...firstArg,
-      main
-    })
 }
 
 // === h =============================================================
@@ -282,32 +250,6 @@ const EMPTY_OBJ = {}
 function h(
   type: string | Component,
   props?: Props | null | undefined,
-  ...children: VNode[]
-): VNode
-
-/*
-function h2(
-  type: string | Component,
-  props?: null | Props,
-  ...children: VNode[]
-): VNode {
-  return typeof type === 'function'
-    ? (type as any)(props, children)
-    : createElement(
-        type,
-        props || {},
-        []
-          .concat(...children)
-          .map((any) =>
-            typeof any === 'string' || typeof any === 'number' ? text(any) : any
-          )
-      )
-}
-*/
-
-function h(
-  type: string | Component,
-  props?: null | Props,
   ...children: VNode[]
 ): VNode
 
@@ -346,39 +288,6 @@ function h(t: any, p: any) {
 
 function asVNode(x: any): any {
   return typeof x === 'number' || typeof x === 'string' ? text(x) : x
-}
-
-function h3(t: string | Component, p?: null | Props | VNode): VNode {
-  const args = [...arguments]
-  const argc = args.length
-
-  const type = typeof t === 'function' ? (t as any)['js-elements:type'] : t
-  const props = p && typeof p === 'object' && !p.isVElement ? p : EMPTY_OBJ
-
-  const firstChildIdx =
-    p === undefined || p === null || props !== EMPTY_OBJ ? 2 : 1
-
-  let children = EMPTY_ARR
-
-  if (firstChildIdx < argc) {
-    children = []
-
-    for (let i = firstChildIdx; i < argc; ++i) {
-      const child = args[i]
-
-      if (child !== undefined && child !== null && typeof child !== 'boolean') {
-        if (typeof child !== 'object') {
-          children.push(text(child))
-        } else {
-          children.push(child)
-        }
-      }
-    }
-  }
-
-  const ret: any = createElement(type, props, children)
-  ret.isVElement = true
-  return ret
 }
 
 // === renderer =================================================

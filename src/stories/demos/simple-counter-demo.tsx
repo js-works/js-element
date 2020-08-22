@@ -1,6 +1,6 @@
-import { component, h, prop } from '../../main/js-elements'
+import { h, prop, sfc, slc } from '../../main/js-elements'
 
-const SimpleCounter = component('simple-counter', {
+const SimpleCounter = sfc('simple-counter', {
   props: {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
@@ -31,7 +31,7 @@ const SimpleCounter = component('simple-counter', {
   }
 })
 
-component('simple-counter-demo', () => (
+slc('simple-counter-demo', () => (
   <div>
     <h3>Counter demo</h3>
     <div>

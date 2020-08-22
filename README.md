@@ -12,17 +12,17 @@ and btw: It is currently not meant to be used in production.
 ### Stateless component
 
 ```js
-import { component, h, prop, render } from 'js-elements'
+import { h, prop, render, slc } from 'js-elements'
 
-const SayHello = component('say-hello', {
+const SayHello = slc('say-hello', {
   props: {
     salutation: prop.str.opt('Hello')
     name: prop.str.opt('World')
   },
+})((props) => {
+  const msg = `${props.salutation}, ${props.name}!`
 
-  render(props) {
-    return <div>{props.salutation}, {props.name}!</div>
-  }
+  return <div>{msg}</div>
 })
 
 render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
@@ -31,38 +31,36 @@ render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
 ### Stateful component
 
 ```js
-import { component, h, prop, render } from 'js-elements'
+import { h, prop, render, sfc } from 'js-elements'
 import counterStyles from './counter.css'
 
-const Counter = component('demo-counter', {
+const Counter = sfc('demo-counter', {
   props: {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
   },
 
-  styles: simpleCounterStyles,
+  styles: simpleCounterStyles
+})((c, props) => {
+  const [state, setState] = c.addState({ count: props.initialCount })
+  const onIncrement = () => setState('count', (it) => it + 1)
 
-  main(c, props) {
-    const [state, setState] = c.addState({ count: props.initialCount })
-    const onIncrement = () => setState('count', (it) => it + 1)
+  c.afterMount(() => console.log(`"${props.label}" has been mounted`))
+  c.beforeUnmount(() => console.log(`Unmounting "${props.label}"`))
 
-    c.afterMount(() => console.log(`"${props.label}" has been mounted`))
-    c.beforeUnmount(() => console.log(`Unmounting "${props.label}"`))
+  c.effect(
+    () => console.log(`Value of "${props.label}": ${count}`),
+    () => [count]
+  )
 
-    c.effect(
-      () => console.log(`Value of "${props.label}": ${count}`),
-      () => [count]
-    )
-
-    return () => (
-      <div class="counter">
-        <label class="label">{props.label}: </label>
-        <button class="button" onClick={onIncrement}>
-          {count}
-        </button>
-      </div>
-    )
-  }
+  return () => (
+    <div class="counter">
+      <label class="label">{props.label}: </label>
+      <button class="button" onClick={onIncrement}>
+        {count}
+      </button>
+    </div>
+  )
 })
 
 render(<Counter />, '#app')
@@ -73,10 +71,10 @@ functions similar to React hooks (but without all the magic).
 The naming pattern for these "extensions" is `$xyz`.
 
 ```jsx
-import { component, h } from 'js-elements'
+import { h, sfc } from 'js-elements'
 import { $time } from 'js-elements/ext'
 
-const Clock = component('demo-clock', (c) => {
+const Clock = sfc('demo-clock', (c) => {
   const getTime = $time(c, 1000, () => new Date().toLocaleTimeString())
 
   return () => <div>Current time: {getTime()}</div>

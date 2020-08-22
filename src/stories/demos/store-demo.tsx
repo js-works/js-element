@@ -1,4 +1,4 @@
-import { component, h, prop } from '../../main/js-elements'
+import { h, prop, sfc } from '../../main/js-elements'
 
 function createStore() {
   const data = {
@@ -34,7 +34,7 @@ function createStore() {
   }
 }
 
-const StoreDemo = component('store-demo', (c) => {
+const StoreDemo = sfc('store-demo', (c) => {
   const store = createStore()
 
   return () => <div>TODO!!!</div>
@@ -48,7 +48,7 @@ const StoreDemo = component('store-demo', (c) => {
   */
 })
 
-const DispatchButton = component('dispatch-button', (c) => {
+const DispatchButton = sfc('dispatch-button', (c) => {
   const onClick = () => c.send({ type: 'some.message' })
 
   return () => <button onClick={onClick}>Send event</button>
