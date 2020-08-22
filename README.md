@@ -20,9 +20,7 @@ const SayHello = slc('say-hello', {
     name: prop.str.opt('World')
   },
 })((props) => {
-  const msg = `${props.salutation}, ${props.name}!`
-
-  return <div>{msg}</div>
+  return <div>{props.salutation}, ${props.name}!</div>
 })
 
 render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
@@ -76,7 +74,6 @@ import { $time } from 'js-elements/ext'
 
 const Clock = sfc('demo-clock', (c) => {
   const getTime = $time(c, 1000, () => new Date().toLocaleTimeString())
-
   return () => <div>Current time: {getTime()}</div>
 })
 ```
