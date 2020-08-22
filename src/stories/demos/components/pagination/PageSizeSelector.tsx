@@ -1,10 +1,10 @@
-import { h, prop, sfc } from '../../../../main/js-elements'
+import { h, prop, stateful } from '../../../../main/js-elements'
 
 // === constants =====================================================
 
 const PAGE_SIZE_OPTIONS = [10, 25, 100, 250, 500]
 
-export default sfc('jsc-page-size-selector', {
+export default stateful('jsc-page-size-selector', {
   props: {
     pageSize: prop.num.opt(50)
   }

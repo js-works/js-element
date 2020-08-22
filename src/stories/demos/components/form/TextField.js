@@ -1,8 +1,8 @@
-import { html, prop, sfc } from '../../../../main/js-elements'
+import { html, prop, stateful } from '../../../../main/js-elements'
 import { $state } from '../../../../main/js-elements-ext'
 import '@vaadin/vaadin-text-field'
 
-export default sfc({
+export default stateful({
   name: 'jsc-text-field',
 
   props: {

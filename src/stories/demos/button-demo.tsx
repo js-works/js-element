@@ -1,4 +1,4 @@
-import { h, prop, sfc, slc } from '../../main/js-elements'
+import { h, prop, stateful, stateless } from '../../main/js-elements'
 
 const buttonDemoStyles = ` 
   .demo-button {
@@ -18,7 +18,7 @@ const buttonDemoStyles = `
   }
 `
 
-const DemoButton = sfc('demo-button', {
+const DemoButton = stateful('demo-button', {
   props: {
     text: prop.str.opt(),
     onButtonClick: prop.evt()
@@ -42,7 +42,7 @@ const DemoButton = sfc('demo-button', {
   }
 })
 
-slc('button-demo', () => {
+stateless('button-demo', () => {
   const onClick = (e: any) => alert(e.type) // TODO
 
   return (

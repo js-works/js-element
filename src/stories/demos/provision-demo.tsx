@@ -1,9 +1,9 @@
-import { provision, h, sfc, slc } from '../../main/js-elements'
+import { provision, h, stateful, stateless } from '../../main/js-elements'
 import { $interval } from '../../main/js-elements-ext'
 
 const [provideTheme, consumeTheme] = provision('theme', 'light')
 
-sfc('provision-demo', (c) => {
+stateful('provision-demo', (c) => {
   let theme = 'light'
   provideTheme(c, theme)
 
@@ -25,7 +25,7 @@ sfc('provision-demo', (c) => {
   )
 })
 
-const ThemeInfo = slc('theme-info', {
+const ThemeInfo = stateless('theme-info', {
   ctx: {
     theme: consumeTheme
   },

@@ -1,4 +1,4 @@
-import { h, slc } from '../../main/js-elements'
+import { h, stateless } from '../../main/js-elements'
 
 const demoContent = {
   *[Symbol.iterator]() {
@@ -39,7 +39,7 @@ const demoContent = {
   }
 }
 
-slc('iterator-demo', () => {
+stateless('iterator-demo', () => {
   return (
     <div>
       <div>
