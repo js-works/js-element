@@ -35,101 +35,126 @@ const NOOP = () => {}
 
 // === stateless =====================================================
 
-function component(name: string, main: (c: Ctrl) => () => VNode): Component
-function component(name: string, render: () => VNode): Component
+type ComponentFunction = {
+  (name: string, main: (c: Ctrl) => () => VNode): Component
+  (name: string, render: () => VNode): Component
 
-function component<PC extends PropsConfig, CC extends CtxConfig>(config: {
-  name: string
-  props?: PC
-  ctx?: CC
-  styles?: string | string[] | (() => string | string[])
-  slots?: string[]
-  methods?: string[]
-  render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): VNode
-}): Component<ExternalPropsOf<PC>>
-
-function component<PC extends PropsConfig, CC extends CtxConfig>(
-  name: string,
-
-  config: {
+  <PC extends PropsConfig, CC extends CtxConfig>(config: {
+    name: string
     props?: PC
     ctx?: CC
     styles?: string | string[] | (() => string | string[])
     slots?: string[]
     methods?: string[]
     render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): VNode
-  }
-): Component<ExternalPropsOf<PC>>
+  }): Component<ExternalPropsOf<PC>>
 
-function component<PC extends PropsConfig, CC extends CtxConfig>(config: {
-  name: string
-  props?: PC
-  ctx?: CC
-  styles?: string | string[] | (() => string | string[])
-  slots?: string[]
-  methods?: string[]
-  main(ctrl: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>): () => VNode
-}): Component<ExternalPropsOf<PC>>
+  <PC extends PropsConfig, CC extends CtxConfig>(
+    name: string,
 
-function component<PC extends PropsConfig, CC extends CtxConfig>(
-  name: string,
+    config: {
+      props?: PC
+      ctx?: CC
+      styles?: string | string[] | (() => string | string[])
+      slots?: string[]
+      methods?: string[]
+      render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): VNode
+    }
+  ): Component<ExternalPropsOf<PC>>
 
-  config: {
+  <PC extends PropsConfig, CC extends CtxConfig>(config: {
+    name: string
     props?: PC
     ctx?: CC
     styles?: string | string[] | (() => string | string[])
     slots?: string[]
     methods?: string[]
     main(ctrl: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>): () => VNode
+  }): Component<ExternalPropsOf<PC>>
+
+  <PC extends PropsConfig, CC extends CtxConfig>(
+    name: string,
+
+    config: {
+      props?: PC
+      ctx?: CC
+      styles?: string | string[] | (() => string | string[])
+      slots?: string[]
+      methods?: string[]
+      main(ctrl: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>): () => VNode
+    }
+  ): Component<ExternalPropsOf<PC>>
+
+  readonly stateless: {
+    (name: string, render: () => VNode): Component<{}>
+
+    <PC extends PropsConfig, CC extends CtxConfig>(config: {
+      name: string
+      props?: PC
+      ctx?: CC
+      styles?: string | string[] | (() => string | string[])
+      slots?: string[]
+      methods?: string[]
+    }): (
+      render: (props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => VNode
+    ) => Component<ExternalPropsOf<PC>>
+
+    <PC extends PropsConfig, CC extends CtxConfig>(
+      name: string,
+
+      config: {
+        props?: PC
+        ctx?: CC
+        styles?: string | string[] | (() => string | string[])
+        slots?: string[]
+        methods?: string[]
+      }
+    ): (
+      render: (props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => VNode
+    ) => Component<ExternalPropsOf<PC>>
   }
-): Component<ExternalPropsOf<PC>>
 
-function component<PC extends PropsConfig, CC extends CtxConfig>(config: {
-  name: string
-  props?: PC
-  ctx?: CC
-  styles?: string | string[] | (() => string | string[])
-  slots?: string[]
-  methods?: string[]
-}): {
-  stateless: (
-    render: (props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => VNode
-  ) => Component<ExternalPropsOf<PC>>
+  readonly stateful: {
+    (name: string, main: (c: Ctrl) => () => VNode): Component<{}>
 
-  stateful: (
-    main: (
-      ctrl: Ctrl,
-      props: InternalPropsOf<PC>,
-      ctx: CtxOf<CC>
-    ) => () => VNode
-  ) => Component<ExternalPropsOf<PC>>
+    <PC extends PropsConfig, CC extends CtxConfig>(config: {
+      name: string
+      props?: PC
+      ctx?: CC
+      styles?: string | string[] | (() => string | string[])
+      slots?: string[]
+      methods?: string[]
+    }): (
+      main: (
+        ctrl: Ctrl,
+        props: InternalPropsOf<PC>,
+        ctx: CtxOf<CC>
+      ) => () => VNode
+    ) => Component<ExternalPropsOf<PC>>
+
+    <PC extends PropsConfig, CC extends CtxConfig>(
+      name: string,
+
+      config: {
+        props?: PC
+        ctx?: CC
+        styles?: string | string[] | (() => string | string[])
+        slots?: string[]
+        methods?: string[]
+      }
+    ): (
+      main: (
+        ctrl: Ctrl,
+        props: InternalPropsOf<PC>,
+        ctx: CtxOf<CC>
+      ) => () => VNode
+    ) => Component<ExternalPropsOf<PC>>
+  }
 }
 
-function component<PC extends PropsConfig, CC extends CtxConfig>(
-  name: string,
+let component: ComponentFunction
 
-  config: {
-    props?: PC
-    ctx?: CC
-    styles?: string | string[] | (() => string | string[])
-    slots?: string[]
-    methods?: string[]
-  }
-): {
-  stateless: (
-    render: (props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => VNode
-  ) => Component<ExternalPropsOf<PC>>
-
-  stateful: (
-    main: (
-      ctrl: Ctrl,
-      props: InternalPropsOf<PC>,
-      ctx: CtxOf<CC>
-    ) => () => VNode
-  ) => Component<ExternalPropsOf<PC>>
-}
-
-function component(firstArg: any, sndArg?: any): any {
+component = ((firstArg: any, sndArg: any) => {
   const name = typeof firstArg === 'string' ? firstArg : firstArg.name
 
   if (typeof sndArg === 'function') {
@@ -164,13 +189,6 @@ function component(firstArg: any, sndArg?: any): any {
   delete options.name
   delete options.main
   delete options.render
-
-  if (!render && !main) {
-    return {
-      stateless: (render: Function) => component({ name, ...options, render }),
-      stateful: (main: Function) => component({ name, ...options, main })
-    }
-  }
 
   const ctxConfig = getOwnProp(options, 'ctx')
   delete options.ctx
@@ -220,6 +238,40 @@ function component(firstArg: any, sndArg?: any): any {
   })
 
   return ret as any
+}) as any
+
+;(component as any).stateless = (firstArg: any, sndArg?: any) => {
+  if (typeof firstArg === 'string') {
+    return (render: Function) =>
+      component({
+        name: firstArg,
+        ...sndArg,
+        render
+      })
+  }
+
+  return (render: Function) =>
+    component({
+      ...firstArg,
+      render
+    })
+}
+
+;(component as any).stateful = (firstArg: any, sndArg?: any) => {
+  if (typeof firstArg === 'string') {
+    return (main: Function) =>
+      component({
+        name: firstArg,
+        ...sndArg,
+        main
+      })
+  }
+
+  return (main: Function) =>
+    component({
+      ...firstArg,
+      main
+    })
 }
 
 // === h =============================================================

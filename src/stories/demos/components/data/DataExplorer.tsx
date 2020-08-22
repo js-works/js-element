@@ -3,12 +3,12 @@ import DataTable from './DataTable'
 import Paginator from '../pagination/Paginator'
 import PaginationInfo from '../pagination/PaginationInfo'
 
-export default component('jsc-data-explorer', {
+export default component.stateful('jsc-data-explorer', {
   props: {
     title: prop.str.opt(),
     columns: prop.arr.req()
   }
-}).stateful((c, props) => {
+})((c, props) => {
   const [state, setState] = c.addState({
     pageIndex: 0,
     pageSize: 25,

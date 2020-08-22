@@ -1,6 +1,6 @@
 import { component, h, prop } from '../../../../main/js-elements'
 
-export default component({
+export default component.stateless({
   name: 'jsc-pagination-info',
 
   props: {
@@ -9,7 +9,7 @@ export default component({
     totalItemCount: prop.num.req(),
     about: prop.str.as<'pages' | 'items'>().opt('items')
   }
-}).stateless((props) => {
+})((props) => {
   return props.about === 'pages' ? renderAboutPages() : renderAboutItems()
 
   // --- local component helper functions ----------------------------
