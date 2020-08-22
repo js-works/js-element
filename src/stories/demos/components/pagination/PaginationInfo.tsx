@@ -1,6 +1,6 @@
-import { h, prop, stateless } from '../../../../main/js-elements'
+import { h, prop, slc } from '../../../../main/js-elements'
 
-export default stateless({
+export default slc({
   name: 'jsc-pagination-info',
 
   props: {

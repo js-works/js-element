@@ -1,9 +1,9 @@
-import { h, prop, stateful } from '../../../../main/js-elements'
+import { h, prop, sfc } from '../../../../main/js-elements'
 import DataTable from './DataTable'
 import Paginator from '../pagination/Paginator'
 import PaginationInfo from '../pagination/PaginationInfo'
 
-export default stateful('jsc-data-explorer', {
+export default sfc('jsc-data-explorer', {
   props: {
     title: prop.str.opt(),
     columns: prop.arr.req()

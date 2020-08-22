@@ -1,6 +1,6 @@
-import { h, prop, stateful } from '../../../../main/js-elements'
+import { h, prop, sfc } from '../../../../main/js-elements'
 
-export default stateful({
+export default sfc({
   name: 'jsc-data-table',
 
   props: {

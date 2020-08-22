@@ -1,7 +1,7 @@
-import { h, stateful } from '../../main/js-elements'
+import { h, sfc } from '../../main/js-elements'
 import { $interval, $state } from '../../main/js-elements-ext'
 
-stateful('interval-demo', (c) => {
+sfc('interval-demo', (c) => {
   const [state, setState] = $state(c, {
       count: 0,
       delay: 1000

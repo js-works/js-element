@@ -1,6 +1,6 @@
-import { h, prop, stateful, stateless } from '../../main/js-elements'
+import { h, prop, sfc, slc } from '../../main/js-elements'
 
-const SimpleCounter = stateful('simple-counter', {
+const SimpleCounter = sfc('simple-counter', {
   props: {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
@@ -31,7 +31,7 @@ const SimpleCounter = stateful('simple-counter', {
   }
 })
 
-stateless('simple-counter-demo', () => (
+slc('simple-counter-demo', () => (
   <div>
     <h3>Counter demo</h3>
     <div>

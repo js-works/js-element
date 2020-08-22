@@ -1,11 +1,11 @@
 /*
-import { h, prop, stateful } from '../../main/js-elements'
+import { h, prop, sfc } from '../../main/js-elements'
 import { $state } from '../../main/js-elements-ext'
 
 const ENTER_KEY = 13
 const ESC_KEY = 27
 
-const Header = stateful('todo-header', (c) => {
+const Header = sfc('todo-header', (c) => {
   const root = c.getContentElement()
   const [state, setState] = $state(c, { title: '' })
   const onInput = (ev: any) => setState({ title: ev.target.value })
@@ -42,7 +42,7 @@ const Header = stateful('todo-header', (c) => {
   )
 })
 
-const Item = stateful('todo-item', {
+const Item = sfc('todo-item', {
   props: {
     todo: prop.obj.req()
   },
@@ -160,7 +160,7 @@ const Item = stateful('todo-item', {
   }
 })
 
-const Main = stateful('todo-main', {
+const Main = sfc('todo-main', {
   props: {
     todos: prop.obj.req(),
     filter: prop.str.req()
@@ -207,7 +207,7 @@ const Main = stateful('todo-main', {
   }
 })
 
-const Filters = stateful('todo-filters', {
+const Filters = sfc('todo-filters', {
   props: {
     filter: prop.str.req()
   },
@@ -263,7 +263,7 @@ const Filters = stateful('todo-filters', {
   }
 })
 
-const Footer = stateful('todo-footer', {
+const Footer = sfc('todo-footer', {
   props: {
     todos: prop.obj.req(),
     filter: prop.str.req()
@@ -298,7 +298,7 @@ const Footer = stateful('todo-footer', {
   }
 })
 
-const TodoMvc = stateful('todo-mvc', (c) => {
+const TodoMvc = sfc('todo-mvc', (c) => {
   const root = c.getContentElement(),
     [state, setState] = c.addState({
       todos: [],

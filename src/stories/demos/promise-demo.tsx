@@ -1,7 +1,7 @@
-import { h, prop, stateful } from '../../main/js-elements'
+import { h, prop, sfc } from '../../main/js-elements'
 import { $Promise, $state } from '../../main/js-elements-ext'
 
-const DataLoader = stateful('data-loader', {
+const DataLoader = sfc('data-loader', {
   props: {
     loadingText: prop.str.opt('Loading...'),
     finishText: prop.str.opt('Finished!'),
@@ -24,7 +24,7 @@ const DataLoader = stateful('data-loader', {
   }
 })
 
-stateful('promise-demo', (c) => {
+sfc('promise-demo', (c) => {
   const [state, setState] = $state(c, {
     key: 0,
     loadingText: 'Loading...',
