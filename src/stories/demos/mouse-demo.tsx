@@ -1,8 +1,8 @@
 /** @jsx h */
-import { h, sfc } from '../../main/js-elements'
+import { h, stateful } from '../../main/js-elements'
 import { $mousePosition } from '../../main/js-elements-ext'
 
-sfc('mouse-demo', (c) => {
+stateful('mouse-demo', (c) => {
   const mousePos = $mousePosition(c)
 
   return () =>

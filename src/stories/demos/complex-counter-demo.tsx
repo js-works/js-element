@@ -1,10 +1,10 @@
-import { h, prop, sfc } from '../../main/js-elements'
+import { h, prop, stateful } from '../../main/js-elements'
 
 type CounterMethods = {
   reset(n: number): void
 }
 
-const ComplexCounter = sfc('complex-counter', {
+const ComplexCounter = stateful('complex-counter', {
   props: {
     initialValue: prop.num.opt(0),
     label: prop.str.opt('Counter'),
@@ -51,7 +51,7 @@ const ComplexCounter = sfc('complex-counter', {
   }
 })
 
-sfc('complex-counter-demo', (c) => {
+stateful('complex-counter-demo', (c) => {
   const findCounter = () => c.find<CounterMethods>('[data-counter]')!
   const onSetTo0 = () => findCounter().reset(0)
   const onSetTo100 = () => findCounter().reset(100)

@@ -1,4 +1,4 @@
-import { h, prop, sfc, slc, VNode } from '../../main/js-elements'
+import { h, prop, stateful, stateless, VNode } from '../../main/js-elements'
 
 const prefs = {
   framesPerSecond: 240,
@@ -8,7 +8,7 @@ const prefs = {
   rowCount: 20
 }
 
-const Tile = slc('x-tile', {
+const Tile = stateless('x-tile', {
   props: {
     color: prop.str.opt('white'),
     width: prop.num.opt(3)
@@ -38,7 +38,7 @@ const Tile = slc('x-tile', {
   }
 })
 
-const TileRow = slc('x-tile-row', {
+const TileRow = stateless('x-tile-row', {
   props: {
     tileWidth: prop(Number).opt(3),
     columnCount: prop.num.opt(prefs.columnCount),
@@ -60,7 +60,7 @@ const TileRow = slc('x-tile-row', {
   }
 })
 
-const SpeedTest = sfc('x-speed-test', {
+const SpeedTest = stateful('x-speed-test', {
   props: {
     columnCount: prop.num.opt(prefs.columnCount),
     rowCount: prop.num.opt(prefs.rowCount),
@@ -132,7 +132,7 @@ const SpeedTest = sfc('x-speed-test', {
   }
 })
 
-slc('performance-demo', () => (
+stateless('performance-demo', () => (
   <SpeedTest
     tileWidth={prefs.tileWidth}
     columnCount={prefs.columnCount}

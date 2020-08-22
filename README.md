@@ -12,9 +12,9 @@ and btw: It is currently not meant to be used in production.
 ### Stateless component
 
 ```js
-import { h, prop, render, slc } from 'js-elements'
+import { h, prop, render, stateless } from 'js-elements'
 
-const SayHello = slc('say-hello', {
+const SayHello = stateless('say-hello', {
   props: {
     salutation: prop.str.opt('Hello')
     name: prop.str.opt('World')
@@ -29,10 +29,10 @@ render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
 ### Stateful component
 
 ```js
-import { h, prop, render, sfc } from 'js-elements'
+import { h, prop, render, stateful } from 'js-elements'
 import counterStyles from './counter.css'
 
-const Counter = sfc('demo-counter', {
+const Counter = stateful('demo-counter', {
   props: {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
@@ -69,10 +69,10 @@ functions similar to React hooks (but without all the magic).
 The naming pattern for these "extensions" is `$xyz`.
 
 ```jsx
-import { h, sfc } from 'js-elements'
+import { h, stateful } from 'js-elements'
 import { $time } from 'js-elements/ext'
 
-const Clock = sfc('demo-clock', (c) => {
+const Clock = stateful('demo-clock', (c) => {
   const getTime = $time(c, 1000, () => new Date().toLocaleTimeString())
   return () => <div>Current time: {getTime()}</div>
 })

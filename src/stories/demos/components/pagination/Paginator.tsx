@@ -1,9 +1,9 @@
-import { h, prop, sfc } from '../../../../main/js-elements'
+import { h, prop, stateful } from '../../../../main/js-elements'
 import PageChangeEvent from '../../events/PageChangeEvent'
 
 // === Paginator =====================================================
 
-export default sfc('jsc-paginator', {
+export default stateful('jsc-paginator', {
   props: {
     pageIndex: prop.num.req(),
     pageSize: prop.num.req(),

@@ -19,7 +19,17 @@ import { h as createElement, text, patch } from './libs/superfine'
 
 // === exports =======================================================
 
-export { provision, prop, h, html, render, sfc, slc, VElement, VNode }
+export {
+  provision,
+  prop,
+  h,
+  html,
+  render,
+  stateful,
+  stateless,
+  VElement,
+  VNode
+}
 
 // === types ========================================================
 
@@ -33,11 +43,11 @@ type CtxOf<CC extends CtxConfig> = {
 
 const NOOP = () => {}
 
-// === slc =====================================================
+// === stateless =====================================================
 
-function slc(name: string, render: () => VNode): Component
+function stateless(name: string, render: () => VNode): Component
 
-function slc<PC extends PropsConfig, CC extends CtxConfig>(config: {
+function stateless<PC extends PropsConfig, CC extends CtxConfig>(config: {
   name: string
   props?: PC
   ctx?: CC
@@ -47,7 +57,7 @@ function slc<PC extends PropsConfig, CC extends CtxConfig>(config: {
   render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): VNode
 }): Component<ExternalPropsOf<PC>>
 
-function slc<PC extends PropsConfig, CC extends CtxConfig>(
+function stateless<PC extends PropsConfig, CC extends CtxConfig>(
   name: string,
 
   config: {
@@ -60,9 +70,9 @@ function slc<PC extends PropsConfig, CC extends CtxConfig>(
   }
 ): Component<ExternalPropsOf<PC>>
 
-function slc(name: string, render: () => VNode): Component<{}>
+function stateless(name: string, render: () => VNode): Component<{}>
 
-function slc<PC extends PropsConfig, CC extends CtxConfig>(config: {
+function stateless<PC extends PropsConfig, CC extends CtxConfig>(config: {
   name: string
   props?: PC
   ctx?: CC
@@ -73,7 +83,7 @@ function slc<PC extends PropsConfig, CC extends CtxConfig>(config: {
   render: (props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => VNode
 ) => Component<ExternalPropsOf<PC>>
 
-function slc<PC extends PropsConfig, CC extends CtxConfig>(
+function stateless<PC extends PropsConfig, CC extends CtxConfig>(
   name: string,
 
   config: {
@@ -87,7 +97,7 @@ function slc<PC extends PropsConfig, CC extends CtxConfig>(
   render: (props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => VNode
 ) => Component<ExternalPropsOf<PC>>
 
-function slc(firstArg: any, sndArg?: any): any {
+function stateless(firstArg: any, sndArg?: any): any {
   const firstArgIsString = typeof firstArg === 'string'
   const sndArgIsFunction = typeof sndArg === 'function'
   const name: string = firstArgIsString ? firstArg : firstArg.name
@@ -95,7 +105,9 @@ function slc(firstArg: any, sndArg?: any): any {
   if (sndArgIsFunction) {
     const main = (c: Ctrl, props: any, ctx: any) => () => sndArg(props, ctx)
 
-    return firstArgIsString ? sfc({ name, main }) : sfc({ ...firstArg, main })
+    return firstArgIsString
+      ? stateful({ name, main })
+      : stateful({ ...firstArg, main })
   }
 
   const { render, ...options } = firstArgIsString ? sndArg : firstArg
@@ -103,7 +115,7 @@ function slc(firstArg: any, sndArg?: any): any {
   delete options.render
 
   if (render) {
-    return sfc({
+    return stateful({
       name,
       ...options,
       main: (c, props, ctx) => () => render(props, ctx)
@@ -111,16 +123,16 @@ function slc(firstArg: any, sndArg?: any): any {
   }
 
   return (render: Function) =>
-    sfc({
+    stateful({
       name,
       ...options,
       main: (c, props, ctx) => () => render(props, ctx)
     })
 }
 
-function sfc(name: string, main: (c: Ctrl) => () => VNode): Component
+function stateful(name: string, main: (c: Ctrl) => () => VNode): Component
 
-function sfc<PC extends PropsConfig, CC extends CtxConfig>(config: {
+function stateful<PC extends PropsConfig, CC extends CtxConfig>(config: {
   name: string
   props?: PC
   ctx?: CC
@@ -130,7 +142,7 @@ function sfc<PC extends PropsConfig, CC extends CtxConfig>(config: {
   main(ctrl: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>): () => VNode
 }): Component<ExternalPropsOf<PC>>
 
-function sfc<PC extends PropsConfig, CC extends CtxConfig>(
+function stateful<PC extends PropsConfig, CC extends CtxConfig>(
   name: string,
 
   config: {
@@ -143,9 +155,9 @@ function sfc<PC extends PropsConfig, CC extends CtxConfig>(
   }
 ): Component<ExternalPropsOf<PC>>
 
-function sfc(name: string, main: (c: Ctrl) => () => VNode): Component<{}>
+function stateful(name: string, main: (c: Ctrl) => () => VNode): Component<{}>
 
-function sfc<PC extends PropsConfig, CC extends CtxConfig>(config: {
+function stateful<PC extends PropsConfig, CC extends CtxConfig>(config: {
   name: string
   props?: PC
   ctx?: CC
@@ -156,7 +168,7 @@ function sfc<PC extends PropsConfig, CC extends CtxConfig>(config: {
   main: (ctrl: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => () => VNode
 ) => Component<ExternalPropsOf<PC>>
 
-function sfc<PC extends PropsConfig, CC extends CtxConfig>(
+function stateful<PC extends PropsConfig, CC extends CtxConfig>(
   name: string,
 
   config: {
@@ -170,15 +182,15 @@ function sfc<PC extends PropsConfig, CC extends CtxConfig>(
   main: (ctrl: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => () => VNode
 ) => Component<ExternalPropsOf<PC>>
 
-function sfc(firstArg: any, sndArg?: any): any {
+function stateful(firstArg: any, sndArg?: any): any {
   const firstArgIsString = typeof firstArg === 'string'
   const sndArgIsFunction = typeof sndArg === 'function'
   const name: string = firstArgIsString ? firstArg : firstArg.name
 
   if (sndArgIsFunction) {
     return firstArgIsString
-      ? sfc({ name, main: sndArg })
-      : sfc({ ...firstArg, main: sndArg })
+      ? stateful({ name, main: sndArg })
+      : stateful({ ...firstArg, main: sndArg })
   }
 
   const { main, ...options } = firstArgIsString ? sndArg : firstArg
@@ -186,7 +198,7 @@ function sfc(firstArg: any, sndArg?: any): any {
   delete options.main
 
   if (!main) {
-    return (main: Function) => sfc({ name, ...options, main })
+    return (main: Function) => stateful({ name, ...options, main })
   }
 
   delete options.name
