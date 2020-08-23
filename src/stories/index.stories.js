@@ -36,10 +36,8 @@ export const Performance = () => '<performance-demo></performance-demo>'
 export const Vaadin = () => '<vaadin-demo></vaadin-demo>'
 export const Stores = () => '<store-demo></store-demo>'
 
-/*
 export const TodoMvc = () => `
   <div class="todoapp">
     <todo-mvc></todo-mvc>
   </div>
 `
-*/
