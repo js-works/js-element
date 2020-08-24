@@ -1,5 +1,5 @@
 import { h, prop, stateful } from '../../main/js-elements'
-import { $Promise, $state } from '../../main/js-elements-ext'
+import { $promise, $state } from '../../main/js-elements-ext'
 
 const DataLoader = stateful('data-loader', {
   props: {
@@ -9,7 +9,7 @@ const DataLoader = stateful('data-loader', {
   },
 
   main(c, props) {
-    const res = $Promise(
+    const res = $promise(
       c,
       () => wait(4000),
       () => [props.key]

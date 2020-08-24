@@ -30,20 +30,13 @@ export {
 type Func = (...args: any[]) => any
 type Key = string | number
 type Props = Record<string, any> & { key?: never; children?: VNode }
-type VElement<T extends Props = Props> = any // TODO !!!!!!!!
+type VElement<T extends Props = Props> = Record<any, any>
 
-type VNode =
-  | undefined
-  | null
-  | boolean
-  | number
-  | string
-  | VElement
-  | Iterable<VNode>
+type VNode = null | boolean | number | string | VElement | Iterable<VNode>
 
 type Component<P extends Props = {}, M extends Methods = {}> = (
   props?: P & { key?: Key }
-) => VNode // TODO
+) => VElement<P>
 
 type Action = () => void
 type Message = { type: string } & Record<string, any>

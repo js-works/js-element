@@ -50,7 +50,7 @@ export function createExtension<T extends Ctrl, A extends [T, ...any[]], R>(
   return ret
 }
 
-// --- $value --------------------------------------------------------
+// === $value ======================================================--
 
 export const $value = createExtension('$value', function <T>(
   c: Ctrl,
@@ -73,7 +73,7 @@ export const $value = createExtension('$value', function <T>(
   return [() => value, setValue as any] // TODO
 })
 
-// --- $state --------------------------------------------------------
+// === $state ======================================================--
 
 type StateUpdater<T extends Record<string, any>> = {
   (newState: Partial<T>): void
@@ -116,7 +116,7 @@ export const $state = createExtension('$state', function <
   return [state, setState as any] // TODO
 })
 
-// --- $memo ---------------------------------------------------------
+// === $memo =========================================================
 
 // TODO - this is not really optimized, is it?
 
@@ -143,7 +143,7 @@ export const $memo = createExtension('$memo', function <
   return memo
 })
 
-// --- $effect -------------------------------------------------------
+// === $effect ======================================================-
 
 export const $effect = createExtension('$effect', function (
   c,
@@ -192,7 +192,7 @@ export const $effect = createExtension('$effect', function (
   }
 })
 
-// --- $interval ------------------------------------------------------
+// === $interval ======================================================
 
 export const $interval = createExtension(
   '$interval',
@@ -247,7 +247,7 @@ function getDate() {
   return new Date()
 }
 
-// --- $Promise ---------------------------------------------------
+// === $promise ===================================================
 
 type PromiseRes<T> =
   | {
@@ -272,7 +272,7 @@ const initialState: PromiseRes<any> = {
   state: 'pending'
 }
 
-export const $Promise = createExtension('$Promise', function <T>(
+export const $promise = createExtension('$promise', function <T>(
   c: Ctrl,
   getPromise: () => Promise<T>,
   getDeps?: () => any[]
@@ -341,7 +341,28 @@ export const $mousePosition = createExtension('$mousePosition', (c: Ctrl) => {
   return mousePos
 })
 
-// --- locals --------------------------------------------------------
+// === $provideStore =================================================
+
+export const $provideStore = createExtension(
+  '$provideStore',
+  (...args: any[]): any => {
+    // TODO
+  }
+)
+
+// === $actions ======================================================
+
+export const $actions = createExtension('$actions', (...args: any[]): any => {
+  // TODO
+})
+
+// === $select =======================================================
+
+export const $select = createExtension('$select', (...args: any[]): any => {
+  // TODO
+})
+
+// === locals ========================================================
 
 function isEqualArray(arr1: any[], arr2: any[]) {
   let ret =

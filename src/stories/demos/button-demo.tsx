@@ -35,7 +35,7 @@ const DemoButton = stateful('demo-button', {
     }
 
     return () => (
-      <button className="demo-button" onClick={onClick}>
+      <button class="demo-button" onClick={onClick}>
         {props.text}
       </button>
     )

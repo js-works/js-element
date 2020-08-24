@@ -1,4 +1,5 @@
 import { h, prop, stateful } from '../../main/js-elements'
+import { $actions, $provideStore, $select } from '../../main/js-elements-ext'
 import { defineMessages } from 'js-messages'
 import { createReducer, on } from 'js-reducers'
 import { update } from 'js-immutables'
@@ -7,6 +8,7 @@ import { update } from 'js-immutables'
 
 const ENTER_KEY = 13
 const ESC_KEY = 27
+const STORAGE_ID = 'todomvc/js-elements'
 
 // === types =========================================================
 
@@ -22,9 +24,9 @@ enum TodoFilter {
   Completed = 'completed'
 }
 
-// === actions =======================================================
+// === messages ======================================================
 
-const TodoAct = defineMessages('todo', {
+const TodoMsg = defineMessages('todo', {
   create: (title: string) => ({ title }),
   edit: (id: number, title: string) => ({ id, title }),
   destroy: (id: number) => ({ id }),
@@ -42,7 +44,7 @@ const initialTodoState = {
 }
 
 const todoReducer = createReducer(initialTodoState, [
-  on(TodoAct.create, (state, { title }) =>
+  on(TodoMsg.create, (state, { title }) =>
     update(state, 'todos').push({
       id: state.todos.reduce((max, todo) => Math.max(max, todo.id + 1), 0),
       title,
@@ -50,35 +52,35 @@ const todoReducer = createReducer(initialTodoState, [
     })
   ),
 
-  on(TodoAct.edit, (state, { id, title }) =>
+  on(TodoMsg.edit, (state, { id, title }) =>
     update(state, 'todos').mapFirst(
       (todo) => todo.id === id,
       (todo) => update(todo).set('title', title)
     )
   ),
 
-  on(TodoAct.destroy, (state, { id }) =>
+  on(TodoMsg.destroy, (state, { id }) =>
     update(state, 'todos').removeFirst((todo) => todo.id === id)
   ),
 
-  on(TodoAct.toggle, (state, { id, completed }) =>
+  on(TodoMsg.toggle, (state, { id, completed }) =>
     update(state, 'todos').mapFirst(
       (todo) => todo.id === id,
       (todo) => update(todo).set('completed', completed)
     )
   ),
 
-  on(TodoAct.toggleAll, (state, { completed }) =>
+  on(TodoMsg.toggleAll, (state, { completed }) =>
     update(state, 'todos').map((todo) =>
       update(todo).set('completed', completed)
     )
   ),
 
-  on(TodoAct.clearCompleted, (state) =>
+  on(TodoMsg.clearCompleted, (state) =>
     update(state, 'todos').remove((todo) => todo.completed)
   ),
 
-  on(TodoAct.setFilter, (state, { filter }) =>
+  on(TodoMsg.setFilter, (state, { filter }) =>
     update(state).set('filter', filter)
   )
 ])
@@ -86,6 +88,7 @@ const todoReducer = createReducer(initialTodoState, [
 // === components ====================================================
 
 const Header = stateful('todo-header', (c) => {
+  const todoAct = $actions(c, TodoMsg)
   const [state, setState] = c.addState({ title: '' })
   const onInput = (ev: any) => setState('title', ev.target.value)
 
@@ -95,7 +98,7 @@ const Header = stateful('todo-header', (c) => {
       ev.preventDefault()
       setState('title', '')
       ev.target.value = ''
-      c.send(TodoAct.create(title1))
+      todoAct.create(title1)
     }
   }
 
@@ -119,22 +122,21 @@ const Item = stateful('todo-item', {
     todo: prop.obj.as<Todo>().req()
   }
 })((c, props) => {
+  const todoAct = $actions(c, TodoMsg)
+
   const [state, setState] = c.addState({
     active: false,
     title: props.todo.title
   })
 
-  const onToggle = (ev: any) =>
-    c.send(TodoAct.toggle(props.todo.id, ev.target.checked))
-
-  const onDestroy = () => c.send(TodoAct.destroy(props.todo.id))
+  const onToggle = (ev: any) => todoAct.toggle(props.todo.id, ev.target.checked)
+  const onDestroy = () => todoAct.destroy(props.todo.id)
+  const onInput = (ev: any) => setState({ title: ev.target.value })
 
   const onDoubleClick = (ev: any) => {
     setState({ active: true })
     ev.target.parentElement.nextSibling.focus()
   }
-
-  const onInput = (ev: any) => setState({ title: ev.target.value })
 
   const onKeyDown = (ev: any) => {
     if (ev.keyCode === ENTER_KEY || ev.keyCode === ESC_KEY) {
@@ -144,9 +146,9 @@ const Item = stateful('todo-item', {
       })
 
       if (state.title) {
-        c.send(TodoAct.edit(props.todo.id, state.title))
+        todoAct.edit(props.todo.id, state.title)
       } else {
-        c.send(TodoAct.destroy(props.todo.id))
+        todoAct.destroy(props.todo.id)
       }
     }
   }
@@ -155,9 +157,9 @@ const Item = stateful('todo-item', {
     setState({ active: false })
 
     if (state.title) {
-      c.send(TodoAct.edit(props.todo.id, state.title))
+      todoAct.edit(props.todo.id, state.title)
     } else {
-      c.send(TodoAct.destroy(props.todo.id))
+      todoAct.destroy(props.todo.id)
     }
   }
 
@@ -188,7 +190,7 @@ const Item = stateful('todo-item', {
           class="edit"
           value={state.title}
           onInput={onInput}
-          onKeydown={onKeyDown}
+          onKeyDown={onKeyDown}
           onBlur={onBlur}
         />
       </li>
@@ -202,8 +204,9 @@ const Main = stateful('todo-main', {
     filter: prop.str.as<TodoFilter>().req()
   }
 })((c, props) => {
+  const todoAct = $actions(c, TodoMsg)
   const completed = props.todos.every((todo) => todo.completed)
-  const onToggleAll = () => c.send(TodoAct.toggleAll(!completed))
+  const onToggleAll = () => todoAct.toggleAll(!completed)
 
   let filteredTodos =
     props.filter === TodoFilter.Active
@@ -236,13 +239,14 @@ const Filters = stateful('todo-filters', {
     filter: prop.str.as<TodoFilter>().req()
   }
 })((c, props) => {
+  const todoAct = $actions(c, TodoMsg)
   const onActiveFilter = (ev: any) => setFilter(TodoFilter.Active, ev)
   const onCompletedFilter = (ev: any) => setFilter(TodoFilter.Completed, ev)
   const onNoFilter = (ev: any) => setFilter(TodoFilter.All, ev)
 
   const setFilter = (filter: TodoFilter, ev: any) => {
     ev.preventDefault()
-    c.send(TodoAct.setFilter(filter))
+    todoAct.setFilter(filter)
   }
 
   return () => (
@@ -284,9 +288,10 @@ const Footer = stateful('todo-footer', {
     filter: prop.str.as<TodoFilter>().req()
   }
 })((c, props) => {
+  const todoAct = $actions(c, TodoMsg)
   const completed = props.todos.filter((todo: Todo) => todo.completed).length
   const remaining = props.todos.length - completed
-  const onClearCompleted = () => c.send(TodoAct.clearCompleted())
+  const onClearCompleted = () => todoAct.clearCompleted()
 
   return () => (
     <footer class="footer">

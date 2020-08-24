@@ -263,7 +263,7 @@ function h(
   type: string | Component,
   props?: Props | null | undefined,
   ...children: VNode[]
-): VNode
+): VElement
 
 function h(t: any, p: any) {
   const argc = arguments.length
