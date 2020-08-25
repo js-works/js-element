@@ -98,7 +98,7 @@ type Notifier = {
 
 declare const tag: unique symbol
 
-type PropType<Type, Kind extends 'optional' | 'default' | 'required'> = {
+type PropType<Type, Kind extends 'optional' | 'defaulted' | 'required'> = {
   readonly [tag]: 'PropType'
 }
 
@@ -166,7 +166,7 @@ type InternalPropsOf<PC extends PropsConfig> = Partial<
       [K in keyof PC]: PC[K] extends PropType<infer T, infer K>
         ? K extends 'required'
           ? never
-          : K extends 'default'
+          : K extends 'defaulted'
           ? never
           : T
         : never
@@ -178,7 +178,7 @@ type InternalPropsOf<PC extends PropsConfig> = Partial<
       [K in keyof PC]: PC[K] extends PropType<infer T, infer K>
         ? K extends 'required'
           ? T
-          : K extends 'default'
+          : K extends 'defaulted'
           ? T
           : never
         : never
