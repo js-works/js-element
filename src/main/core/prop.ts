@@ -27,7 +27,7 @@ type TypeType<T extends Type | null> = T extends null
 type PropTypeBuilder<T> = {
   opt: {
     (): PropType<T, 'optional'>
-    (defaultValue: T): PropType<T, 'optional-with-default'>
+    (defaultValue: T): PropType<T, 'default'>
   }
 
   req: () => PropType<T, 'required'>
