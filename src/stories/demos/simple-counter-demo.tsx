@@ -1,13 +1,13 @@
 import { component, h, prop } from 'js-elements'
-import { addState } from 'js-elements/ext'
+import { useState } from 'js-elements/ext'
 
 const SimpleCounter = component('simple-counter', {
   props: {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
   }
-}).main((c, props) => {
-  const [state, setState] = addState(c, {
+})(function (c, props) {
+  const [state, setState] = useState(c, {
     count: props.initialCount
   })
 

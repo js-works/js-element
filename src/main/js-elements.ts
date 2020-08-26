@@ -37,22 +37,20 @@ function component<PC extends PropsConfig>(
     slots?: string[]
     methods?: string[]
   }
-): {
-  main(
-    fn: (ctrl: Ctrl, props: InternalPropsOf<PC>) => () => VNode
-  ): Component<ExternalPropsOf<PC>>
-}
+): (
+  main: (ctrl: Ctrl, props: InternalPropsOf<PC>) => () => VNode
+) => Component<ExternalPropsOf<PC>>
 
 function component(name: string, sndArg?: any): any {
   const sndArgIsFunction = typeof sndArg === 'function'
 
   if (sndArgIsFunction) {
-    return component(name, {}).main(sndArg)
+    return component(name, {})(sndArg)
   }
 
   const options = sndArg
 
-  const main = (fn: Function) => {
+  return (fn: Function) => {
     const init = (ctrl: Ctrl, props: Props) => {
       return fn(ctrl, props)
     }
@@ -82,8 +80,6 @@ function component(name: string, sndArg?: any): any {
 
     return ret as any
   }
-
-  return { main }
 }
 
 // === h =============================================================

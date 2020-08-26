@@ -1,22 +1,20 @@
 import { component, h } from 'js-elements'
-import { interval, addState } from 'js-elements/ext'
+import { useInterval, useState } from 'js-elements/ext'
 
 component('interval-demo', (c) => {
-  const [state, setState] = addState(c, {
+  const [state, setState] = useState(c, {
       count: 0,
       delay: 1000
     }),
     onReset = () => setState('delay', 1000)
 
-  interval(
+  useInterval(
     c,
-    () => {
-      setState('count', (it: any) => it + 1) // TODO
-    },
+    () => setState('count', (it) => it + 1),
     () => state.delay
   )
 
-  interval(
+  useInterval(
     c,
     () => {
       if (state.delay > 10) {

@@ -1,5 +1,5 @@
 import { component, provision, h } from 'js-elements'
-import { withCtx, interval } from 'js-elements/ext'
+import { useCtx, useInterval } from 'js-elements/ext'
 
 const [provideTheme, consumeTheme] = provision('theme', 'light')
 
@@ -7,7 +7,7 @@ component('provision-demo', (c) => {
   let theme = 'light'
   provideTheme(c, theme)
 
-  interval(
+  useInterval(
     c,
     () => {
       theme = theme === 'light' ? 'dark' : 'light'
@@ -26,7 +26,7 @@ component('provision-demo', (c) => {
 })
 
 const ThemeInfo = component('theme-info', (c) => {
-  const ctx = withCtx(c, {
+  const ctx = useCtx(c, {
     theme: consumeTheme
   })
 

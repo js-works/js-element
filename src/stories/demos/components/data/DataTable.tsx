@@ -4,7 +4,7 @@ export default component('jsc-data-table', {
   props: {
     columns: prop.arr.req()
   }
-}).main((c, props) => {
+})((c, props) => {
   return () => (
     <div>
       <h4>DataTable</h4>

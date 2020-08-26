@@ -23,7 +23,7 @@ const DemoButton = component('demo-button', {
     text: prop.str.req(),
     onButtonClick: prop.evt()
   }
-}).main((c, props) => {
+})((c, props) => {
   c.addStyles(buttonDemoStyles)
 
   const onClick = () => {

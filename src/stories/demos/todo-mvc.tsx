@@ -1,5 +1,5 @@
 import { component, h, prop } from 'js-elements'
-import { useActions, addState, useStore, useSelectors } from 'js-elements/ext'
+import { useActions, useState, useStore, useSelectors } from 'js-elements/ext'
 import { defineMessages } from 'js-messages'
 import { createReducer, on } from 'js-reducers'
 import { update } from 'js-immutables'
@@ -89,7 +89,7 @@ const todoReducer = createReducer(initialTodoState, [
 
 const Header = component('todo-header', (c) => {
   const todoAct = useActions(c, TodoMsg)
-  const [state, setState] = addState(c, { title: '' })
+  const [state, setState] = useState(c, { title: '' })
   const onInput = (ev: any) => setState('title', ev.target.value)
 
   const onKeyDown = (ev: any) => {
@@ -121,10 +121,10 @@ const Item = component('todo-item', {
   props: {
     todo: prop.obj.as<Todo>().req()
   }
-}).main((c, props) => {
+})((c, props) => {
   const todoAct = useActions(c, TodoMsg)
 
-  const [state, setState] = addState(c, {
+  const [state, setState] = useState(c, {
     active: false,
     title: props.todo.title
   })
@@ -203,7 +203,7 @@ const Main = component('todo-main', {
     todos: prop.arr.as<Todo[]>().req(),
     filter: prop.str.as<TodoFilter>().req()
   }
-}).main((c, props) => {
+})((c, props) => {
   const todoAct = useActions(c, TodoMsg)
   const completed = props.todos.every((todo) => todo.completed)
   const onToggleAll = () => todoAct.toggleAll(!completed)
@@ -238,7 +238,7 @@ const Filters = component('todo-filters', {
   props: {
     filter: prop.str.as<TodoFilter>().req()
   }
-}).main((c, props) => {
+})((c, props) => {
   const todoAct = useActions(c, TodoMsg)
   const onActiveFilter = (ev: any) => setFilter(TodoFilter.Active, ev)
   const onCompletedFilter = (ev: any) => setFilter(TodoFilter.Completed, ev)
@@ -287,7 +287,7 @@ const Footer = component('todo-footer', {
     todos: prop.arr.as<Todo[]>().req(),
     filter: prop.str.as<TodoFilter>().req()
   }
-}).main((c, props) => {
+})((c, props) => {
   const todoAct = useActions(c, TodoMsg)
   const completed = props.todos.filter((todo: Todo) => todo.completed).length
   const remaining = props.todos.length - completed
@@ -312,7 +312,7 @@ const Footer = component('todo-footer', {
 })
 
 const TodoMvc = component('todo-mvc', (c) => {
-  const [state, setState] = addState(c, {
+  const [state, setState] = useState(c, {
     todos: [] as Todo[],
     filter: TodoFilter.All
   })

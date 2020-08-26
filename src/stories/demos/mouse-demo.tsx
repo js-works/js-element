@@ -1,9 +1,9 @@
 /** @jsx h */
 import { component, h } from 'js-elements'
-import { withMousePosition } from 'js-elements/ext'
+import { useMousePosition } from 'js-elements/ext'
 
 component('mouse-demo', (c) => {
-  const mousePos = withMousePosition(c)
+  const mousePos = useMousePosition(c)
 
   return () =>
     mousePos.x === -1 ? (

@@ -7,7 +7,7 @@ export default component('jsc-pagination-info', {
     totalItemCount: prop.num.req(),
     about: prop.str.as<'pages' | 'items'>().opt('items')
   }
-}).main((c, props) => () => {
+})((c, props) => () => {
   return props.about === 'pages' ? renderAboutPages() : renderAboutItems()
 
   // --- local component helper functions ----------------------------

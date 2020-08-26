@@ -10,7 +10,7 @@ export default component('jsc-paginator', {
     totalItemCount: prop.num.req(),
     onPageChange: prop.evt<PageChangeEvent>()
   }
-}).main((c, props) => {
+})((c, props) => {
   const onFirstPageClick = () => gotoPage(1)
   const onPreviousPageClick = () => gotoPage(props.pageIndex - 1)
   const onNextPageClick = () => gotoPage(props.pageIndex + 1)

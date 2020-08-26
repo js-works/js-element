@@ -1,5 +1,5 @@
 import { component, h, prop } from 'js-elements'
-import { addState } from 'js-elements/ext'
+import { useState } from 'js-elements/ext'
 
 type CounterMethods = {
   reset(n: number): void
@@ -12,8 +12,8 @@ const ComplexCounter = component('complex-counter', {
     ref: prop.obj.opt()
   },
   methods: ['reset']
-}).main((c, props) => {
-  const [state, setState] = addState(c, {
+})((c, props) => {
+  const [state, setState] = useState(c, {
     count: props.initialValue
   })
 

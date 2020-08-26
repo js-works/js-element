@@ -19,7 +19,7 @@ const SayHello = component('say-hello', {
     salutation: prop.str.opt('Hello')
     name: prop.str.opt('World')
   }
-}).main((c, props) => {
+})(function (c, props) {
   return () => (
     <div>
       {props.salutation}, {props.name}!
@@ -41,7 +41,7 @@ const Counter = component('demo-counter', {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
   }
-}).main((c, props) => {
+})(function (c, props) {
   let count = 0
   const onIncrement = c.updateFn(() => ++count)
 
@@ -74,10 +74,10 @@ All of those "extensions" can be written completely in userland
 
 ```jsx
 import { component, h } from 'js-elements'
-import { withTime } from 'js-elements/ext'
+import { useTime } from 'js-elements/ext'
 
 const Clock = component('demo-clock', (c) => {
-  const getTime = withTime(c, 1000, () => new Date().toLocaleTimeString())
+  const getTime = useTime(c, 1000, () => new Date().toLocaleTimeString())
   return () => <div>Current time: {getTime()}</div>
 })
 ```
