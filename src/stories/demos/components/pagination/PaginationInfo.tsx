@@ -1,15 +1,13 @@
-import { h, prop, stateless } from '../../../../main/js-elements'
+import { component, h, prop } from 'js-elements'
 
-export default stateless({
-  name: 'jsc-pagination-info',
-
+export default component('jsc-pagination-info', {
   props: {
     pageIndex: prop.num.req(),
     pageSize: prop.num.req(),
     totalItemCount: prop.num.req(),
     about: prop.str.as<'pages' | 'items'>().opt('items')
   }
-})((props) => {
+}).main((c, props) => () => {
   return props.about === 'pages' ? renderAboutPages() : renderAboutItems()
 
   // --- local component helper functions ----------------------------

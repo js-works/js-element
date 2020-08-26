@@ -1,14 +1,14 @@
-import { h, stateful } from '../../main/js-elements'
-import { $interval, $state } from '../../main/js-elements-ext'
+import { component, h } from 'js-elements'
+import { interval, addState } from 'js-elements/ext'
 
-stateful('interval-demo', (c) => {
-  const [state, setState] = $state(c, {
+component('interval-demo', (c) => {
+  const [state, setState] = addState(c, {
       count: 0,
       delay: 1000
     }),
     onReset = () => setState('delay', 1000)
 
-  $interval(
+  interval(
     c,
     () => {
       setState('count', (it: any) => it + 1) // TODO
@@ -16,7 +16,7 @@ stateful('interval-demo', (c) => {
     () => state.delay
   )
 
-  $interval(
+  interval(
     c,
     () => {
       if (state.delay > 10) {

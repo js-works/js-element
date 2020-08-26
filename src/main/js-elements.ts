@@ -19,239 +19,71 @@ import { h as createElement, text, patch } from './libs/superfine'
 
 // === exports =======================================================
 
-export {
-  provision,
-  prop,
-  h,
-  html,
-  render,
-  stateful,
-  stateless,
-  VElement,
-  VNode
-}
-
-// === types ========================================================
-
-type CtxConfig = Record<string, (c: Ctrl) => any>
-
-type CtxOf<CC extends CtxConfig> = {
-  [K in keyof CC]: ReturnType<CC[K]>
-}
+export { component, provision, prop, h, html, render, VElement, VNode }
 
 // === constants =====================================================
 
 const NOOP = () => {}
 
-// === stateless =====================================================
+// === component =====================================================
 
-function stateless(name: string, render: () => VNode): Component
+function component(name: string, main: (c: Ctrl) => () => VNode): Component
 
-function stateless<PC extends PropsConfig, CC extends CtxConfig>(config: {
-  name: string
-  props?: PC
-  ctx?: CC
-  styles?: string | string[] | (() => string | string[])
-  slots?: string[]
-  methods?: string[]
-  render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): VNode
-}): Component<ExternalPropsOf<PC>>
-
-function stateless<PC extends PropsConfig, CC extends CtxConfig>(
+function component<PC extends PropsConfig>(
   name: string,
 
   config: {
     props?: PC
-    ctx?: CC
-    styles?: string | string[] | (() => string | string[])
-    slots?: string[]
-    methods?: string[]
-    render(props: InternalPropsOf<PC>, ctx: CtxOf<CC>): VNode
-  }
-): Component<ExternalPropsOf<PC>>
-
-function stateless(name: string, render: () => VNode): Component<{}>
-
-function stateless<PC extends PropsConfig, CC extends CtxConfig>(config: {
-  name: string
-  props?: PC
-  ctx?: CC
-  styles?: string | string[] | (() => string | string[])
-  slots?: string[]
-  methods?: string[]
-}): (
-  render: (props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => VNode
-) => Component<ExternalPropsOf<PC>>
-
-function stateless<PC extends PropsConfig, CC extends CtxConfig>(
-  name: string,
-
-  config: {
-    props?: PC
-    ctx?: CC
-    styles?: string | string[] | (() => string | string[])
     slots?: string[]
     methods?: string[]
   }
-): (
-  render: (props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => VNode
-) => Component<ExternalPropsOf<PC>>
-
-function stateless(firstArg: any, sndArg?: any): any {
-  const firstArgIsString = typeof firstArg === 'string'
-  const sndArgIsFunction = typeof sndArg === 'function'
-  const name: string = firstArgIsString ? firstArg : firstArg.name
-
-  if (sndArgIsFunction) {
-    const main = (c: Ctrl, props: any, ctx: any) => () => sndArg(props, ctx)
-
-    return firstArgIsString
-      ? stateful({ name, main })
-      : stateful({ ...firstArg, main })
-  }
-
-  const { render, ...options } = firstArgIsString ? sndArg : firstArg
-  delete options.name
-  delete options.render
-
-  if (render) {
-    return stateful({
-      name,
-      ...options,
-      main: (c, props, ctx) => () => render(props, ctx)
-    })
-  }
-
-  return (render: Function) =>
-    stateful({
-      name,
-      ...options,
-      main: (c, props, ctx) => () => render(props, ctx)
-    })
+): {
+  main(
+    fn: (ctrl: Ctrl, props: InternalPropsOf<PC>) => () => VNode
+  ): Component<ExternalPropsOf<PC>>
 }
 
-function stateful(name: string, main: (c: Ctrl) => () => VNode): Component
-
-function stateful<PC extends PropsConfig, CC extends CtxConfig>(config: {
-  name: string
-  props?: PC
-  ctx?: CC
-  styles?: string | string[] | (() => string | string[])
-  slots?: string[]
-  methods?: string[]
-  main(ctrl: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>): () => VNode
-}): Component<ExternalPropsOf<PC>>
-
-function stateful<PC extends PropsConfig, CC extends CtxConfig>(
-  name: string,
-
-  config: {
-    props?: PC
-    ctx?: CC
-    styles?: string | string[] | (() => string | string[])
-    slots?: string[]
-    methods?: string[]
-    main(ctrl: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>): () => VNode
-  }
-): Component<ExternalPropsOf<PC>>
-
-function stateful(name: string, main: (c: Ctrl) => () => VNode): Component<{}>
-
-function stateful<PC extends PropsConfig, CC extends CtxConfig>(config: {
-  name: string
-  props?: PC
-  ctx?: CC
-  styles?: string | string[] | (() => string | string[])
-  slots?: string[]
-  methods?: string[]
-}): (
-  main: (ctrl: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => () => VNode
-) => Component<ExternalPropsOf<PC>>
-
-function stateful<PC extends PropsConfig, CC extends CtxConfig>(
-  name: string,
-
-  config: {
-    props?: PC
-    ctx?: CC
-    styles?: string | string[] | (() => string | string[])
-    slots?: string[]
-    methods?: string[]
-  }
-): (
-  main: (ctrl: Ctrl, props: InternalPropsOf<PC>, ctx: CtxOf<CC>) => () => VNode
-) => Component<ExternalPropsOf<PC>>
-
-function stateful(firstArg: any, sndArg?: any): any {
-  const firstArgIsString = typeof firstArg === 'string'
+function component(name: string, sndArg?: any): any {
   const sndArgIsFunction = typeof sndArg === 'function'
-  const name: string = firstArgIsString ? firstArg : firstArg.name
 
   if (sndArgIsFunction) {
-    return firstArgIsString
-      ? stateful({ name, main: sndArg })
-      : stateful({ ...firstArg, main: sndArg })
+    return component(name, {}).main(sndArg)
   }
 
-  const { main, ...options } = firstArgIsString ? sndArg : firstArg
-  delete options.name
-  delete options.main
+  const options = sndArg
 
-  if (!main) {
-    return (main: Function) => stateful({ name, ...options, main })
+  const main = (fn: Function) => {
+    const init = (ctrl: Ctrl, props: Props) => {
+      return fn(ctrl, props)
+    }
+
+    const customElementClass = createCustomElementClass(
+      name,
+      (options && options.props) || null,
+      (options && options.methods) || null,
+      init,
+      renderer
+    )
+
+    if (
+      process.env.NODE_ENV === ('development' as any) &&
+      customElements.get(name)
+    ) {
+      location.reload()
+    }
+
+    customElements.define(name, customElementClass)
+
+    const ret = h.bind(null, name)
+
+    Object.defineProperty(ret, 'js-elements:type', {
+      value: name
+    })
+
+    return ret as any
   }
 
-  delete options.name
-  delete options.main
-
-  const ctxConfig = getOwnProp(options, 'ctx')
-  delete options.ctx
-  const ctxKeys = ctxConfig ? Object.keys(ctxConfig) : null
-  const ctx = {} as any
-
-  const initCtx = !ctxConfig
-    ? NOOP
-    : (ctrl: Ctrl) => {
-        const updateCtx = () => {
-          for (let key of ctxKeys!) {
-            ctx[key] = ctxConfig[key](ctrl)
-          }
-        }
-
-        ctrl.beforeUpdate(updateCtx)
-        updateCtx()
-      }
-
-  const init = (ctrl: Ctrl, props: Props) => {
-    initCtx(ctrl)
-    return main(ctrl, props, ctx)
-  }
-
-  const customElementClass = createCustomElementClass(
-    name,
-    (options && options.props) || null,
-    (options && options.styles) || null,
-    (options && options.methods) || null,
-    init,
-    renderer
-  )
-
-  if (
-    process.env.NODE_ENV === ('development' as any) &&
-    customElements.get(name)
-  ) {
-    location.reload()
-  }
-
-  customElements.define(name, customElementClass)
-
-  const ret = h.bind(null, name)
-
-  Object.defineProperty(ret, 'js-elements:type', {
-    value: name
-  })
-
-  return ret as any
+  return { main }
 }
 
 // === h =============================================================
@@ -320,7 +152,7 @@ const renderer = (content: VElement, target: Element) => {
 function render(content: VElement, container: Element | string) {
   if (content !== null && (!content || content.isVElement !== true)) {
     throw new TypeError()
-    'First argument "content" of function "render" must be a virtual element or null'
+    ;('First argument "content" of function "render" must be a virtual element or null')
   }
 
   if (!container || (typeof container !== 'string' && !container.tagName)) {

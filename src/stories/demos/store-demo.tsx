@@ -1,4 +1,4 @@
-import { h, prop, stateful } from '../../main/js-elements'
+import { component, h, prop } from 'js-elements'
 
 function createStore() {
   const data = {
@@ -34,7 +34,7 @@ function createStore() {
   }
 }
 
-const StoreDemo = stateful('store-demo', (c) => {
+const StoreDemo = component('store-demo', (c) => {
   const store = createStore()
 
   return () => <div>TODO!!!</div>
@@ -48,7 +48,7 @@ const StoreDemo = stateful('store-demo', (c) => {
   */
 })
 
-const DispatchButton = stateful('dispatch-button', (c) => {
+const DispatchButton = component('dispatch-button', (c) => {
   const onClick = () => c.send({ type: 'some.message' })
 
   return () => <button onClick={onClick}>Send event</button>

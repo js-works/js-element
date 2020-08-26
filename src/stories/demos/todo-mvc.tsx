@@ -1,5 +1,5 @@
-import { h, prop, stateful } from '../../main/js-elements'
-import { $actions, $provideStore, $select } from '../../main/js-elements-ext'
+import { component, h, prop } from 'js-elements'
+import { useActions, addState, useStore, useSelectors } from 'js-elements/ext'
 import { defineMessages } from 'js-messages'
 import { createReducer, on } from 'js-reducers'
 import { update } from 'js-immutables'
@@ -87,9 +87,9 @@ const todoReducer = createReducer(initialTodoState, [
 
 // === components ====================================================
 
-const Header = stateful('todo-header', (c) => {
-  const todoAct = $actions(c, TodoMsg)
-  const [state, setState] = c.addState({ title: '' })
+const Header = component('todo-header', (c) => {
+  const todoAct = useActions(c, TodoMsg)
+  const [state, setState] = addState(c, { title: '' })
   const onInput = (ev: any) => setState('title', ev.target.value)
 
   const onKeyDown = (ev: any) => {
@@ -117,14 +117,14 @@ const Header = stateful('todo-header', (c) => {
   )
 })
 
-const Item = stateful('todo-item', {
+const Item = component('todo-item', {
   props: {
     todo: prop.obj.as<Todo>().req()
   }
-})((c, props) => {
-  const todoAct = $actions(c, TodoMsg)
+}).main((c, props) => {
+  const todoAct = useActions(c, TodoMsg)
 
-  const [state, setState] = c.addState({
+  const [state, setState] = addState(c, {
     active: false,
     title: props.todo.title
   })
@@ -198,13 +198,13 @@ const Item = stateful('todo-item', {
   }
 })
 
-const Main = stateful('todo-main', {
+const Main = component('todo-main', {
   props: {
     todos: prop.arr.as<Todo[]>().req(),
     filter: prop.str.as<TodoFilter>().req()
   }
-})((c, props) => {
-  const todoAct = $actions(c, TodoMsg)
+}).main((c, props) => {
+  const todoAct = useActions(c, TodoMsg)
   const completed = props.todos.every((todo) => todo.completed)
   const onToggleAll = () => todoAct.toggleAll(!completed)
 
@@ -234,12 +234,12 @@ const Main = stateful('todo-main', {
   )
 })
 
-const Filters = stateful('todo-filters', {
+const Filters = component('todo-filters', {
   props: {
     filter: prop.str.as<TodoFilter>().req()
   }
-})((c, props) => {
-  const todoAct = $actions(c, TodoMsg)
+}).main((c, props) => {
+  const todoAct = useActions(c, TodoMsg)
   const onActiveFilter = (ev: any) => setFilter(TodoFilter.Active, ev)
   const onCompletedFilter = (ev: any) => setFilter(TodoFilter.Completed, ev)
   const onNoFilter = (ev: any) => setFilter(TodoFilter.All, ev)
@@ -282,13 +282,13 @@ const Filters = stateful('todo-filters', {
   )
 })
 
-const Footer = stateful('todo-footer', {
+const Footer = component('todo-footer', {
   props: {
     todos: prop.arr.as<Todo[]>().req(),
     filter: prop.str.as<TodoFilter>().req()
   }
-})((c, props) => {
-  const todoAct = $actions(c, TodoMsg)
+}).main((c, props) => {
+  const todoAct = useActions(c, TodoMsg)
   const completed = props.todos.filter((todo: Todo) => todo.completed).length
   const remaining = props.todos.length - completed
   const onClearCompleted = () => todoAct.clearCompleted()
@@ -311,8 +311,8 @@ const Footer = stateful('todo-footer', {
   )
 })
 
-const TodoMvc = stateful('todo-mvc', (c) => {
-  const [state, setState] = c.addState({
+const TodoMvc = component('todo-mvc', (c) => {
+  const [state, setState] = addState(c, {
     todos: [] as Todo[],
     filter: TodoFilter.All
   })

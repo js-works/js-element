@@ -17,14 +17,13 @@ import {
 
 // === constants =====================================================
 
-const MESSAGE_EVENT_TYPE = 'js-element:###message###'
+const MESSAGE_TYPE_SUFFIX = '$$js-elements$$::'
 
 // === creatCustomElementClass =======================================
 
 export function createCustomElementClass(
   name: string,
   propsConfig: PropsConfig | null,
-  styles: string | string[] | null,
   methods: string[] | null,
   init: (c: Ctrl, props: Props) => () => VNode,
   renderer: Renderer
@@ -36,15 +35,11 @@ export function createCustomElementClass(
     defaultProps[propName] = (propsConfig![propName] as any).defaultValue // TODO!!!!!!!!!!!! : ''
   }
 
-  return class extends createBaseElementClass(
-    name,
-    propsConfig,
-    styles,
-    methods
-  ) {
+  return class extends createBaseElementClass(name, propsConfig, methods) {
     _props: Props = { ...defaultProps }
     _ctrl: Ctrl = this._createCtrl()
     _contentElement: Element | null = null // TODO
+    _stylesElement: Element | null = null // TODO
     _render: null | (() => VNode) = null
     _initialized = false
     _mounted = false
@@ -60,6 +55,7 @@ export function createCustomElementClass(
       super(
         (propName: string, value: any) => (this._props[propName] = value),
         (contentElement: Element) => (this._contentElement = contentElement),
+        (stylesElement: Element) => (this._stylesElement = stylesElement),
         () => this._mounted && this._refresh(),
         (methodName: string) => getOwnProp(this._methods, methodName) || null
       )
@@ -72,7 +68,7 @@ export function createCustomElementClass(
 
     disconnectedCallback() {
       this._beforeUnmountNotifier && this._beforeUnmountNotifier.notify()
-      this._ctrl.getContentElement().innerHTML = ''
+      this._contentElement!.innerHTML = ''
     }
 
     _refresh() {
@@ -156,6 +152,16 @@ export function createCustomElementClass(
           }
         },
 
+        addStyles: (styles) => {
+          const css = Array.isArray(styles)
+            ? styles.join('\n\n/* =============== */\n\n')
+            : styles
+
+          const styleElem = document.createElement('style')
+          styleElem.appendChild(document.createTextNode(css))
+          this._stylesElement!.appendChild(styleElem)
+        },
+
         update: (action: Action) => {
           action()
           this._refresh()
@@ -166,46 +172,6 @@ export function createCustomElementClass(
             callback(...args)
             this._refresh()
           }
-        },
-
-        getElement: () => {
-          return this
-        },
-
-        getContentElement: () => {
-          return this._contentElement!
-        },
-
-        addState(initialState) {
-          let nextState: any, // TODO
-            mergeNecessary = false
-
-          const state = { ...initialState },
-            setState = (arg1: any, arg2: any) => {
-              mergeNecessary = true
-
-              if (typeof arg1 === 'string') {
-                nextState[arg1] =
-                  typeof arg2 === 'function' ? arg2(nextState[arg1]) : arg2
-              } else if (typeof arg1 === 'function') {
-                Object.assign(nextState, arg1(nextState))
-              } else {
-                Object.assign(nextState, arg1)
-              }
-
-              ctrl.onceBeforeUpdate(() => {
-                if (mergeNecessary) {
-                  Object.assign(state, nextState)
-                  mergeNecessary = false
-                }
-              })
-
-              ctrl.refresh()
-            }
-
-          nextState = { ...state }
-
-          return [state, setState as any] // TODO
         },
 
         effect: (action: Action, getDeps?: null | (() => any[])) => {
@@ -254,36 +220,42 @@ export function createCustomElementClass(
           this._methods = methods
         },
 
-        find(selector: string) {
-          return this.getContentElement().querySelector(selector)
+        find: (selector: string) => {
+          return this._contentElement!.querySelector(selector)
         },
 
-        findAll<T extends Element = AnyElement>(selector: string) {
-          return this.getContentElement().querySelectorAll<T>(selector)
+        findAll: <T extends Element = AnyElement>(selector: string) => {
+          return this._contentElement!.querySelectorAll<T>(selector)
         },
 
         send: (msg: Message) => {
-          const root = ctrl.getContentElement()
+          const root = this
 
           root.dispatchEvent(
-            new CustomEvent(MESSAGE_EVENT_TYPE, {
+            new CustomEvent(MESSAGE_TYPE_SUFFIX + msg.type, {
               bubbles: true,
               detail: msg
             })
           )
         },
 
-        receive(handler: (msg: Message) => void): () => void {
-          const root = this.getContentElement(),
-            listener = (ev: Event) => {
-              handler((ev as any).detail)
-            },
-            unsubscribe = () => {
-              root.removeEventListener(MESSAGE_EVENT_TYPE, listener)
-            }
+        receive: (
+          type: string,
+          handler: (msg: Message) => void
+        ): (() => void) => {
+          const root = this._contentElement!
 
-          root.addEventListener(MESSAGE_EVENT_TYPE, listener)
-          this.beforeUnmount(unsubscribe)
+          const listener = (ev: Event) => {
+            ev.stopPropagation()
+            handler((ev as any).detail)
+          }
+
+          const unsubscribe = () => {
+            root.removeEventListener(MESSAGE_TYPE_SUFFIX + type, listener)
+          }
+
+          root.addEventListener(MESSAGE_TYPE_SUFFIX + type, listener)
+          ctrl.beforeUnmount(unsubscribe)
 
           return unsubscribe
         }

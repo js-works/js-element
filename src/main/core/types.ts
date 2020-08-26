@@ -69,20 +69,18 @@ type Ctrl = {
   beforeUpdate(action: Action): void
   afterUpdate(action: Action): void
   beforeUnmount(action: Action): void
+  addStyles(styles: string | string[]): void
+  send(message: Message): void
+  receive(type: string, handler: (message: Message) => void): () => void
 
   // js-elements specific control functions
 
-  addState<S extends State>(initialState: S): [S, StateUpdater<S>]
   update(action: Action): void
   updateFn<A extends any[]>(fn: (...args: A) => void): (...args: A) => void
-  getElement(): Element
-  getContentElement(): Element
   effect(action: Action, getDeps?: null | (() => any[])): void
   setMethods(methods: Methods): void // TODO!!!!!!!!!!!!!!!
   find<T = {}>(selector: string): (T & Element) | null
   findAll<T = {}>(selector: string): NodeListOf<T & Element>
-  send(message: Message): void
-  receive(receiver: (message: Message) => void): () => void
 }
 
 type Class<T> = {

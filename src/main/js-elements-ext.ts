@@ -2,6 +2,7 @@
 
 type Action = () => void
 type State = Record<string, any>
+type Message = { type: string } & Record<string, any>
 
 export interface Ctrl {
   getName(): string
@@ -10,9 +11,13 @@ export interface Ctrl {
   afterMount(action: () => void): void
   // afterCommit(action: () => void): void
   onceBeforeUpdate(action: () => void): void
+  beforeUpdate(action: () => void): void
   afterUpdate(action: () => void): void
   beforeUnmount(action: () => void): void
   refresh(): void
+  addStyles(styles: string | string[]): void
+  send(message: Message): void
+  receive(type: string, handler: (message: Message) => void): () => void
 }
 
 // === createExtension ===============================================
@@ -50,9 +55,9 @@ export function createExtension<T extends Ctrl, A extends [T, ...any[]], R>(
   return ret
 }
 
-// === $value ======================================================--
+// === addValue ======================================================--
 
-export const $value = createExtension('$value', function <T>(
+export const addValue = createExtension('addValue', function <T>(
   c: Ctrl,
   initialValue: T
 ): [() => T, (updater: T | ((value: T) => T)) => void] {
@@ -73,7 +78,7 @@ export const $value = createExtension('$value', function <T>(
   return [() => value, setValue as any] // TODO
 })
 
-// === $state ======================================================--
+// === addState ======================================================--
 
 type StateUpdater<T extends Record<string, any>> = {
   (newState: Partial<T>): void
@@ -82,7 +87,7 @@ type StateUpdater<T extends Record<string, any>> = {
   (key: keyof T, valueUpdate: (oldValue: T[typeof key]) => T[typeof key]): void
 }
 
-export const $state = createExtension('$state', function <
+export const addState = createExtension('addState', function <
   T extends Record<string, any>
 >(c: Ctrl, initialState: T): [T, StateUpdater<T>] {
   let nextState: any, // TODO
@@ -116,11 +121,11 @@ export const $state = createExtension('$state', function <
   return [state, setState as any] // TODO
 })
 
-// === $memo =========================================================
+// === memo =========================================================
 
 // TODO - this is not really optimized, is it?
 
-export const $memo = createExtension('$memo', function <
+export const memo = createExtension('memo', function <
   T,
   A extends any[],
   G extends () => A
@@ -143,9 +148,9 @@ export const $memo = createExtension('$memo', function <
   return memo
 })
 
-// === $effect ======================================================-
+// === effect ======================================================-
 
-export const $effect = createExtension('$effect', function (
+export const effect = createExtension('effect', function (
   c,
   action: () => void | undefined | null | (() => void),
   getDeps?: null | (() => any[])
@@ -187,19 +192,44 @@ export const $effect = createExtension('$effect', function (
     c.beforeUnmount(() => cleanup && cleanup())
   } else {
     throw new TypeError(
-      '[$effect] Third argument must either be undefined, null or a function'
+      '[effect] Third argument must either be undefined, null or a function'
     )
   }
 })
 
-// === $interval ======================================================
+// === withCtx ========================================================
 
-export const $interval = createExtension(
-  '$interval',
+type CtxConfig<C extends Ctrl> = Record<string, (c: C) => any> // TODO
+
+type CtxOf<CC extends CtxConfig<any>> = {
+  [K in keyof CC]: ReturnType<CC[K]>
+}
+
+export const withCtx = createExtension('withCtx', function <
+  CC extends CtxConfig<any>
+>(c: Ctrl, config: CC): CtxOf<CC> {
+  const ctx: any = {}
+  const ctxKeys = Object.keys(config)
+
+  const updateCtx = () => {
+    for (let key of ctxKeys!) {
+      ctx[key] = config[key](c)
+    }
+  }
+
+  updateCtx()
+  c.beforeUpdate(updateCtx)
+  return ctx
+})
+
+// === interval ======================================================
+
+export const interval = createExtension(
+  'interval',
   (c, action: Action, delay: number | (() => number)) => {
     const getDelay = typeof delay === 'function' ? delay : () => delay
 
-    $effect(
+    effect(
       c,
       () => {
         const id = setInterval(action, getDelay())
@@ -211,9 +241,9 @@ export const $interval = createExtension(
   }
 )
 
-// === $time =========================================================
+// === withTime =========================================================
 
-export const $time = createExtension('$time', timeFn)
+export const withTime = createExtension('withTime', timeFn)
 
 function timeFn(c: Ctrl, delay: number | (() => number)): () => Date
 
@@ -230,9 +260,9 @@ function timeFn(
 ): () => any {
   const getDelay = typeof delay === 'function' ? delay : () => delay
 
-  const [getValue, setValue] = $value(c, getter())
+  const [getValue, setValue] = addValue(c, getter())
 
-  $interval(
+  interval(
     c,
     () => {
       setValue(getter())
@@ -247,7 +277,7 @@ function getDate() {
   return new Date()
 }
 
-// === $promise ===================================================
+// === withPromise ===================================================
 
 type PromiseRes<T> =
   | {
@@ -272,16 +302,16 @@ const initialState: PromiseRes<any> = {
   state: 'pending'
 }
 
-export const $promise = createExtension('$promise', function <T>(
+export const withPromise = createExtension('withPromise', function <T>(
   c: Ctrl,
   getPromise: () => Promise<T>,
   getDeps?: () => any[]
 ): PromiseRes<T> {
-  const [state, setState] = $state<PromiseRes<T>>(c, initialState)
+  const [state, setState] = addState<PromiseRes<T>>(c, initialState)
 
   let promiseIdx = -1
 
-  $effect(
+  effect(
     c,
     () => {
       ++promiseIdx
@@ -316,51 +346,57 @@ export const $promise = createExtension('$promise', function <T>(
   return state
 })
 
-// === $mousePosition ===============================================
+// === withMousePosition ===============================================
 
-export const $mousePosition = createExtension('$mousePosition', (c: Ctrl) => {
-  const [mousePos, setMousePos] = $state(c, { x: -1, y: -1 })
+export const withMousePosition = createExtension(
+  'withMousePosition',
+  (c: Ctrl) => {
+    const [mousePos, setMousePos] = addState(c, { x: -1, y: -1 })
 
-  $effect(
-    c,
-    () => {
-      const listener = (ev: any) => {
-        // TODO
-        setMousePos({ x: ev.pageX, y: ev.pageY })
-      }
+    effect(
+      c,
+      () => {
+        const listener = (ev: any) => {
+          // TODO
+          setMousePos({ x: ev.pageX, y: ev.pageY })
+        }
 
-      window.addEventListener('mousemove', listener)
+        window.addEventListener('mousemove', listener)
 
-      return () => {
-        window.removeEventListener('mousemove', listener)
-      }
-    },
-    null
-  )
+        return () => {
+          window.removeEventListener('mousemove', listener)
+        }
+      },
+      null
+    )
 
-  return mousePos
+    return mousePos
+  }
+)
+
+// === useStore =================================================
+
+export const useStore = createExtension('useStore', (...args: any[]): any => {
+  // TODO
 })
 
-// === $provideStore =================================================
+// === useActions ======================================================
 
-export const $provideStore = createExtension(
-  '$provideStore',
+export const useActions = createExtension(
+  'useActions',
   (...args: any[]): any => {
     // TODO
   }
 )
 
-// === $actions ======================================================
+// === useSelect =======================================================
 
-export const $actions = createExtension('$actions', (...args: any[]): any => {
-  // TODO
-})
-
-// === $select =======================================================
-
-export const $select = createExtension('$select', (...args: any[]): any => {
-  // TODO
-})
+export const useSelectors = createExtension(
+  'useSelectors',
+  (...args: any[]): any => {
+    // TODO
+  }
+)
 
 // === locals ========================================================
 

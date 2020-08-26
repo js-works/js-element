@@ -18,7 +18,10 @@
     "esModuleInterop": true,
     "baseUrl": ".",
     "skipLibCheck": true,
-    "paths": {},
+    "paths": {
+      "js-elements": ["src/main/js-elements.ts"],
+      "js-elements/ext": ["src/main/js-elements-ext.ts"]
+    },
     "typeRoots": ["node_modules/@types"],
     "types": ["node", "mocha", "chai"]
   },

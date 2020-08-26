@@ -1,22 +1,22 @@
-import { h, prop, stateful } from '../../../../main/js-elements'
+import { component, h, prop } from 'js-elements'
 import PageChangeEvent from '../../events/PageChangeEvent'
 
 // === Paginator =====================================================
 
-export default stateful('jsc-paginator', {
+export default component('jsc-paginator', {
   props: {
     pageIndex: prop.num.req(),
     pageSize: prop.num.req(),
     totalItemCount: prop.num.req(),
     onPageChange: prop.evt<PageChangeEvent>()
-  },
-
-  styles: () => paginatorStyles
-})((c, props) => {
+  }
+}).main((c, props) => {
   const onFirstPageClick = () => gotoPage(1)
   const onPreviousPageClick = () => gotoPage(props.pageIndex - 1)
   const onNextPageClick = () => gotoPage(props.pageIndex + 1)
   const onLastPageClick = () => gotoPage(getTotalPageCount() - 1)
+
+  c.addStyles(paginatorStyles)
 
   return () => (
     <div class="root">

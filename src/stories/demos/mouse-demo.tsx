@@ -1,9 +1,9 @@
 /** @jsx h */
-import { h, stateful } from '../../main/js-elements'
-import { $mousePosition } from '../../main/js-elements-ext'
+import { component, h } from 'js-elements'
+import { withMousePosition } from 'js-elements/ext'
 
-stateful('mouse-demo', (c) => {
-  const mousePos = $mousePosition(c)
+component('mouse-demo', (c) => {
+  const mousePos = withMousePosition(c)
 
   return () =>
     mousePos.x === -1 ? (

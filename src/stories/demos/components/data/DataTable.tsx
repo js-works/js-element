@@ -1,12 +1,10 @@
-import { h, prop, stateful } from '../../../../main/js-elements'
+import { component, h, prop } from 'js-elements'
 
-export default stateful({
-  name: 'jsc-data-table',
-
+export default component('jsc-data-table', {
   props: {
     columns: prop.arr.req()
   }
-})((c, props) => {
+}).main((c, props) => {
   return () => (
     <div>
       <h4>DataTable</h4>

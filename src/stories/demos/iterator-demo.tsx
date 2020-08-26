@@ -1,4 +1,4 @@
-import { h, stateless } from '../../main/js-elements'
+import { component, h } from 'js-elements'
 
 const demoContent = {
   *[Symbol.iterator]() {
@@ -39,8 +39,8 @@ const demoContent = {
   }
 }
 
-stateless('iterator-demo', () => {
-  return (
+component('iterator-demo', () => {
+  return () => (
     <div>
       <div>
         If everything works fine then the following line should be: "

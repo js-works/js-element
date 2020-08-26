@@ -1,57 +1,55 @@
-import { h, prop, stateful } from '../../main/js-elements'
+import { component, h, prop } from 'js-elements'
+import { addState } from 'js-elements/ext'
 
 type CounterMethods = {
   reset(n: number): void
 }
 
-const ComplexCounter = stateful('complex-counter', {
+const ComplexCounter = component('complex-counter', {
   props: {
     initialValue: prop.num.opt(0),
     label: prop.str.opt('Counter'),
     ref: prop.obj.opt()
   },
+  methods: ['reset']
+}).main((c, props) => {
+  const [state, setState] = addState(c, {
+    count: props.initialValue
+  })
 
-  methods: ['reset'],
+  const onIncrement = () => setState({ count: state.count + 1 })
+  const onDecrement = () => setState({ count: state.count - 1 })
 
-  main(c, props) {
-    const [state, setState] = c.addState({
-      count: props.initialValue
-    })
+  c.setMethods({
+    reset(n: number) {
+      setState({ count: n })
+    }
+  })
 
-    const onIncrement = () => setState({ count: state.count + 1 })
-    const onDecrement = () => setState({ count: state.count - 1 })
+  c.effect(() => {
+    console.log('Component "complex-counter" has been mounted')
 
-    c.setMethods({
-      reset(n: number) {
-        setState({ count: n })
-      }
-    })
+    return () => console.log('Component "complex-counter" will be umounted')
+  }, null)
 
-    c.effect(() => {
-      console.log('Component "complex-counter" has been mounted')
+  c.effect(
+    () => {
+      console.log(`Value of counter "${props.label}": ${state.count}`)
+    },
+    () => [state.count]
+  )
 
-      return () => console.log('Component "complex-counter" will be umounted')
-    }, null)
-
-    c.effect(
-      () => {
-        console.log(`Value of counter "${props.label}": ${state.count}`)
-      },
-      () => [state.count]
-    )
-
-    return () => (
-      <div>
-        <label>{props.label}: </label>
-        <button onClick={onDecrement}>-</button>
-        <span> {state.count} </span>
-        <button onClick={onIncrement}>+</button>
-      </div>
-    )
-  }
+  return () => (
+    <div>
+      <label>{props.label}: </label>
+      <button onClick={onDecrement}>-</button>
+      <span> {state.count} </span>
+      <button onClick={onIncrement}>+</button>
+    </div>
+  )
 })
 
-stateful('complex-counter-demo', (c) => {
+component('complex-counter-demo', (c) => {
   const findCounter = () => c.find<CounterMethods>('[data-counter]')!
   const onSetTo0 = () => findCounter().reset(0)
   const onSetTo100 = () => findCounter().reset(100)

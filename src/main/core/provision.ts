@@ -35,8 +35,7 @@ function provision<T>(
       }
 
       const onSubscribe = (ev: any) => {
-        ev.stopPropagation()
-        const subscriber = ev.detail
+        const subscriber = ev.payload
         const [value, subscribers] = providersMap.get(c)!
 
         subscribers.add(subscriber)
@@ -49,13 +48,9 @@ function provision<T>(
       }
 
       providersMap.set(c, [value, new Set()])
-      c.getContentElement().addEventListener(subscribeEventType, onSubscribe)
+      c.receive(subscribeEventType, onSubscribe)
 
       c.beforeUnmount(() => {
-        c.getContentElement().removeEventListener(
-          subscribeEventType,
-          onSubscribe
-        )
         providersMap.delete(c)
       })
     } else {
@@ -89,21 +84,20 @@ function provision<T>(
 
       c.beforeUnmount(() => cancel && cancel())
 
-      c.getElement().dispatchEvent(
-        new CustomEvent(subscribeEventType, {
-          bubbles: true,
-          detail: {
-            notifyChange(newValue) {
-              currentValue = newValue
-              c.refresh() // TODO: optimize
-            },
+      c.send({
+        type: subscribeEventType,
 
-            cancelled: new Promise((resolve) => {
-              cancel = resolve
-            })
-          } as ProvisionSubscriber<T>
-        })
-      )
+        payload: {
+          notifyChange(newValue: any) {
+            currentValue = newValue
+            c.refresh() // TODO: optimize
+          },
+
+          cancelled: new Promise((resolve) => {
+            cancel = resolve
+          })
+        }
+      })
     }
 
     return getter()

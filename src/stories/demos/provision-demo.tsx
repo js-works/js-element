@@ -1,13 +1,13 @@
-import { provision, h, stateful, stateless } from '../../main/js-elements'
-import { $interval } from '../../main/js-elements-ext'
+import { component, provision, h } from 'js-elements'
+import { withCtx, interval } from 'js-elements/ext'
 
 const [provideTheme, consumeTheme] = provision('theme', 'light')
 
-stateful('provision-demo', (c) => {
+component('provision-demo', (c) => {
   let theme = 'light'
   provideTheme(c, theme)
 
-  $interval(
+  interval(
     c,
     () => {
       theme = theme === 'light' ? 'dark' : 'light'
@@ -25,12 +25,10 @@ stateful('provision-demo', (c) => {
   )
 })
 
-const ThemeInfo = stateless('theme-info', {
-  ctx: {
+const ThemeInfo = component('theme-info', (c) => {
+  const ctx = withCtx(c, {
     theme: consumeTheme
-  },
+  })
 
-  render(_, ctx) {
-    return <div>Current theme: {ctx.theme}</div>
-  }
+  return () => <div>Current theme: {ctx.theme}</div>
 })

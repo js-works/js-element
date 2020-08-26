@@ -1,4 +1,4 @@
-import { h, prop, stateful, stateless } from '../../main/js-elements'
+import { component, h, prop } from 'js-elements'
 
 const buttonDemoStyles = ` 
   .demo-button {
@@ -18,34 +18,31 @@ const buttonDemoStyles = `
   }
 `
 
-const DemoButton = stateful('demo-button', {
+const DemoButton = component('demo-button', {
   props: {
-    text: prop.str.opt(),
+    text: prop.str.req(),
     onButtonClick: prop.evt()
-  },
-
-  styles: buttonDemoStyles,
-
-  main(c, props) {
-    props.text
-    const onClick = () => {
-      if (props.onButtonClick) {
-        props.onButtonClick(new CustomEvent('button-click')) // TODO
-      }
-    }
-
-    return () => (
-      <button class="demo-button" onClick={onClick}>
-        {props.text}
-      </button>
-    )
   }
+}).main((c, props) => {
+  c.addStyles(buttonDemoStyles)
+
+  const onClick = () => {
+    if (props.onButtonClick) {
+      props.onButtonClick(new CustomEvent('button-click')) // TODO
+    }
+  }
+
+  return () => (
+    <button class="demo-button" onClick={onClick}>
+      {props.text}
+    </button>
+  )
 })
 
-stateless('button-demo', () => {
+component('button-demo', () => {
   const onClick = (e: any) => alert(e.type) // TODO
 
-  return (
+  return () => (
     <div>
       <h3>Button demo</h3>
       <DemoButton onButtonClick={onClick} text="Click me" />

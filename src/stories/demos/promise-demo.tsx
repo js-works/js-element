@@ -1,31 +1,29 @@
-import { h, prop, stateful } from '../../main/js-elements'
-import { $promise, $state } from '../../main/js-elements-ext'
+import { component, h, prop } from 'js-elements'
+import { withPromise, addState } from 'js-elements/ext'
 
-const DataLoader = stateful('data-loader', {
+const DataLoader = component('data-loader', {
   props: {
     loadingText: prop.str.opt('Loading...'),
     finishText: prop.str.opt('Finished!'),
     key: prop.num.opt()
-  },
-
-  main(c, props) {
-    const res = $promise(
-      c,
-      () => wait(4000),
-      () => [props.key]
-    )
-
-    return () =>
-      res.state === 'pending' ? (
-        <div>{props.loadingText}</div>
-      ) : (
-        <div>{props.finishText}</div>
-      )
   }
+}).main((c, props) => {
+  const res = withPromise(
+    c,
+    () => wait(4000),
+    () => [props.key]
+  )
+
+  return () =>
+    res.state === 'pending' ? (
+      <div>{props.loadingText}</div>
+    ) : (
+      <div>{props.finishText}</div>
+    )
 })
 
-stateful('promise-demo', (c) => {
-  const [state, setState] = $state(c, {
+component('promise-demo', (c) => {
+  const [state, setState] = addState(c, {
     key: 0,
     loadingText: 'Loading...',
     finishText: 'Finished!'

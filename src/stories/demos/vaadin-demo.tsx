@@ -1,12 +1,10 @@
-import { h, prop, stateless } from '../../main/js-elements'
+import { component, h, prop } from 'js-elements'
 import DataExplorer from './components/data/DataExplorer'
 
-stateless('vaadin-demo', {
-  render() {
-    return (
-      <div class="root">
-        <DataExplorer columns={[]} />
-      </div>
-    )
-  }
+component('vaadin-demo', () => {
+  return () => (
+    <div class="root">
+      <DataExplorer columns={[]} />
+    </div>
+  )
 })

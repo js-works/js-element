@@ -5,22 +5,26 @@ A R&D project to evaluate an alternative approach to define custom elements.
 #### Disclaimer:
 
 Project is in an early state ...
-and btw: It is currently not meant to be used in production.
+and btw: It is currently not meant to ever be used in production.
 
-## Example
+## Examples
 
-### Stateless component
+### Stateless component (not a real API difference to stateful components - just a pattern)
 
-```js
-import { h, prop, render, stateless } from 'js-elements'
+```jsx
+import { component, h, prop, render } from 'js-elements'
 
-const SayHello = stateless('say-hello', {
+const SayHello = component('say-hello', {
   props: {
     salutation: prop.str.opt('Hello')
     name: prop.str.opt('World')
-  },
-})((props) => {
-  return <div>{props.salutation}, ${props.name}!</div>
+  }
+}).main((c, props) => {
+  return () => (
+    <div>
+      {props.salutation}, {props.name}!
+    </div>
+  )
 })
 
 render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
@@ -28,21 +32,20 @@ render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
 
 ### Stateful component
 
-```js
-import { h, prop, render, stateful } from 'js-elements'
+```jsx
+import { component, h, prop, render } from 'js-elements'
 import counterStyles from './counter.css'
 
-const Counter = stateful('demo-counter', {
+const Counter = component('demo-counter', {
   props: {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
-  },
+  }
+}).main((c, props) => {
+  let count = 0
+  const onIncrement = c.updateFn(() => ++count)
 
-  styles: simpleCounterStyles
-})((c, props) => {
-  const [state, setState] = c.addState({ count: props.initialCount })
-  const onIncrement = () => setState('count', (it) => it + 1)
-
+  c.addStyles(counterStyles)
   c.afterMount(() => console.log(`"${props.label}" has been mounted`))
   c.beforeUnmount(() => console.log(`Unmounting "${props.label}"`))
 
@@ -66,14 +69,15 @@ render(<Counter />, '#app')
 
 _js-elements_ also supports so-called "extensions" which are
 functions similar to React hooks (but without all the magic).
-The naming pattern for these "extensions" is `$xyz`.
+All of those "extensions" can be written completely in userland
+(means there are no such things like "core extensions").
 
 ```jsx
-import { h, stateful } from 'js-elements'
-import { $time } from 'js-elements/ext'
+import { component, h } from 'js-elements'
+import { withTime } from 'js-elements/ext'
 
-const Clock = stateful('demo-clock', (c) => {
-  const getTime = $time(c, 1000, () => new Date().toLocaleTimeString())
+const Clock = component('demo-clock', (c) => {
+  const getTime = withTime(c, 1000, () => new Date().toLocaleTimeString())
   return () => <div>Current time: {getTime()}</div>
 })
 ```

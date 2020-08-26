@@ -20,7 +20,6 @@ const commonPropConverters: Record<string, PropConverter<any>> = {
 export function createBaseElementClass(
   name: string,
   propsConfig: PropsConfig | null,
-  styles: string | string[] | (() => string | string[]) | null,
   methodNames: string[] | null
 ) {
   const propNames = propsConfig ? Object.keys(propsConfig) : []
@@ -57,6 +56,7 @@ export function createBaseElementClass(
 
     _onPropChange: (propName: string, value: any) => void
     _onContentElementCreated: (contentElement: Element) => void
+    _onStylesElementCreated: (stylesElement: Element) => void
     _performRefresh: Action
     _getMethodByName: (name: string) => Function | null
     _properties: Record<string, any> = {}
@@ -68,12 +68,14 @@ export function createBaseElementClass(
     constructor(
       onPropChange: (propName: string, value: any) => void,
       onContentElementCreated: (contentElement: Element) => void,
+      onStylesElementCreated: (stylesElement: Element) => void,
       performRefresh: () => void,
       getMethodByName: (name: string) => Function | null
     ) {
       super()
       this._onPropChange = onPropChange
       this._onContentElementCreated = onContentElementCreated
+      this._onStylesElementCreated = onStylesElementCreated
       this._performRefresh = performRefresh
       this._getMethodByName = getMethodByName
 
@@ -125,21 +127,7 @@ export function createBaseElementClass(
       root.appendChild(stylesElem)
       root.appendChild(contentElem)
       this._onContentElementCreated(contentElem)
-
-      if (styles) {
-        if (typeof styles === 'function') {
-          styles = styles()
-        }
-
-        const css = Array.isArray(styles)
-          ? styles.join('\n\n/* =============== */\n\n')
-          : styles
-
-        const styleElem = document.createElement('style')
-        styleElem.appendChild(document.createTextNode(css))
-        stylesElem.appendChild(styleElem)
-      }
-
+      this._onStylesElementCreated(stylesElem)
       this._performRefresh()
     }
 

@@ -1,15 +1,16 @@
-import { h, prop, stateful } from '../../../../main/js-elements'
+import { component, h, prop } from 'js-elements'
+import { addState } from 'js-elements/ext'
 import DataTable from './DataTable'
 import Paginator from '../pagination/Paginator'
 import PaginationInfo from '../pagination/PaginationInfo'
 
-export default stateful('jsc-data-explorer', {
+export default component('jsc-data-explorer', {
   props: {
     title: prop.str.opt(),
     columns: prop.arr.req()
   }
-})((c, props) => {
-  const [state, setState] = c.addState({
+}).main((c, props) => {
+  const [state, setState] = addState(c, {
     pageIndex: 0,
     pageSize: 25,
     totalItemCount: 1253
