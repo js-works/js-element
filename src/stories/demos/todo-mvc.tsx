@@ -2,12 +2,12 @@ import { component, h, prop } from 'js-elements'
 import { useActions, useState, useStore, useSelectors } from 'js-elements/ext'
 import { defineMessages } from 'js-messages'
 import { createReducer, on } from 'js-reducers'
+import { createStore } from 'js-stores'
 import { update } from 'js-immutables'
+import { createSelector } from 'reselect'
 
 // === constants =====================================================
 
-const ENTER_KEY = 13
-const ESC_KEY = 27
 const STORAGE_ID = 'todomvc/js-elements'
 
 // === types =========================================================
@@ -19,9 +19,14 @@ type Todo = {
 }
 
 enum TodoFilter {
-  All = '',
-  Active = 'active',
+  All = 'all',
+  Open = 'open',
   Completed = 'completed'
+}
+
+type TodoState = {
+  todos: Todo[]
+  filter: TodoFilter
 }
 
 // === messages ======================================================
@@ -34,12 +39,12 @@ const TodoMsg = defineMessages('todo', {
   toggleAll: (completed: boolean) => ({ completed }),
   clearCompleted: null,
   setFilter: (filter: TodoFilter) => ({ filter })
-}) as any // TODO!!!!!!!!
+})
 
 // === reducer =======================================================
 
-const initialTodoState = {
-  todos: [] as Todo[],
+const initialTodoState: TodoState = {
+  todos: [],
   filter: TodoFilter.All
 }
 
@@ -85,6 +90,31 @@ const todoReducer = createReducer(initialTodoState, [
   )
 ])
 
+// === selectors =====================================================
+
+const TodoSel = {
+  activeFilter: (state: TodoState) => state.filter,
+
+  filteredTodos: (state: TodoState) => {
+    switch (state.filter) {
+      case TodoFilter.Open:
+        return state.todos.filter((todo) => !todo.completed)
+
+      case TodoFilter.Completed:
+        return state.todos.filter((todo) => todo.completed)
+
+      default:
+        return state.todos
+    }
+  },
+
+  openTodos: (state: TodoState) =>
+    state.todos.filter((todo) => !todo.completed),
+
+  completedTodos: (state: TodoState) =>
+    state.todos.filter((todo) => todo.completed)
+}
+
 // === components ====================================================
 
 const Header = component('todo-header', (c) => {
@@ -93,7 +123,7 @@ const Header = component('todo-header', (c) => {
   const onInput = (ev: any) => setState('title', ev.target.value)
 
   const onKeyDown = (ev: any) => {
-    if (ev.keyCode === ENTER_KEY && state.title.trim()) {
+    if (ev.keyCode === 13 && state.title.trim()) {
       const title1 = state.title.trim()
       ev.preventDefault()
       setState('title', '')
@@ -121,7 +151,7 @@ const Item = component('todo-item', {
   props: {
     todo: prop.obj.as<Todo>().req()
   }
-})((c, props) => {
+}).main((c, props) => {
   const todoAct = useActions(c, TodoMsg)
 
   const [state, setState] = useState(c, {
@@ -139,7 +169,7 @@ const Item = component('todo-item', {
   }
 
   const onKeyDown = (ev: any) => {
-    if (ev.keyCode === ENTER_KEY || ev.keyCode === ESC_KEY) {
+    if (ev.keyCode === 13 || ev.keyCode === 27) {
       setState({
         active: false,
         title: state.title.trim()
@@ -154,7 +184,7 @@ const Item = component('todo-item', {
   }
 
   const onBlur = () => {
-    setState({ active: false })
+    setState('active', false)
 
     if (state.title) {
       todoAct.edit(props.todo.id, state.title)
@@ -198,22 +228,11 @@ const Item = component('todo-item', {
   }
 })
 
-const Main = component('todo-main', {
-  props: {
-    todos: prop.arr.as<Todo[]>().req(),
-    filter: prop.str.as<TodoFilter>().req()
-  }
-})((c, props) => {
+const Main = component('todo-main', (c) => {
+  const todoSel = useSelectors(c, TodoSel)
   const todoAct = useActions(c, TodoMsg)
-  const completed = props.todos.every((todo) => todo.completed)
-  const onToggleAll = () => todoAct.toggleAll(!completed)
-
-  let filteredTodos =
-    props.filter === TodoFilter.Active
-      ? props.todos.filter((todo) => !todo.completed)
-      : props.filter === TodoFilter.Completed
-      ? props.todos.filter((todo) => todo.completed)
-      : props.todos
+  const hasCompletedTodos = true // TODO
+  const onToggleAll = () => todoAct.toggleAll(!hasCompletedTodos)
 
   return () => (
     <section class="main">
@@ -222,11 +241,11 @@ const Main = component('todo-main', {
         class="toggle-all"
         type="checkbox"
         onClick={onToggleAll}
-        checked={completed}
+        checked={hasCompletedTodos}
       />
       <label for="toggle-all">Mark all as complete</label>
       <ul class="todo-list">
-        {filteredTodos.map((todo) => (
+        {todoSel.filteredTodos.map((todo: Todo) => (
           <Item todo={todo} />
         ))}
       </ul>
@@ -234,13 +253,10 @@ const Main = component('todo-main', {
   )
 })
 
-const Filters = component('todo-filters', {
-  props: {
-    filter: prop.str.as<TodoFilter>().req()
-  }
-})((c, props) => {
+const Filters = component('todo-filters', (c) => {
   const todoAct = useActions(c, TodoMsg)
-  const onActiveFilter = (ev: any) => setFilter(TodoFilter.Active, ev)
+  const todoSel = useSelectors(c, TodoSel)
+  const onOpenFilter = (ev: any) => setFilter(TodoFilter.Open, ev)
   const onCompletedFilter = (ev: any) => setFilter(TodoFilter.Completed, ev)
   const onNoFilter = (ev: any) => setFilter(TodoFilter.All, ev)
 
@@ -253,7 +269,7 @@ const Filters = component('todo-filters', {
     <ul class="filters">
       <li>
         <a
-          class={props.filter === '' ? 'selected' : ''}
+          class={todoSel.activeFilter === TodoFilter.All ? 'selected' : ''}
           onClick={onNoFilter}
           href="#/"
         >
@@ -262,8 +278,8 @@ const Filters = component('todo-filters', {
       </li>
       <li>
         <a
-          class={props.filter === 'active' ? 'selected' : ''}
-          onClick={onActiveFilter}
+          class={todoSel.activeFilter === TodoFilter.Open ? 'selected' : ''}
+          onClick={onOpenFilter}
           href="#/active"
         >
           Active
@@ -271,7 +287,9 @@ const Filters = component('todo-filters', {
       </li>
       <li>
         <a
-          class={props.filter === 'completed' ? 'selected' : ''}
+          class={
+            todoSel.activeFilter === TodoFilter.Completed ? 'selected' : ''
+          }
           onClick={onCompletedFilter}
           href="#/completed"
         >
@@ -282,25 +300,21 @@ const Filters = component('todo-filters', {
   )
 })
 
-const Footer = component('todo-footer', {
-  props: {
-    todos: prop.arr.as<Todo[]>().req(),
-    filter: prop.str.as<TodoFilter>().req()
-  }
-})((c, props) => {
+const Footer = component('todo-footer', (c) => {
   const todoAct = useActions(c, TodoMsg)
-  const completed = props.todos.filter((todo: Todo) => todo.completed).length
-  const remaining = props.todos.length - completed
+  const hasCompletedTodos = true // TODO
+  const countOpenTodos = 42 as any // TODO
   const onClearCompleted = () => todoAct.clearCompleted()
 
   return () => (
     <footer class="footer">
       <span class="todo-count">
-        <strong>${remaining}</strong> ${remaining === 1 ? 'item' : 'items'}
+        <strong>${countOpenTodos}</strong>
+        {countOpenTodos === 1 ? 'item' : 'items'}
         left
       </span>
-      <Filters filter={props.filter} />
-      {!completed ? (
+      <Filters />
+      {countOpenTodos === 0 ? (
         ''
       ) : (
         <button class="clear-completed" onClick={onClearCompleted}>
@@ -312,51 +326,14 @@ const Footer = component('todo-footer', {
 })
 
 const TodoMvc = component('todo-mvc', (c) => {
-  const [state, setState] = useState(c, {
-    todos: [] as Todo[],
-    filter: TodoFilter.All
-  })
+  const store = createStore(todoReducer, initialTodoState)
+  useStore(c, store)
 
-  let nextTodoId = 0
-
-  c.afterMount(() => {
-    try {
-      const storedTodos = JSON.parse(localStorage.getItem(STORAGE_KEY)!)
-
-      if (Array.isArray(storedTodos) && storedTodos.length) {
-        setState({ todos: storedTodos })
-        nextTodoId = Math.max(...storedTodos.map((todo) => todo.id)) + 1
-      } else {
-        localStorage.removeItem(STORAGE_KEY)
-      }
-    } catch (err) {
-      localStorage.removeItem(STORAGE_KEY)
-    }
-  })
-
-  return () => {
-    let todoBody
-
-    if (state.todos.length > 0) {
-      todoBody = (
-        <div>
-          <Main todos={state.todos} filter={state.filter} />
-          <Footer todos={state.todos} filter={state.filter} />
-        </div>
-      )
-    }
-
-    return (
-      <div>
-        <Header />
-        {todoBody}
-      </div>
-    )
-  }
+  return () => (
+    <div>
+      <Header />
+      <Main />
+      <Footer />
+    </div>
+  )
 })
-
-const STORAGE_KEY = 'todo-mvc'
-
-function save(todos: Todo[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(todos))
-}

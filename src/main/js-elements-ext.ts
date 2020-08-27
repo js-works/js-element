@@ -1,8 +1,32 @@
+// === constants =====================================================
+
+const STORE_KEY = 'js-elements::ext::store'
+
 // === types =========================================================
 
-type Action = () => void
+type Task = () => void
 type State = Record<string, any>
+
+type StateUpdater<T extends Record<string, any>> = {
+  (newState: Partial<T>): void
+  (stateUpdate: (oldState: T) => Partial<T>): void
+  (key: keyof T, newValue: T[typeof key]): void
+  (key: keyof T, valueUpdate: (oldValue: T[typeof key]) => T[typeof key]): void
+}
+
 type Message = { type: string } & Record<string, any>
+
+type MessageCreators = {
+  [key: string]: (...args: any[]) => Message
+}
+
+type Selectors<S extends State> = {
+  [key: string]: (state: S) => any
+}
+
+type SelectorsOf<S extends State, U extends Selectors<S>> = {
+  [K in keyof U]: U[K] extends (state: S) => infer R ? R : never
+}
 
 export interface Ctrl {
   getName(): string
@@ -18,6 +42,12 @@ export interface Ctrl {
   addStyles(styles: string | string[]): void
   send(message: Message): void
   receive(type: string, handler: (message: Message) => void): () => void
+}
+
+type Store<S extends State> = {
+  getState(): State
+  subscribe(listener: () => void): () => void
+  dispatch(msg: Message): void
 }
 
 // === createExtension ===============================================
@@ -79,13 +109,6 @@ export const useValue = createExtension('useValue', function <T>(
 })
 
 // === useState ======================================================--
-
-type StateUpdater<T extends Record<string, any>> = {
-  (newState: Partial<T>): void
-  (stateUpdate: (oldState: T) => Partial<T>): void
-  (key: keyof T, newValue: T[typeof key]): void
-  (key: keyof T, valueUpdate: (oldValue: T[typeof key]) => T[typeof key]): void
-}
 
 export const useState = createExtension('useState', function <
   T extends Record<string, any>
@@ -156,7 +179,7 @@ export const useEffect = createExtension('useEffect', function (
   getDeps?: null | (() => any[])
 ): void {
   let oldDeps: any[] | null = null,
-    cleanup: Action | null | undefined | void
+    cleanup: Task | null | undefined | void
 
   if (getDeps === null) {
     c.afterMount(() => {
@@ -226,13 +249,13 @@ export const useCtx = createExtension('useCtx', function <
 
 export const useInterval = createExtension(
   'useInterval',
-  (c, action: Action, delay: number | (() => number)) => {
+  (c, task: Task, delay: number | (() => number)) => {
     const getDelay = typeof delay === 'function' ? delay : () => delay
 
     useEffect(
       c,
       () => {
-        const id = setInterval(action, getDelay())
+        const id = setInterval(task, getDelay())
 
         return () => clearInterval(id)
       },
@@ -374,29 +397,95 @@ export const useMousePosition = createExtension(
   }
 )
 
-// === useStore =================================================
+// === useStore ======================================================
 
-export const useStore = createExtension('useStore', (...args: any[]): any => {
-  // TODO
-})
+export const useStore = createExtension(
+  'useStore',
+  (c, store: Store<any>): void => {
+    c.receive(STORE_KEY, (msg: any /* TODO */) => {
+      msg.payload.setStore(store)
+    })
+  }
+)
 
 // === useActions ======================================================
 
-export const useActions = createExtension(
-  'useActions',
-  (...args: any[]): any => {
-    // TODO
+type ActionsOf<C extends MessageCreators> = {
+  [K in keyof C]: C[K] extends (...args: infer A) => any
+    ? (...args: A) => void
+    : never
+}
+
+export const useActions = createExtension('useActions', function <
+  C extends MessageCreators
+>(c: Ctrl, msgCreators: C): ActionsOf<C> {
+  let store: Store<any> | null = null
+
+  const ret: any = {}
+
+  for (const key of Object.keys(msgCreators)) {
+    ret[key] = (...args: any[]) => {
+      if (!store) {
+        c.send({
+          type: STORE_KEY,
+
+          payload: {
+            setStore(st: Store<any>) {
+              store = st
+            }
+          }
+        })
+      }
+
+      if (!store) {
+        throw new Error(`Store for actions not available (-> ${c.getName()})`)
+      }
+
+      store.dispatch(msgCreators[key](...args))
+    }
   }
-)
+
+  return ret
+})
 
 // === useSelect =======================================================
 
-export const useSelectors = createExtension(
-  'useSelectors',
-  (...args: any[]): any => {
-    // TODO
+export const useSelectors = createExtension('useSelectors', function <
+  U extends Selectors<any>
+>(c: Ctrl, selectors: U): SelectorsOf<any, U> {
+  let store: Store<any> | null = null
+
+  const ret: any = {}
+
+  for (const key of Object.keys(selectors)) {
+    Object.defineProperty(ret, key, {
+      get: () => {
+        if (!store) {
+          c.send({
+            type: STORE_KEY,
+
+            payload: {
+              setStore(st: Store<any>) {
+                console.log('setting store', c.getName(), st)
+                store = st
+              }
+            }
+          })
+        }
+
+        if (!store) {
+          throw new Error(
+            `Store for selectors not available (-> ${c.getName()})`
+          )
+        }
+
+        return selectors[key](store.getState())
+      }
+    })
   }
-)
+
+  return ret
+})
 
 // === locals ========================================================
 

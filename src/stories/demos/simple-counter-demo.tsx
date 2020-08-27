@@ -6,7 +6,7 @@ const SimpleCounter = component('simple-counter', {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
   }
-})(function (c, props) {
+}).main((c, props) => {
   const [state, setState] = useState(c, {
     count: props.initialCount
   })

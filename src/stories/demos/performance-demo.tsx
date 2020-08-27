@@ -13,7 +13,7 @@ const Tile = component('x-tile', {
     color: prop.str.opt('white'),
     width: prop.num.opt(3)
   }
-})((c, props) => {
+}).main((c, props) => {
   return () => {
     /*
     const style = {
@@ -45,7 +45,7 @@ const TileRow = component('x-tile-row', {
     colors: prop.obj.opt(prefs.colors as any), // TODO!!!!
     loop: prop.num.req() // TODO!!!
   }
-})((c, props) => {
+}).main((c, props) => {
   return () => {
     const tiles = []
 
@@ -67,7 +67,7 @@ const SpeedTest = component('x-speed-test', {
     tileWidth: prop.num.opt(3),
     framesPerSecond: prop.num.opt(prefs.framesPerSecond)
   }
-})((c, props) => {
+}).main((c, props) => {
   let loop = 0
 
   let intervalId = null as any,

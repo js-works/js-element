@@ -36,37 +36,41 @@ render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
 import { component, h, prop, render } from 'js-elements'
 import counterStyles from './counter.css'
 
-const Counter = component('demo-counter', {
-  props: {
-    initialCount: prop.num.opt(0),
-    label: prop.str.opt('Counter')
+const Counter = component(
+  'demo-counter',
+  {
+    props: {
+      initialCount: prop.num.opt(0),
+      label: prop.str.opt('Counter')
+    }
+  },
+  (c, props) => {
+    let count = 0
+
+    const onClick = () => {
+      ++count
+      c.refresh()
+    }
+
+    c.addStyles(counterStyles)
+    c.afterMount(() => console.log(`"${props.label}" has been mounted`))
+    c.beforeUnmount(() => console.log(`Unmounting "${props.label}"`))
+
+    c.effect(
+      () => console.log(`Value of "${props.label}": ${count}`),
+      () => [count]
+    )
+
+    return () => (
+      <div class="counter">
+        <label class="label">{props.label}: </label>
+        <button class="button" onClick={onClick}>
+          {count}
+        </button>
+      </div>
+    )
   }
-}, (c, props) => {
-  let count = 0
-  
-  const onClick = () => {
-    ++count
-    c.refresh()
-  }
-
-  c.addStyles(counterStyles)
-  c.afterMount(() => console.log(`"${props.label}" has been mounted`))
-  c.beforeUnmount(() => console.log(`Unmounting "${props.label}"`))
-
-  c.effect(
-    () => console.log(`Value of "${props.label}": ${count}`),
-    () => [count]
-  )
-
-  return () => (
-    <div class="counter">
-      <label class="label">{props.label}: </label>
-      <button class="button" onClick={onClick}>
-        {count}
-      </button>
-    </div>
-  )
-})
+)
 
 render(<Counter />, '#app')
 ```
@@ -75,7 +79,7 @@ Unfortunatlely, if you are using the prettier code formatter, the
 above shown syntax will be reformatted in a way that you may not
 necessarily want.
 Therefore the following more prettier friendly alternative syntax
-is also allowed:
+is also allowed (it's a litte fluent API/builder pattern):
 
 ```jsx
 import { component, h, prop } from 'js-elements'
@@ -85,9 +89,9 @@ export default component('demo-counter', {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
   }
-})(function (c, props) {
+}).main((c, props) => {
   let count = 0
-  
+
   const onClick = () => {
     ++count
     c.refresh()
@@ -96,14 +100,11 @@ export default component('demo-counter', {
   return () => (
     <div>
       <label>{props.label}: </label>
-      <button onClick={onClick}>
-        {count}
-      </button>
+      <button onClick={onClick}>{count}</button>
     </div>
   )
 })
 ```
-
 
 _js-elements_ also supports so-called "extensions" which are
 functions similar to React hooks (but without all the magic).
