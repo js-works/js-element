@@ -19,7 +19,7 @@ const SayHello = component('say-hello', {
     salutation: prop.str.opt('Hello')
     name: prop.str.opt('World')
   }
-})(function (c, props) {
+}, (c, props) => {
   return () => (
     <div>
       {props.salutation}, {props.name}!
@@ -41,9 +41,13 @@ const Counter = component('demo-counter', {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
   }
-})(function (c, props) {
+}, (c, props) => {
   let count = 0
-  const onIncrement = c.updateFn(() => ++count)
+  
+  const onClick = () => {
+    ++count
+    c.refresh()
+  }
 
   c.addStyles(counterStyles)
   c.afterMount(() => console.log(`"${props.label}" has been mounted`))
@@ -57,7 +61,7 @@ const Counter = component('demo-counter', {
   return () => (
     <div class="counter">
       <label class="label">{props.label}: </label>
-      <button class="button" onClick={onIncrement}>
+      <button class="button" onClick={onClick}>
         {count}
       </button>
     </div>
@@ -66,6 +70,40 @@ const Counter = component('demo-counter', {
 
 render(<Counter />, '#app')
 ```
+
+Unfortunatlely, if you are using the prettier code formatter, the
+above shown syntax will be reformatted in a way that you may not
+necessarily want.
+Therefore the following more prettier friendly alternative syntax
+is also allowed:
+
+```jsx
+import { component, h, prop } from 'js-elements'
+
+export default component('demo-counter', {
+  props: {
+    initialCount: prop.num.opt(0),
+    label: prop.str.opt('Counter')
+  }
+})(function (c, props) {
+  let count = 0
+  
+  const onClick = () => {
+    ++count
+    c.refresh()
+  }
+
+  return () => (
+    <div>
+      <label>{props.label}: </label>
+      <button onClick={onClick}>
+        {count}
+      </button>
+    </div>
+  )
+})
+```
+
 
 _js-elements_ also supports so-called "extensions" which are
 functions similar to React hooks (but without all the magic).

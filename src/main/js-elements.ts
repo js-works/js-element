@@ -36,12 +36,28 @@ function component<PC extends PropsConfig>(
     props?: PC
     slots?: string[]
     methods?: string[]
+  },
+
+  main: (ctrl: Ctrl, props: InternalPropsOf<PC>) => () => VNode
+): Component<ExternalPropsOf<PC>>
+
+function component<PC extends PropsConfig>(
+  name: string,
+
+  config: {
+    props?: PC
+    slots?: string[]
+    methods?: string[]
   }
 ): (
   main: (ctrl: Ctrl, props: InternalPropsOf<PC>) => () => VNode
 ) => Component<ExternalPropsOf<PC>>
 
-function component(name: string, sndArg?: any): any {
+function component(name: string, sndArg?: any, thirdArg?: any): any {
+  if (arguments.length > 2) {
+    return component(name, sndArg)(thirdArg)
+  }
+
   const sndArgIsFunction = typeof sndArg === 'function'
 
   if (sndArgIsFunction) {
