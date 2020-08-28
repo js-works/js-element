@@ -423,25 +423,23 @@ export const useActions = createExtension('useActions', function <
 
   const ret: any = {}
 
+  c.send({
+    type: STORE_KEY,
+
+    payload: {
+      setStore(st: Store<any>) {
+        store = st
+      }
+    }
+  })
+
+  if (!store) {
+    throw new Error(`Store for actions not available (-> ${c.getName()})`)
+  }
+
   for (const key of Object.keys(msgCreators)) {
     ret[key] = (...args: any[]) => {
-      if (!store) {
-        c.send({
-          type: STORE_KEY,
-
-          payload: {
-            setStore(st: Store<any>) {
-              store = st
-            }
-          }
-        })
-      }
-
-      if (!store) {
-        throw new Error(`Store for actions not available (-> ${c.getName()})`)
-      }
-
-      store.dispatch(msgCreators[key](...args))
+      store!.dispatch(msgCreators[key](...args))
     }
   }
 
@@ -457,28 +455,30 @@ export const useSelectors = createExtension('useSelectors', function <
 
   const ret: any = {}
 
+  c.send({
+    type: STORE_KEY,
+
+    payload: {
+      setStore(st: Store<any>) {
+        store = st
+      }
+    }
+  })
+
+  if (!store) {
+    throw new Error(`Store for selectors not available (-> ${c.getName()})`)
+  }
+
+  const unsubscribe = store!.subscribe(() => {
+    c.refresh()
+  })
+
+  c.beforeUnmount(unsubscribe)
+
   for (const key of Object.keys(selectors)) {
     Object.defineProperty(ret, key, {
       get: () => {
-        if (!store) {
-          c.send({
-            type: STORE_KEY,
-
-            payload: {
-              setStore(st: Store<any>) {
-                store = st
-              }
-            }
-          })
-        }
-
-        if (!store) {
-          throw new Error(
-            `Store for selectors not available (-> ${c.getName()})`
-          )
-        }
-
-        return selectors[key](store.getState())
+        return selectors[key](store!.getState())
       }
     })
   }

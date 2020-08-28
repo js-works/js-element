@@ -139,8 +139,10 @@ const TodoSel = {
 // === components ====================================================
 
 const Header = component('todo-header', (c) => {
-  const todoAct = useActions(c, TodoMsg)
+  c.addStyles(styles)
+
   const [state, setState] = useState(c, { title: '' })
+  const todoAct = useActions(c, TodoMsg)
   const onInput = (ev: any) => setState('title', ev.target.value)
 
   const onKeyDown = (ev: any) => {
@@ -152,8 +154,6 @@ const Header = component('todo-header', (c) => {
       todoAct.create(title1)
     }
   }
-
-  c.addStyles(styles)
 
   return () => (
     <header class="header">
@@ -175,13 +175,14 @@ const Item = component('todo-item', {
     todo: prop.obj.as<Todo>().req()
   }
 })((c, props) => {
-  const todoAct = useActions(c, TodoMsg)
+  c.addStyles(styles)
 
   const [state, setState] = useState(c, {
     active: false,
     title: props.todo.title
   })
 
+  const todoAct = useActions(c, TodoMsg)
   const onToggle = (ev: any) => todoAct.toggle(props.todo.id, ev.target.checked)
   const onDestroy = () => todoAct.destroy(props.todo.id)
   const onInput = (ev: any) => setState({ title: ev.target.value })
@@ -215,8 +216,6 @@ const Item = component('todo-item', {
       todoAct.destroy(props.todo.id)
     }
   }
-
-  c.addStyles(styles)
 
   return () => {
     const classes: string[] = []
@@ -254,12 +253,12 @@ const Item = component('todo-item', {
 })
 
 const Main = component('todo-main', (c) => {
+  c.addStyles(styles)
+
   const todoSel = useSelectors(c, TodoSel)
   const todoAct = useActions(c, TodoMsg)
   const hasCompletedTodos = true // TODO
   const onToggleAll = () => todoAct.toggleAll(!hasCompletedTodos)
-
-  c.addStyles(styles)
 
   return () => (
     <section class="main">
@@ -281,6 +280,8 @@ const Main = component('todo-main', (c) => {
 })
 
 const Filters = component('todo-filters', (c) => {
+  c.addStyles(styles)
+
   const todoAct = useActions(c, TodoMsg)
   const todoSel = useSelectors(c, TodoSel)
   const onOpenFilter = (ev: any) => setFilter(TodoFilter.Open, ev)
@@ -291,8 +292,6 @@ const Filters = component('todo-filters', (c) => {
     ev.preventDefault()
     todoAct.setFilter(filter)
   }
-
-  c.addStyles(styles)
 
   return () => (
     <ul class="filters">
@@ -330,22 +329,21 @@ const Filters = component('todo-filters', (c) => {
 })
 
 const Footer = component('todo-footer', (c) => {
+  c.addStyles(styles)
+
   const todoAct = useActions(c, TodoMsg)
-  const hasCompletedTodos = true // TODO
-  const countOpenTodos = 42 as any // TODO
+  const todoSel = useSelectors(c, TodoSel)
   const onClearCompleted = () => todoAct.clearCompleted()
 
   return () => (
     <footer class="footer">
       <span class="todo-count">
-        <strong>{countOpenTodos}</strong>
-        {countOpenTodos === 1 ? 'item' : 'items'}
-        left
+        <strong>{todoSel.openTodos.length} </strong>
+        {todoSel.openTodos.length === 1 ? 'item' : 'items'}
+        {' left '}
       </span>
       <Filters />
-      {countOpenTodos === 0 ? (
-        ''
-      ) : (
+      {todoSel.completedTodos.length > 0 && (
         <button class="clear-completed" onClick={onClearCompleted}>
           Clear completed
         </button>
@@ -356,8 +354,13 @@ const Footer = component('todo-footer', (c) => {
 
 const TodoMvc = component('todo-mvc', (c) => {
   const store = createStore(todoReducer, initialTodoState)
+
   store.dispatch(TodoMsg.loadTodoState())
   useStore(c, store)
+
+  store.subscribe(() => {
+    console.log('State:', store.getState())
+  })
 
   return () => (
     <div>

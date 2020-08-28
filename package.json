@@ -41,7 +41,7 @@
     "@rollup/plugin-typescript": "^5.0.2",
     "@storybook/addon-actions": "^6.0.16",
     "@storybook/addon-links": "^6.0.16",
-    "@storybook/addons": "^6.0.16",
+    "@storybook/addons": "^6.0.20",
     "@storybook/html": "^6.0.16",
     "@types/chai": "^4.2.12",
     "@types/mocha": "^8.0.3",
