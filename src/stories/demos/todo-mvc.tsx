@@ -4,8 +4,7 @@ import { defineMessages } from 'js-messages'
 import { createReducer, on } from 'js-reducers'
 import { createStore } from 'js-stores'
 import { update } from 'js-immutables'
-import { createSelector } from 'reselect'
-
+import classNames from 'classnames'
 import styles from './styles/todomvc.styles'
 
 // === constants =====================================================
@@ -48,24 +47,7 @@ const TodoMsg = defineMessages('todo', {
 // === reducer =======================================================
 
 const initialTodoState: TodoState = {
-  todos: [
-    {
-      id: 1,
-      title: 'Task 1',
-      completed: false
-    },
-    {
-      id: 2,
-      title: 'Task 2',
-      completed: true
-    },
-    {
-      id: 3,
-      title: 'Task 3',
-      completed: false
-    }
-  ],
-
+  todos: [],
   filter: TodoFilter.All
 }
 
@@ -134,6 +116,20 @@ const TodoSel = {
 
   completedTodos: (state: TodoState) =>
     state.todos.filter((todo) => todo.completed)
+}
+
+// === service interfaces ============================================
+
+interface StorageService {
+  save(key: string, data: any): void
+  load(key: string, defaultValue?: any): any
+}
+
+// === service implementations =======================================
+
+class LocalStorageService implements StorageService {
+  save(key: string, data: any) {}
+  load(key: string, defaultValue?: any): any {}
 }
 
 // === components ====================================================
@@ -218,18 +214,13 @@ const Item = component('todo-item', {
   }
 
   return () => {
-    const classes: string[] = []
-
-    if (state.active) {
-      classes.push('editing')
-    }
-
-    if (props.todo.completed) {
-      classes.push('completed')
-    }
+    const classes = classNames({
+      editing: state.active,
+      completed: props.todo.completed
+    })
 
     return (
-      <li class={classes.join(' ')}>
+      <li class={classes}>
         <div class="view">
           <input
             class="toggle"
@@ -284,46 +275,29 @@ const Filters = component('todo-filters', (c) => {
 
   const todoAct = useActions(c, TodoMsg)
   const todoSel = useSelectors(c, TodoSel)
-  const onOpenFilter = (ev: any) => setFilter(TodoFilter.Open, ev)
-  const onCompletedFilter = (ev: any) => setFilter(TodoFilter.Completed, ev)
-  const onNoFilter = (ev: any) => setFilter(TodoFilter.All, ev)
 
-  const setFilter = (filter: TodoFilter, ev: any) => {
+  function onFilterClick(filter: TodoFilter, ev: any) {
     ev.preventDefault()
     todoAct.setFilter(filter)
   }
 
+  function renderFilter(filter: TodoFilter, path: string, title: string) {
+    return (
+      <a
+        class={todoSel.activeFilter === filter ? 'selected' : ''}
+        onClick={(ev: any) => onFilterClick(filter, ev)}
+        href={`#/${path}`}
+      >
+        {title}
+      </a>
+    )
+  }
+
   return () => (
     <ul class="filters">
-      <li>
-        <a
-          class={todoSel.activeFilter === TodoFilter.All ? 'selected' : ''}
-          onClick={onNoFilter}
-          href="#/"
-        >
-          All
-        </a>
-      </li>
-      <li>
-        <a
-          class={todoSel.activeFilter === TodoFilter.Open ? 'selected' : ''}
-          onClick={onOpenFilter}
-          href="#/active"
-        >
-          Active
-        </a>
-      </li>
-      <li>
-        <a
-          class={
-            todoSel.activeFilter === TodoFilter.Completed ? 'selected' : ''
-          }
-          onClick={onCompletedFilter}
-          href="#/completed"
-        >
-          Completed
-        </a>
-      </li>
+      <li>{renderFilter(TodoFilter.All, '', 'All')}</li>
+      <li>{renderFilter(TodoFilter.Open, 'active', 'Active')}</li>
+      <li>{renderFilter(TodoFilter.Completed, 'completed', 'Completed')}</li>
     </ul>
   )
 })
@@ -343,7 +317,7 @@ const Footer = component('todo-footer', (c) => {
         {' left '}
       </span>
       <Filters />
-      {todoSel.completedTodos.length > 0 && (
+      {todoSel.completedTodos.length === 0 || (
         <button class="clear-completed" onClick={onClearCompleted}>
           Clear completed
         </button>
@@ -357,10 +331,6 @@ const TodoMvc = component('todo-mvc', (c) => {
 
   store.dispatch(TodoMsg.loadTodoState())
   useStore(c, store)
-
-  store.subscribe(() => {
-    console.log('State:', store.getState())
-  })
 
   return () => (
     <div>
