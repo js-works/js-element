@@ -12,7 +12,7 @@ const ComplexCounter = component('complex-counter', {
     ref: prop.obj.opt()
   },
   methods: ['reset']
-}).main((c, props) => {
+})((c, props) => {
   const [state, setState] = useState(c, {
     count: props.initialValue
   })

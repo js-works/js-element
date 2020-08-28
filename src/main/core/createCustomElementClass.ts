@@ -62,7 +62,6 @@ export function createCustomElementClass(
     }
 
     connectedCallback() {
-      console.log('connecting ...', this._ctrl.getName())
       super.connectedCallback()
       this._refresh()
     }
@@ -230,12 +229,12 @@ export function createCustomElementClass(
         },
 
         send: (msg: Message) => {
-          console.log('sending ...', msg.type)
           const root = this
 
           root.dispatchEvent(
             new CustomEvent(MESSAGE_TYPE_SUFFIX + msg.type, {
               bubbles: true,
+              composed: true,
               detail: msg
             })
           )
@@ -245,7 +244,6 @@ export function createCustomElementClass(
           type: string,
           handler: (msg: Message) => void
         ): (() => void) => {
-          console.log('receiving ...', type)
           const root = this._contentElement!
 
           const listener = (ev: Event) => {

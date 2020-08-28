@@ -466,7 +466,6 @@ export const useSelectors = createExtension('useSelectors', function <
 
             payload: {
               setStore(st: Store<any>) {
-                console.log('setting store', c.getName(), st)
                 store = st
               }
             }

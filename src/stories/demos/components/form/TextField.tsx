@@ -6,6 +6,6 @@ export default component('jsc-text-field', {
   props: {
     label: prop.str.opt()
   }
-}).main((c, props) => {
+})((c, props) => {
   return () => html`<vaadin-text-field label=${props.label} />`
 })

@@ -16,7 +16,7 @@ import { component, h, prop, render } from 'js-elements'
 
 const SayHello = component('say-hello', {
   props: {
-    salutation: prop.str.opt('Hello')
+    salutation: prop.str.opt('Hello'),
     name: prop.str.opt('World')
   }
 }, (c, props) => {
@@ -36,41 +36,37 @@ render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
 import { component, h, prop, render } from 'js-elements'
 import counterStyles from './counter.css'
 
-const Counter = component(
-  'demo-counter',
-  {
-    props: {
-      initialCount: prop.num.opt(0),
-      label: prop.str.opt('Counter')
-    }
-  },
-  (c, props) => {
-    let count = 0
-
-    const onClick = () => {
-      ++count
-      c.refresh()
-    }
-
-    c.addStyles(counterStyles)
-    c.afterMount(() => console.log(`"${props.label}" has been mounted`))
-    c.beforeUnmount(() => console.log(`Unmounting "${props.label}"`))
-
-    c.effect(
-      () => console.log(`Value of "${props.label}": ${count}`),
-      () => [count]
-    )
-
-    return () => (
-      <div class="counter">
-        <label class="label">{props.label}: </label>
-        <button class="button" onClick={onClick}>
-          {count}
-        </button>
-      </div>
-    )
+const Counter = component('demo-counter', {
+  props: {
+    initialCount: prop.num.opt(0),
+    label: prop.str.opt('Counter')
   }
-)
+}, (c, props) => {
+  let count = 0
+
+  const onClick = () => {
+    ++count
+    c.refresh()
+  }
+
+  c.addStyles(counterStyles)
+  c.afterMount(() => console.log(`"${props.label}" has been mounted`))
+  c.beforeUnmount(() => console.log(`Unmounting "${props.label}"`))
+
+  c.effect(
+    () => console.log(`Value of "${props.label}": ${count}`),
+    () => [count]
+  )
+
+  return () => (
+    <div class="counter">
+      <label class="label">{props.label}: </label>
+      <button class="button" onClick={onClick}>
+        {count}
+      </button>
+    </div>
+  )
+})
 
 render(<Counter />, '#app')
 ```
@@ -79,7 +75,7 @@ Unfortunatlely, if you are using the prettier code formatter, the
 above shown syntax will be reformatted in a way that you may not
 necessarily want.
 Therefore the following more prettier friendly alternative syntax
-is also allowed (it's a litte fluent API/builder pattern):
+is also allowed:
 
 ```jsx
 import { component, h, prop } from 'js-elements'
@@ -89,7 +85,7 @@ export default component('demo-counter', {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
   }
-}).main((c, props) => {
+})((c, props) => {
   let count = 0
 
   const onClick = () => {

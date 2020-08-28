@@ -8,7 +8,7 @@ export default component('jsc-page-size-selector', {
   props: {
     pageSize: prop.num.opt(50)
   }
-}).main((c, props) => {
+})((c, props) => {
   return () => (
     <select>
       {PAGE_SIZE_OPTIONS.map((pageSize) => {

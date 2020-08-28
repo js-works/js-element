@@ -6,6 +6,8 @@ import { createStore } from 'js-stores'
 import { update } from 'js-immutables'
 import { createSelector } from 'reselect'
 
+import styles from './styles/todomvc.styles'
+
 // === constants =====================================================
 
 const STORAGE_ID = 'todomvc/js-elements'
@@ -38,13 +40,32 @@ const TodoMsg = defineMessages('todo', {
   toggle: (id: number, completed: boolean) => ({ id, completed }),
   toggleAll: (completed: boolean) => ({ completed }),
   clearCompleted: null,
-  setFilter: (filter: TodoFilter) => ({ filter })
+  setFilter: (filter: TodoFilter) => ({ filter }),
+  loadTodoState: null,
+  saveTodoState: null
 })
 
 // === reducer =======================================================
 
 const initialTodoState: TodoState = {
-  todos: [],
+  todos: [
+    {
+      id: 1,
+      title: 'Task 1',
+      completed: false
+    },
+    {
+      id: 2,
+      title: 'Task 2',
+      completed: true
+    },
+    {
+      id: 3,
+      title: 'Task 3',
+      completed: false
+    }
+  ],
+
   filter: TodoFilter.All
 }
 
@@ -132,9 +153,11 @@ const Header = component('todo-header', (c) => {
     }
   }
 
+  c.addStyles(styles)
+
   return () => (
     <header class="header">
-      <h1>todos (not working!)</h1>
+      <h1>todos</h1>
       <input
         class="new-todo"
         placeholder="What needs to be done?"
@@ -151,7 +174,7 @@ const Item = component('todo-item', {
   props: {
     todo: prop.obj.as<Todo>().req()
   }
-}).main((c, props) => {
+})((c, props) => {
   const todoAct = useActions(c, TodoMsg)
 
   const [state, setState] = useState(c, {
@@ -192,6 +215,8 @@ const Item = component('todo-item', {
       todoAct.destroy(props.todo.id)
     }
   }
+
+  c.addStyles(styles)
 
   return () => {
     const classes: string[] = []
@@ -234,6 +259,8 @@ const Main = component('todo-main', (c) => {
   const hasCompletedTodos = true // TODO
   const onToggleAll = () => todoAct.toggleAll(!hasCompletedTodos)
 
+  c.addStyles(styles)
+
   return () => (
     <section class="main">
       <input
@@ -264,6 +291,8 @@ const Filters = component('todo-filters', (c) => {
     ev.preventDefault()
     todoAct.setFilter(filter)
   }
+
+  c.addStyles(styles)
 
   return () => (
     <ul class="filters">
@@ -309,7 +338,7 @@ const Footer = component('todo-footer', (c) => {
   return () => (
     <footer class="footer">
       <span class="todo-count">
-        <strong>${countOpenTodos}</strong>
+        <strong>{countOpenTodos}</strong>
         {countOpenTodos === 1 ? 'item' : 'items'}
         left
       </span>
@@ -327,6 +356,7 @@ const Footer = component('todo-footer', (c) => {
 
 const TodoMvc = component('todo-mvc', (c) => {
   const store = createStore(todoReducer, initialTodoState)
+  store.dispatch(TodoMsg.loadTodoState())
   useStore(c, store)
 
   return () => (
