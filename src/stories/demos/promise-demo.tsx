@@ -7,7 +7,7 @@ const DataLoader = component('data-loader', {
     finishText: prop.str.opt('Finished!'),
     key: prop.num.opt()
   }
-})((c, props) => {
+}).from((c, props) => {
   const res = usePromise(
     c,
     () => wait(4000),

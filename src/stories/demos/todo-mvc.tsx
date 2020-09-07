@@ -2,10 +2,40 @@ import { component, h, prop } from 'js-elements'
 import { useActions, useState, useStore, useSelectors } from 'js-elements/ext'
 import { defineMessages } from 'js-messages'
 import { createReducer, on } from 'js-reducers'
-import { createStore } from 'js-stores'
+import {} from 'js-stores'
 import { update } from 'js-immutables'
 import classNames from 'classnames'
 import styles from './styles/todomvc.styles'
+import { Observable } from 'rxjs'
+
+type State = Record<string, any>
+type Message = Record<string, any> & { type: string }
+
+function createStore<S extends State>(
+  reducer: (state: S, msg: Message) => S,
+  initialState: S
+) {
+  const subscribers = new Set<() => void>()
+  let state = initialState
+
+  return {
+    getState(): S {
+      return state
+    },
+
+    dispatch(msg: Message): void {
+      state = reducer(state, msg)
+      subscribers.forEach((it) => it())
+    },
+
+    subscribe(subscriber: () => void): () => void {
+      const subscriber2 = () => subscriber()
+      subscribers.add(subscriber2)
+
+      return () => subscribers.delete(subscriber2)
+    }
+  }
+}
 
 // === constants =====================================================
 
@@ -96,7 +126,7 @@ const todoReducer = createReducer(initialTodoState, [
 // === selectors =====================================================
 
 const TodoSel = {
-  activeFilter: (state: TodoState) => state.filter,
+  filter: (state: TodoState) => state.filter,
 
   filteredTodos: (state: TodoState) => {
     switch (state.filter) {
@@ -131,6 +161,23 @@ class LocalStorageService implements StorageService {
   save(key: string, data: any) {}
   load(key: string, defaultValue?: any): any {}
 }
+
+// === effects =======================================================
+
+/*
+function effects<S extends State>(
+ fn: (
+  action$: Observable<Message>,
+  state$: Observable<S>,
+  getState: () => S
+ ) => any): () => S {
+  return () =>  
+}
+
+class TodoEffects implements EffectsCreator<TodoState> {
+  createEffects = effects((action$, state$, getState) => null)
+}
+*/
 
 // === components ====================================================
 
@@ -170,7 +217,7 @@ const Item = component('todo-item', {
   props: {
     todo: prop.obj.as<Todo>().req()
   }
-})((c, props) => {
+}).from((c, props) => {
   c.addStyles(styles)
 
   const [state, setState] = useState(c, {
@@ -284,7 +331,7 @@ const Filters = component('todo-filters', (c) => {
   function renderFilter(filter: TodoFilter, path: string, title: string) {
     return (
       <a
-        class={todoSel.activeFilter === filter ? 'selected' : ''}
+        class={todoSel.filter === filter ? 'selected' : ''}
         onClick={(ev: any) => onFilterClick(filter, ev)}
         href={`#/${path}`}
       >
@@ -317,7 +364,9 @@ const Footer = component('todo-footer', (c) => {
         {' left '}
       </span>
       <Filters />
-      {todoSel.completedTodos.length === 0 || (
+      {todoSel.completedTodos.length === 0 ? (
+        ''
+      ) : (
         <button class="clear-completed" onClick={onClearCompleted}>
           Clear completed
         </button>
@@ -327,7 +376,12 @@ const Footer = component('todo-footer', (c) => {
 })
 
 const TodoMvc = component('todo-mvc', (c) => {
-  const store = createStore(todoReducer, initialTodoState)
+  const store = createStore(
+    todoReducer,
+    initialTodoState
+    //TodoEffects.saveTodos
+    //combineEffects(TodoEffects)
+  )
 
   store.dispatch(TodoMsg.loadTodoState())
   useStore(c, store)

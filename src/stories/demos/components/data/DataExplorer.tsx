@@ -9,7 +9,7 @@ export default component('jsc-data-explorer', {
     title: prop.str.opt(),
     columns: prop.arr.req()
   }
-})((c, props) => {
+}).from((c, props) => {
   const [state, setState] = useState(c, {
     pageIndex: 0,
     pageSize: 25,
