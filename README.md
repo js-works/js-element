@@ -42,7 +42,7 @@ const Counter = component('demo-counter', {
     label: prop.str.opt('Counter')
   }
 }, (c, props) => {
-  let count = 0
+  let count = props.initialCount
 
   const onClick = () => {
     ++count
@@ -86,7 +86,7 @@ export default component('demo-counter', {
     label: prop.str.opt('Counter')
   }
 }).from((c, props) => {
-  let count = 0
+  let count = props.initialCount
 
   const onClick = () => {
     ++count
