@@ -397,17 +397,6 @@ export const useMousePosition = createExtension(
   }
 )
 
-// === useStore ======================================================
-
-export const useStore = createExtension(
-  'useStore',
-  (c, store: Store<any>): void => {
-    c.receive(STORE_KEY, (msg: any /* TODO */) => {
-      msg.payload.setStore(store)
-    })
-  }
-)
-
 // === useActions ======================================================
 
 type ActionsOf<C extends MessageCreators> = {
@@ -446,45 +435,66 @@ export const useActions = createExtension('useActions', function <
   return ret
 })
 
-// === useSelect =======================================================
+// === createStoreExtensions =========================================
 
-export const useSelectors = createExtension('useSelectors', function <
-  U extends Selectors<any>
->(c: Ctrl, selectors: U): SelectorsOf<any, U> {
-  let store: Store<any> | null = null
+let eventKeyCounter = 0
 
-  const ret: any = {}
+export function createStoreExtensions<S extends State>(): [
+  (c: Ctrl, store: Store<S>) => void,
+  <U extends Selectors<S>>(c: Ctrl, selectors: U) => SelectorsOf<S, U>
+] {
+  const STORE_KEY2 = STORE_KEY + ++eventKeyCounter
 
-  c.send({
-    type: STORE_KEY,
+  const useStore = createExtension('useStore', (c, store: Store<S>): void => {
+    c.receive(STORE_KEY, (msg: Message) => {
+      msg.payload.setStore(store)
+    })
 
-    payload: {
-      setStore(st: Store<any>) {
-        store = st
-      }
-    }
+    c.receive(STORE_KEY2, (msg: Message) => {
+      msg.payload.setStore(store)
+    })
   })
 
-  if (!store) {
-    throw new Error(`Store for selectors not available (-> ${c.getName()})`)
-  }
+  const useSelectors = createExtension('useSelectors', function <
+    U extends Selectors<S>
+  >(c: Ctrl, selectors: U): SelectorsOf<S, U> {
+    let store: Store<S> | null = null
 
-  const unsubscribe = store!.subscribe(() => {
-    c.refresh()
-  })
+    const ret: any = {}
 
-  c.beforeUnmount(unsubscribe)
+    c.send({
+      type: STORE_KEY2,
 
-  for (const key of Object.keys(selectors)) {
-    Object.defineProperty(ret, key, {
-      get: () => {
-        return selectors[key](store!.getState())
+      payload: {
+        setStore(st: Store<any>) {
+          store = st
+        }
       }
     })
-  }
 
-  return ret
-})
+    if (!store) {
+      throw new Error(`Store for selectors not available (-> ${c.getName()})`)
+    }
+
+    const unsubscribe = store!.subscribe(() => {
+      c.refresh()
+    })
+
+    c.beforeUnmount(unsubscribe)
+
+    for (const key of Object.keys(selectors)) {
+      Object.defineProperty(ret, key, {
+        get: () => {
+          return selectors[key]((store as any).getState()) // TODO!!!
+        }
+      })
+    }
+
+    return ret
+  })
+
+  return [useStore, useSelectors]
+}
 
 // === locals ========================================================
 

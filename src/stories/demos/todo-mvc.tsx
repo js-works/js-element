@@ -1,129 +1,12 @@
 import { component, h, prop } from 'js-elements'
-import { useActions, useState, useStore, useSelectors } from 'js-elements/ext'
+import { createStoreExtensions, useActions, useState } from 'js-elements/ext'
 import { defineMessages } from 'js-messages'
 import { createReducer, on } from 'js-reducers'
-import {} from 'js-stores'
+import { combineEffects, createStore, createEffects, ofType } from './js-stores'
 import { update } from 'js-immutables'
 import classNames from 'classnames'
 import styles from './styles/todomvc.styles'
-import { empty, Observable, OperatorFunction, Subject } from 'rxjs'
 import { filter, map, tap, mapTo } from 'rxjs/operators'
-
-type State = Record<string, any>
-type Message = Record<string, any> & { type: string }
-
-type Effects<S extends State> = (
-  msg$: Observable<Message>,
-  state$: Observable<S>,
-  getState: () => S
-) => Observable<Message>
-
-function combineEffects<S extends State>(
-  ...effects: (Effects<S> | { effects: Effects<S> })[]
-): Effects<S> {
-  return (msg$, actions$, getState) => {
-    const out$ = new Subject<Message>()
-
-    for (const e of effects) {
-      let eff = typeof e === 'function' ? e : e.effects
-
-      eff(msg$, actions$, getState).subscribe((msg) => {
-        out$.next(msg)
-      })
-    }
-
-    return out$.asObservable()
-  }
-}
-
-function createEffects<S extends State>(
-  fn: (
-    msg$: Observable<Message>,
-    state$: Observable<S>,
-    getState: () => S
-  ) => Record<string, Observable<Message>>
-): Effects<S> {
-  return (msg2$, state2$, getState2) => {
-    const outSubject = new Subject<Message>()
-
-    const result = fn(msg2$, state2$, getState2)
-
-    for (const key of Object.keys(result)) {
-      result[key].subscribe((msg) => {
-        outSubject.next(msg)
-      })
-    }
-
-    return outSubject.asObservable()
-  }
-}
-
-type MessageCreator<M extends Message> = {
-  (...args: any[]): M
-  type: string
-}
-
-function ofType<M extends Message>(
-  creator: MessageCreator<M>
-): OperatorFunction<Message, M> {
-  return (input$) =>
-    input$.pipe(
-      filter((msg) => msg && msg.type === creator.type)
-    ) as Observable<M>
-}
-
-function createStore<S extends State>(
-  reducer: (state: S, msg: Message) => S,
-  initialState: S,
-  effects?: Effects<S>
-) {
-  const subscribers = new Set<() => void>()
-  let state = initialState
-
-  let msgSubject: Subject<Message>
-  let stateSubject: Subject<S>
-
-  if (effects) {
-    msgSubject = new Subject()
-    stateSubject = new Subject()
-
-    effects(msgSubject.asObservable(), stateSubject.asObservable(), () =>
-      store.getState()
-    ).subscribe((msg) => {
-      store.dispatch(msg)
-    })
-  }
-
-  const store = {
-    getState(): S {
-      return state
-    },
-
-    dispatch(msg: Message): void {
-      const newState = reducer(state, msg)
-
-      if (newState !== state) {
-        state = newState
-        subscribers.forEach((it) => it())
-
-        if (effects) {
-          stateSubject.next(state)
-        }
-      }
-
-      msgSubject.next(msg)
-    },
-
-    subscribe(subscriber: () => void): () => void {
-      const subscriber2 = () => subscriber()
-      subscribers.add(subscriber2)
-
-      return () => subscribers.delete(subscriber2)
-    }
-  }
-
-  return store
-}
 
 // === constants =====================================================
 
@@ -158,17 +41,19 @@ const TodoMsg = defineMessages('todo', {
   toggleAll: (completed: boolean) => ({ completed }),
   clearCompleted: null,
   setFilter: (filter: TodoFilter) => ({ filter }),
-  setNewState: (newState: TodoState) => ({ newState }),
+  setTodoState: (todoState: TodoState) => ({ todoState }),
   loadTodoState: null,
   saveTodoState: null
 })
 
-// === reducer =======================================================
+// === state =========================================================
 
 const initialTodoState: TodoState = {
   todos: [],
   filter: TodoFilter.All
 }
+
+// === reducer =======================================================
 
 const todoReducer = createReducer(initialTodoState, [
   on(TodoMsg.create, (state, { title }) =>
@@ -211,7 +96,7 @@ const todoReducer = createReducer(initialTodoState, [
     update(state).set('filter', filter)
   ),
 
-  on(TodoMsg.setNewState, (_, { newState }) => newState)
+  on(TodoMsg.setTodoState, (_, { todoState }) => todoState)
 ])
 
 // === selectors =====================================================
@@ -253,13 +138,13 @@ class LocalStorageService implements StorageService {
     localStorage.setItem(key, JSON.stringify(value))
   }
 
-  load<T = any>(key: string, defaultValue?: any): T {
+  load<T = any>(key: string, defaultValue?: T): T {
     let data
 
     try {
       data = JSON.parse(localStorage.getItem(key)!)
     } catch {}
-    console.log(1111, data)
+
     return data !== undefined ? data : defaultValue
   }
 }
@@ -281,10 +166,14 @@ class TodoEffects {
     loadFromStorage: msg$.pipe(
       ofType(TodoMsg.loadTodoState),
       map(() => this.storageService.load(STORAGE_KEY, initialTodoState)),
-      map((state) => TodoMsg.setNewState(state))
+      map((state) => TodoMsg.setTodoState(state))
     )
   }))
 }
+
+// === extensions ====================================================
+
+const [useStore, useSelectors] = createStoreExtensions<TodoState>()
 
 // === components ====================================================
 
@@ -482,9 +371,8 @@ const Footer = component('todo-footer', (c) => {
   )
 })
 
-const TodoMvc = component('todo-mvc', (c) => {
+component('todo-mvc', (c) => {
   const rootEffects = combineEffects(new TodoEffects(new LocalStorageService()))
-
   const store = createStore(todoReducer, initialTodoState, rootEffects)
 
   store.dispatch(TodoMsg.loadTodoState())
