@@ -50,6 +50,10 @@ function component<PC extends PropsConfig>(
     methods?: string[]
   }
 ): {
+  (main: (ctrl: Ctrl, props: InternalPropsOf<PC>) => () => VNode): Component<
+    ExternalPropsOf<PC>
+  >
+
   from(
     main: (ctrl: Ctrl, props: InternalPropsOf<PC>) => () => VNode
   ): Component<ExternalPropsOf<PC>>
@@ -99,7 +103,8 @@ function component(name: string, sndArg?: any, thirdArg?: any): any {
     return ret
   }
 
-  return { from: main }
+  main.from = main
+  return main
 }
 
 // === h =============================================================
