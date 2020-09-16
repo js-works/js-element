@@ -1,5 +1,5 @@
 import { component, h } from 'js-elements'
-import { useInterval, useState } from 'js-elements/ext'
+import { useInterval, useState } from 'js-elements/hooks'
 
 component('interval-demo', (c) => {
   const [state, setState] = useState(c, {

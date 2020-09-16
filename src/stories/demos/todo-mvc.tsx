@@ -1,5 +1,5 @@
 import { component, h, prop } from 'js-elements'
-import { createStoreExtensions, useActions, useState } from 'js-elements/ext'
+import { createStoreHooks, useActions, useState } from 'js-elements/hooks'
 import { defineMessages } from 'js-messages'
 import { createReducer, on } from 'js-reducers'
 import { combineEffects, createStore, createEffects, ofType } from './js-stores'
@@ -171,9 +171,9 @@ class TodoEffects {
   }))
 }
 
-// === extensions ====================================================
+// === hooks =========================================================
 
-const [useStore, useSelectors] = createStoreExtensions<TodoState>()
+const [useStore, useSelectors] = createStoreHooks<TodoState>()
 
 // === components ====================================================
 
@@ -209,17 +209,17 @@ const Header = component('todo-header', (c) => {
   )
 })
 
-const Item = component('todo-item', {
+const Item = component('todo-item')({
   props: {
     todo: prop.obj.as<Todo>().req()
   }
-}).from((c, props) => {
-  c.addStyles(styles)
-
+})((c, props) => {
   const [state, setState] = useState(c, {
     active: false,
     title: props.todo.title
   })
+
+  c.addStyles(styles)
 
   const todoAct = useActions(c, TodoMsg)
   const onToggle = (ev: any) => todoAct.toggle(props.todo.id, ev.target.checked)
@@ -286,7 +286,7 @@ const Item = component('todo-item', {
   }
 })
 
-const Main = component('todo-main', (c) => {
+const Main = component('todo-main')((c) => {
   c.addStyles(styles)
 
   const todoSel = useSelectors(c, TodoSel)

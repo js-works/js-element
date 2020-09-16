@@ -63,6 +63,7 @@ type Ctrl = {
   getName(): string
   isInitialized(): boolean
   isMounted(): boolean
+  hasUpdated(): boolean
   refresh(): void
   afterMount(action: Action): void
   onceBeforeUpdate(action: Action): void

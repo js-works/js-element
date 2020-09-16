@@ -43,6 +43,7 @@ export function createCustomElementClass(
     _render: null | (() => VNode) = null
     _initialized = false
     _mounted = false
+    _updated = false
     _refreshRequested = false
     _methods: Methods = {} // TODO
     _afterMountNotifier?: Notifier
@@ -99,6 +100,7 @@ export function createCustomElementClass(
         this._mounted = true
         this._afterMountNotifier && this._afterMountNotifier.notify()
       } else {
+        this._updated = true
         this._afterUpdateNotifier && this._afterUpdateNotifier.notify()
       }
     }
@@ -110,6 +112,7 @@ export function createCustomElementClass(
         getName: () => name,
         isInitialized: () => this._initialized,
         isMounted: () => this._mounted,
+        hasUpdated: () => this._updated,
 
         afterMount: (action: Action) => {
           this._afterMountNotifier ||

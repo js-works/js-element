@@ -18,12 +18,12 @@ const buttonDemoStyles = `
   }
 `
 
-const DemoButton = component('demo-button', {
+const DemoButton = component('demo-button')({
   props: {
     text: prop.str.req(),
     onButtonClick: prop.evt()
   }
-}).from((c, props) => {
+})((c, props) => {
   c.addStyles(buttonDemoStyles)
 
   const onClick = () => {
@@ -39,7 +39,7 @@ const DemoButton = component('demo-button', {
   )
 })
 
-component('button-demo', () => {
+component('button-demo')(() => {
   const onClick = (e: any) => alert(e.type) // TODO
 
   return () => (

@@ -14,9 +14,9 @@ module.exports = ({ config }) => {
   const alias = (config.resolve && config.resolve.alias) || {}
 
   alias['js-elements$'] = path.resolve(__dirname, '../src/main/js-elements.ts')
-  alias['js-elements/ext$'] = path.resolve(
+  alias['js-elements/hooks$'] = path.resolve(
     __dirname,
-    '../src/main/js-elements-ext.ts'
+    '../src/main/js-elements-hooks.ts'
   )
 
   config.resolve.alias = alias

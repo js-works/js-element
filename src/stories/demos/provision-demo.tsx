@@ -1,5 +1,5 @@
 import { component, provision, h } from 'js-elements'
-import { useCtx, useInterval } from 'js-elements/ext'
+import { useCtx, useInterval } from 'js-elements/hooks'
 
 const [provideTheme, consumeTheme] = provision('theme', 'light')
 

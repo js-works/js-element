@@ -1,15 +1,15 @@
 import { component, h, prop } from 'js-elements'
-import { useState } from 'js-elements/ext'
+import { useState } from 'js-elements/hooks'
 import DataTable from './DataTable'
 import Paginator from '../pagination/Paginator'
 import PaginationInfo from '../pagination/PaginationInfo'
 
-export default component('jsc-data-explorer', {
+export default component('jsc-data-explorer')({
   props: {
     title: prop.str.opt(),
     columns: prop.arr.req()
   }
-}).from((c, props) => {
+})((c, props) => {
   const [state, setState] = useState(c, {
     pageIndex: 0,
     pageSize: 25,

@@ -59,7 +59,31 @@ function component<PC extends PropsConfig>(
   ): Component<ExternalPropsOf<PC>>
 }
 
+function component(
+  name: string
+): {
+  (main: (c: Ctrl) => () => VNode): Component<{}>
+
+  <PC extends PropsConfig>(options: {
+    props?: PC
+    slots?: string[]
+    methods?: string[]
+  }): (
+    main: (c: Ctrl, props: InternalPropsOf<PC>) => () => VNode
+  ) => Component<ExternalPropsOf<PC>>
+}
+
 function component(name: string, sndArg?: any, thirdArg?: any): any {
+  if (arguments.length === 1) {
+    return (arg: any) => {
+      if (typeof arg === 'function') {
+        return component(name, arg)
+      } else {
+        return (arg2: any) => component(name, arg, arg2)
+      }
+    }
+  }
+
   if (arguments.length > 2) {
     return (component(name, sndArg) as any).from(thirdArg)
   }

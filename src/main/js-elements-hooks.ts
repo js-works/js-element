@@ -32,6 +32,7 @@ export interface Ctrl {
   getName(): string
   isInitialized(): boolean
   isMounted(): boolean
+  hasUpdated(): boolean
   afterMount(action: () => void): void
   // afterCommit(action: () => void): void
   onceBeforeUpdate(action: () => void): void
@@ -50,9 +51,9 @@ type Store<S extends State> = {
   dispatch(msg: Message): void
 }
 
-// === createExtension ===============================================
+// === createHook ====================================================
 
-export function createExtension<T extends Ctrl, A extends [T, ...any[]], R>(
+export function createHook<T extends Ctrl, A extends [T, ...any[]], R>(
   name: string,
   func: (...args: A) => R
 ): (...args: A) => R {
@@ -66,11 +67,11 @@ export function createExtension<T extends Ctrl, A extends [T, ...any[]], R>(
         typeof c.onceBeforeUpdate !== 'function'
       ) {
         throw new TypeError(
-          `First argument of extension "${name}" must be a component controller or an object that has a method "getCtrl"`
+          `First argument of hook function "${name}" must be a component controller or an object that has a method "getCtrl"`
         )
       } else if (c.isInitialized()) {
         throw new Error(
-          `Extension "${name}" has been called after initialization phase of component "${c.getDisplayName()}"`
+          `Hook function "${name}" has been called after initialization phase of component "${c.getDisplayName()}"`
         )
       }
     }
@@ -87,7 +88,7 @@ export function createExtension<T extends Ctrl, A extends [T, ...any[]], R>(
 
 // === useValue ======================================================--
 
-export const useValue = createExtension('useValue', function <T>(
+export const useValue = createHook('useValue', function <T>(
   c: Ctrl,
   initialValue: T
 ): [() => T, (updater: T | ((value: T) => T)) => void] {
@@ -110,7 +111,7 @@ export const useValue = createExtension('useValue', function <T>(
 
 // === useState ======================================================--
 
-export const useState = createExtension('useState', function <
+export const useState = createHook('useState', function <
   T extends Record<string, any>
 >(c: Ctrl, initialState: T): [T, StateUpdater<T>] {
   let nextState: any, // TODO
@@ -144,11 +145,20 @@ export const useState = createExtension('useState', function <
   return [state, setState as any] // TODO
 })
 
+// === useStyles =======================================================
+
+export const useStyles = createHook('useStyles', function (
+  c,
+  styles: string | string[]
+) {
+  c.addStyles(styles)
+})
+
 // === useMemo =========================================================
 
 // TODO - this is not really optimized, is it?
 
-export const useMemo = createExtension('useMemo', function <
+export const useMemo = createHook('useMemo', function <
   T,
   A extends any[],
   G extends () => A
@@ -171,25 +181,73 @@ export const useMemo = createExtension('useMemo', function <
   return memo
 })
 
-// === useEffect ======================================================-
+// === useOnMount ====================================================
 
-export const useEffect = createExtension('useEffect', function (
+export const useOnMount = createHook('useOnMount', function (
   c,
+  action: () => void | undefined | null | (() => void)
+) {
+  let cleanup: Task | null | undefined | void
+
+  c.afterMount(() => {
+    cleanup = action()
+  })
+
+  c.beforeUnmount(() => {
+    if (typeof cleanup === 'function') {
+      cleanup()
+    }
+
+    cleanup = null
+  })
+})
+
+// === useOnUpdate ===================================================
+
+export const useOnUpdate = createHook('useOnUpdate', function (
+  c,
+  action: () => void | undefined | null | (() => void)
+) {
+  let cleanup: Task | null | undefined | void
+
+  c.afterUpdate(() => {
+    if (typeof cleanup === 'function') {
+      cleanup()
+    }
+
+    cleanup = action()
+  })
+
+  c.beforeUnmount(() => {
+    if (typeof cleanup === 'function') {
+      cleanup()
+    }
+
+    cleanup = null
+  })
+})
+
+// === useOnUnmount ==================================================
+
+export const useOnUnmount = createHook('useOnUnmount', function (
+  c,
+  action: () => void
+) {
+  c.beforeUnmount(action)
+})
+
+// === useEffect =====================================================
+
+export const useEffect = createHook('useEffect', function (
+  c
+): (
   action: () => void | undefined | null | (() => void),
-  getDeps?: null | (() => any[])
-): void {
-  let oldDeps: any[] | null = null,
-    cleanup: Task | null | undefined | void
+  getDeps?: () => any[]
+) => void {
+  return (action, getDeps) => {
+    let oldDeps: any[] | null = null
+    let cleanup: Task | null | undefined | void
 
-  if (getDeps === null) {
-    c.afterMount(() => {
-      cleanup = action()
-    })
-
-    c.beforeUnmount(() => {
-      cleanup && cleanup()
-    })
-  } else if (getDeps === undefined || typeof getDeps === 'function') {
     const callback = () => {
       let needsAction = getDeps === undefined
 
@@ -200,6 +258,7 @@ export const useEffect = createExtension('useEffect', function (
           oldDeps === null ||
           newDeps === null ||
           !isEqualArray(oldDeps, newDeps)
+
         oldDeps = newDeps
       }
 
@@ -211,12 +270,7 @@ export const useEffect = createExtension('useEffect', function (
 
     c.afterMount(callback)
     c.afterUpdate(callback)
-
     c.beforeUnmount(() => cleanup && cleanup())
-  } else {
-    throw new TypeError(
-      '[effect] Third argument must either be undefined, null or a function'
-    )
   }
 })
 
@@ -228,9 +282,10 @@ type CtxOf<CC extends CtxConfig<any>> = {
   [K in keyof CC]: ReturnType<CC[K]>
 }
 
-export const useCtx = createExtension('useCtx', function <
-  CC extends CtxConfig<any>
->(c: Ctrl, config: CC): CtxOf<CC> {
+export const useCtx = createHook('useCtx', function <CC extends CtxConfig<any>>(
+  c: Ctrl,
+  config: CC
+): CtxOf<CC> {
   const ctx: any = {}
   const ctxKeys = Object.keys(config)
 
@@ -247,13 +302,12 @@ export const useCtx = createExtension('useCtx', function <
 
 // === useInterval ======================================================
 
-export const useInterval = createExtension(
+export const useInterval = createHook(
   'useInterval',
   (c, task: Task, delay: number | (() => number)) => {
     const getDelay = typeof delay === 'function' ? delay : () => delay
 
-    useEffect(
-      c,
+    useEffect(c)(
       () => {
         const id = setInterval(task, getDelay())
 
@@ -266,7 +320,7 @@ export const useInterval = createExtension(
 
 // === useTime =========================================================
 
-export const useTime = createExtension('useTime', timeFn)
+export const useTime = createHook('useTime', timeFn)
 
 function timeFn(c: Ctrl, delay: number | (() => number)): () => Date
 
@@ -325,7 +379,7 @@ const initialState: PromiseRes<any> = {
   state: 'pending'
 }
 
-export const usePromise = createExtension('usePromise', function <T>(
+export const usePromise = createHook('usePromise', function <T>(
   c: Ctrl,
   getPromise: () => Promise<T>,
   getDeps?: () => any[]
@@ -334,8 +388,7 @@ export const usePromise = createExtension('usePromise', function <T>(
 
   let promiseIdx = -1
 
-  useEffect(
-    c,
+  useEffect(c)(
     () => {
       ++promiseIdx
 
@@ -363,7 +416,7 @@ export const usePromise = createExtension('usePromise', function <T>(
           }
         })
     },
-    typeof getDeps === 'function' ? getDeps : null
+    typeof getDeps === 'function' ? getDeps : () => []
   )
 
   return state
@@ -371,31 +424,24 @@ export const usePromise = createExtension('usePromise', function <T>(
 
 // === useMousePosition ===============================================
 
-export const useMousePosition = createExtension(
-  'useMousePosition',
-  (c: Ctrl) => {
-    const [mousePos, setMousePos] = useState(c, { x: -1, y: -1 })
+export const useMousePosition = createHook('useMousePosition', (c: Ctrl) => {
+  const [mousePos, setMousePos] = useState(c, { x: -1, y: -1 })
 
-    useEffect(
-      c,
-      () => {
-        const listener = (ev: any) => {
-          // TODO
-          setMousePos({ x: ev.pageX, y: ev.pageY })
-        }
+  useOnMount(c, () => {
+    const listener = (ev: any) => {
+      // TODO
+      setMousePos({ x: ev.pageX, y: ev.pageY })
+    }
 
-        window.addEventListener('mousemove', listener)
+    window.addEventListener('mousemove', listener)
 
-        return () => {
-          window.removeEventListener('mousemove', listener)
-        }
-      },
-      null
-    )
+    return () => {
+      window.removeEventListener('mousemove', listener)
+    }
+  })
 
-    return mousePos
-  }
-)
+  return mousePos
+})
 
 // === useActions ======================================================
 
@@ -405,7 +451,7 @@ type ActionsOf<C extends MessageCreators> = {
     : never
 }
 
-export const useActions = createExtension('useActions', function <
+export const useActions = createHook('useActions', function <
   C extends MessageCreators
 >(c: Ctrl, msgCreators: C): ActionsOf<C> {
   let store: Store<any> | null = null
@@ -435,17 +481,17 @@ export const useActions = createExtension('useActions', function <
   return ret
 })
 
-// === createStoreExtensions =========================================
+// === createStoreHooks ==============================================
 
 let eventKeyCounter = 0
 
-export function createStoreExtensions<S extends State>(): [
+export function createStoreHooks<S extends State>(): [
   (c: Ctrl, store: Store<S>) => void,
   <U extends Selectors<S>>(c: Ctrl, selectors: U) => SelectorsOf<S, U>
 ] {
   const STORE_KEY2 = STORE_KEY + ++eventKeyCounter
 
-  const useStore = createExtension('useStore', (c, store: Store<S>): void => {
+  const useStore = createHook('useStore', (c, store: Store<S>): void => {
     c.receive(STORE_KEY, (msg: Message) => {
       msg.payload.setStore(store)
     })
@@ -455,7 +501,7 @@ export function createStoreExtensions<S extends State>(): [
     })
   })
 
-  const useSelectors = createExtension('useSelectors', function <
+  const useSelectors = createHook('useSelectors', function <
     U extends Selectors<S>
   >(c: Ctrl, selectors: U): SelectorsOf<S, U> {
     let store: Store<S> | null = null

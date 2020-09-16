@@ -1,13 +1,13 @@
 import { component, h, prop } from 'js-elements'
 
-export default component('jsc-pagination-info', {
+export default component('jsc-pagination-info')({
   props: {
     pageIndex: prop.num.req(),
     pageSize: prop.num.req(),
     totalItemCount: prop.num.req(),
     about: prop.str.as<'pages' | 'items'>().opt('items')
   }
-}).from((c, props) => () => {
+})((c, props) => () => {
   return props.about === 'pages' ? renderAboutPages() : renderAboutItems()
 
   // --- local component helper functions ----------------------------

@@ -1,6 +1,6 @@
 /** @jsx h */
 import { component, h } from 'js-elements'
-import { useMousePosition } from 'js-elements/ext'
+import { useMousePosition } from 'js-elements/hooks'
 
 component('mouse-demo', (c) => {
   const mousePos = useMousePosition(c)

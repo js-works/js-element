@@ -1,13 +1,13 @@
 import { component, h, prop } from 'js-elements'
-import { usePromise, useState } from 'js-elements/ext'
+import { usePromise, useState } from 'js-elements/hooks'
 
-const DataLoader = component('data-loader', {
+const DataLoader = component('data-loader')({
   props: {
     loadingText: prop.str.opt('Loading...'),
     finishText: prop.str.opt('Finished!'),
     key: prop.num.opt()
   }
-}).from((c, props) => {
+})((c, props) => {
   const res = usePromise(
     c,
     () => wait(4000),

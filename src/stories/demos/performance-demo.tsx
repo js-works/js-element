@@ -8,12 +8,12 @@ const prefs = {
   rowCount: 20
 }
 
-const Tile = component('x-tile', {
+const Tile = component('x-tile')({
   props: {
     color: prop.str.opt('white'),
     width: prop.num.opt(3)
   }
-}).from((c, props) => {
+})((c, props) => {
   return () => {
     /*
     const style = {
@@ -38,14 +38,14 @@ const Tile = component('x-tile', {
   }
 })
 
-const TileRow = component('x-tile-row', {
+const TileRow = component('x-tile-row')({
   props: {
     tileWidth: prop(Number).opt(3),
     columnCount: prop.num.opt(prefs.columnCount),
     colors: prop.obj.opt(prefs.colors as any), // TODO!!!!
     loop: prop.num.req() // TODO!!!
   }
-}).from((c, props) => {
+})((c, props) => {
   return () => {
     const tiles = []
 
@@ -60,14 +60,14 @@ const TileRow = component('x-tile-row', {
   }
 })
 
-const SpeedTest = component('x-speed-test', {
+const SpeedTest = component('x-speed-test')({
   props: {
     columnCount: prop.num.opt(prefs.columnCount),
     rowCount: prop.num.opt(prefs.rowCount),
     tileWidth: prop.num.opt(3),
     framesPerSecond: prop.num.opt(prefs.framesPerSecond)
   }
-}).from((c, props) => {
+})((c, props) => {
   let loop = 0
 
   let intervalId = null as any,

@@ -3,14 +3,14 @@ import PageChangeEvent from '../../events/PageChangeEvent'
 
 // === Paginator =====================================================
 
-export default component('jsc-paginator', {
+export default component('jsc-paginator')({
   props: {
     pageIndex: prop.num.req(),
     pageSize: prop.num.req(),
     totalItemCount: prop.num.req(),
     onPageChange: prop.evt<PageChangeEvent>()
   }
-}).from((c, props) => {
+})((c, props) => {
   const onFirstPageClick = () => gotoPage(1)
   const onPreviousPageClick = () => gotoPage(props.pageIndex - 1)
   const onNextPageClick = () => gotoPage(props.pageIndex + 1)
