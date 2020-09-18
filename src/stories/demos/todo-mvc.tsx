@@ -166,7 +166,7 @@ class TodoEffects {
     loadFromStorage: msg$.pipe(
       ofType(TodoMsg.loadTodoState),
       map(() => this.storageService.load(STORAGE_KEY, initialTodoState)),
-      map((state) => TodoMsg.setTodoState(state))
+      map((state: TodoState) => TodoMsg.setTodoState(state))
     )
   }))
 }

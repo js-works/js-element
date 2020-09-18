@@ -11,6 +11,7 @@ import {
   InternalPropsOf,
   Props,
   PropsConfig,
+  PropsOf,
   VNode,
   VElement
 } from './core/types'
@@ -19,7 +20,7 @@ import { h as createElement, text, patch } from './libs/superfine'
 
 // === exports =======================================================
 
-export { component, provision, prop, h, html, render, VElement, VNode }
+export { component, provision, prop, h, html, render, PropsOf, VElement, VNode }
 
 // === constants =====================================================
 

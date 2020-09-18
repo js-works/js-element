@@ -1,6 +1,6 @@
 {
   "name": "js-elements",
-  "version": "0.0.78",
+  "version": "0.0.81",
   "description": "",
   "main": "index.js",
   "module": "dist/js-elements.esm.producion.js",
@@ -10,7 +10,7 @@
   "files": [
     "index.js",
     "dist",
-    "ext"
+    "hooks"
   ],
   "scripts": {
     "clean": "shx rm -rf ./build ./dist",

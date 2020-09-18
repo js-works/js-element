@@ -42,7 +42,7 @@ const Counter = component('demo-counter')({
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
   }
-})(c, props) => {
+})((c, props) => {
   const [state, setState] = useState(c, {
     count: props.initialCount
   })

@@ -18,6 +18,7 @@ export {
   PropConverter,
   PropConfig,
   PropsConfig,
+  PropsOf,
   PropType,
   Renderer,
   State,
@@ -37,6 +38,10 @@ type VNode = null | boolean | number | string | VElement | Iterable<VNode>
 type Component<P extends Props = {}, M extends Methods = {}> = (
   props?: P & { key?: Key }
 ) => VElement<P>
+
+type PropsOf<C extends Component<any, any>> = C extends Component<infer P>
+  ? P
+  : never
 
 type Action = () => void
 type Message = { type: string } & Record<string, any>
