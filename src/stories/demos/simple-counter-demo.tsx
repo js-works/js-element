@@ -1,7 +1,7 @@
 import { component, h, prop } from 'js-elements'
 import { useEffect, useOnMount, useState } from 'js-elements/hooks'
 
-const SimpleCounter = component('simple-counter')({
+const SimpleCounter = component('simple-counter', {
   props: {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter'),

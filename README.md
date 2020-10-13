@@ -14,7 +14,7 @@ and btw: It is currently not meant to ever be used in production.
 ```jsx
 import { component, h, prop, render } from 'js-elements'
 
-const SayHello = component('say-hello')({
+const SayHello = component('say-hello', {
   props: {
     salutation: prop.str.opt('Hello'),
     name: prop.str.opt('World')
@@ -37,7 +37,7 @@ import { component, h, prop, render } from 'js-elements'
 import { useEffect, useState, useStyles } from 'js-elements/hooks'
 import counterStyles from './counter.css'
 
-const Counter = component('demo-counter')({
+const Counter = component('demo-counter', {
   props: {
     initialCount: prop.num.opt(0),
     label: prop.str.opt('Counter')
@@ -84,7 +84,7 @@ All of those "hooks" can be written completely in userland
 import { component, h } from 'js-elements'
 import { useTime } from 'js-elements/hooks'
 
-const Clock = component('demo-clock')((c) => {
+const Clock = component('demo-clock', (c) => {
   const getTime = useTime(c, 1000, () => new Date().toLocaleTimeString())
   return () => <div>Current time: {getTime()}</div>
 })
