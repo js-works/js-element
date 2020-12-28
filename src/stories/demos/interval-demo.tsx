@@ -1,34 +1,33 @@
-import { component, h } from 'js-elements'
+import { element, h } from 'js-elements'
 import { useInterval, useState } from 'js-elements/hooks'
 
-component('interval-demo', (c) => {
-  const [state, setState] = useState(c, {
+@element('interval-demo')
+export default class IntervalDemo {
+  static main() {
+    const [state, setState] = useState({
       count: 0,
       delay: 1000
-    }),
-    onReset = () => setState('delay', 1000)
+    })
 
-  useInterval(
-    c,
-    () => setState('count', (it) => it + 1),
-    () => state.delay
-  )
+    const onReset = () => setState('delay', 1000)
 
-  useInterval(
-    c,
-    () => {
+    useInterval(
+      () => setState('count', (it) => it + 1),
+      () => state.delay
+    )
+
+    useInterval(() => {
       if (state.delay > 10) {
-        setState('delay', (it: any) => it / 2) // TODO
+        setState('delay', (it) => it / 2)
       }
-    },
-    1000
-  )
+    }, 1000)
 
-  return () => (
-    <div>
-      <h1>Counter: {state.count}</h1>
-      <h4>Delay: {state.delay}</h4>
-      <button onClick={onReset}>Reset delay</button>
-    </div>
-  )
-})
+    return () => (
+      <div>
+        <h1>Counter: {state.count}</h1>
+        <h4>Delay: {state.delay}</h4>
+        <button onClick={onReset}>Reset delay</button>
+      </div>
+    )
+  }
+}

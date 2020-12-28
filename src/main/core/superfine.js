@@ -22,6 +22,17 @@ var patchProp = (dom, key, oldVal, newVal, isSvg) => {
   if (key === 'key') {
   } else if (!isSvg && key !== 'list' && key !== 'form' && key in dom) {
     dom[key] = newVal == null ? '' : newVal
+  } else if (key === 'ref') {
+    // PATCHED // TODO
+    if (newVal !== oldVal) {
+      if (oldVal) {
+        oldVal.current = null
+      }
+
+      if (newVal) {
+        newVal.current = dom
+      }
+    }
   } else if (key[0] === 'o' && key[1] === 'n') {
     const k = key.slice(2).toLowerCase() // TODO: PATCHED!!!
 

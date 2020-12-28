@@ -1,16 +1,21 @@
-/** @jsx h */
-import { component, h } from 'js-elements'
+import { element, h } from 'js-elements'
 import { useMousePosition } from 'js-elements/hooks'
 
-component('mouse-demo', (c) => {
-  const mousePos = useMousePosition(c)
+@element('mouse-demo')
+export default class MouseDemo {
+  static main() {
+    const mousePos = useMousePosition()
 
-  return () =>
-    mousePos.x === -1 ? (
-      <div>Please move mouse ...</div>
-    ) : (
-      <div>
-        Current mouse position: {mousePos.x}x{mousePos.y}
-      </div>
-    )
-})
+    return () => {
+      if (!mousePos.isValid()) {
+        return <div>Please move mouse ...</div>
+      } else {
+        return (
+          <div>
+            Current mouse position: {mousePos.getX()}x{mousePos.getY()}
+          </div>
+        )
+      }
+    }
+  }
+}

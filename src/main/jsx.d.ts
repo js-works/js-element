@@ -1,430 +1,37 @@
 import { Props, VElement } from './core/types'
 
+export = JSX
+
 declare global {
   namespace JSX {
-    type ClipboardEventHandler = EventHandler<ClipboardEvent>
-    type CompositionEventHandler = EventHandler<CompositionEvent>
-    type DragEventHandler = EventHandler<DragEvent>
-    type FocusEventHandler = EventHandler<FocusEvent>
-    type KeyboardEventHandler = EventHandler<KeyboardEvent>
-    type MouseEventHandler = EventHandler<MouseEvent>
-    type TouchEventHandler = EventHandler<TouchEvent>
-    type UIEventHandler = EventHandler<UIEvent>
-    type WheelEventHandler = EventHandler<WheelEvent>
-    type AnimationEventHandler = EventHandler<AnimationEvent>
-    type TransitionEventHandler = EventHandler<TransitionEvent>
-    type GenericEventHandler = EventHandler<Event>
+    interface IntrinsicAttributes {
+      key?: any
+    }
 
-    interface EventHandler<Event> {}
     interface Element extends VElement<any> {}
+
     interface ElementClass {}
-    interface ElementAttributesProperty {
-      props: any
-    }
-    interface ElementChildrenAttribute {
-      children: any
-    }
-    interface IntrinsicAttributes extends Props<{}> {}
-    interface IntrinsicClassAttributes extends Props<{}> {}
-    interface PathAttributes {
-      d: string
-    }
 
-    interface IntrinsicElements {
-      // html
-      a: HTMLAttributes
-      abbr: HTMLAttributes
-      address: HTMLAttributes
-      area: HTMLAttributes
-      article: HTMLAttributes
-      aside: HTMLAttributes
-      audio: HTMLAttributes
-      b: HTMLAttributes
-      base: HTMLAttributes
-      bdi: HTMLAttributes
-      bdo: HTMLAttributes
-      big: HTMLAttributes
-      blockquote: HTMLAttributes
-      body: HTMLAttributes
-      br: HTMLAttributes
-      button: HTMLAttributes
-      canvas: HTMLAttributes
-      caption: HTMLAttributes
-      cite: HTMLAttributes
-      code: HTMLAttributes
-      col: HTMLAttributes
-      colgroup: HTMLAttributes
-      data: HTMLAttributes
-      datalist: HTMLAttributes
-      dd: HTMLAttributes
-      del: HTMLAttributes
-      details: HTMLAttributes
-      dfn: HTMLAttributes
-      dialog: HTMLAttributes
-      div: HTMLAttributes
-      dl: HTMLAttributes
-      dt: HTMLAttributes
-      em: HTMLAttributes
-      embed: HTMLAttributes
-      fieldset: HTMLAttributes
-      figcaption: HTMLAttributes
-      figure: HTMLAttributes
-      footer: HTMLAttributes
-      form: HTMLAttributes
-      h1: HTMLAttributes
-      h2: HTMLAttributes
-      h3: HTMLAttributes
-      h4: HTMLAttributes
-      h5: HTMLAttributes
-      h6: HTMLAttributes
-      head: HTMLAttributes
-      header: HTMLAttributes
-      hr: HTMLAttributes
-      html: HTMLAttributes
-      i: HTMLAttributes
-      iframe: HTMLAttributes
-      img: HTMLAttributes
-      input: HTMLAttributes
-      ins: HTMLAttributes
-      kbd: HTMLAttributes
-      keygen: HTMLAttributes
-      label: HTMLAttributes
-      legend: HTMLAttributes
-      li: HTMLAttributes
-      link: HTMLAttributes
-      main: HTMLAttributes
-      map: HTMLAttributes
-      mark: HTMLAttributes
-      menu: HTMLAttributes
-      menuitem: HTMLAttributes
-      meta: HTMLAttributes
-      meter: HTMLAttributes
-      nav: HTMLAttributes
-      noscript: HTMLAttributes
-      object: HTMLAttributes
-      ol: HTMLAttributes
-      optgroup: HTMLAttributes
-      option: HTMLAttributes
-      output: HTMLAttributes
-      p: HTMLAttributes
-      param: HTMLAttributes
-      picture: HTMLAttributes
-      pre: HTMLAttributes
-      progress: HTMLAttributes
-      q: HTMLAttributes
-      rp: HTMLAttributes
-      rt: HTMLAttributes
-      ruby: HTMLAttributes
-      s: HTMLAttributes
-      samp: HTMLAttributes
-      script: HTMLAttributes
-      section: HTMLAttributes
-      select: HTMLAttributes
-      slot: HTMLAttributes
-      small: HTMLAttributes
-      source: HTMLAttributes
-      span: HTMLAttributes
-      strong: HTMLAttributes
-      style: HTMLAttributes
-      sub: HTMLAttributes
-      summary: HTMLAttributes
-      sup: HTMLAttributes
-      table: HTMLAttributes
-      tbody: HTMLAttributes
-      td: HTMLAttributes
-      textarea: HTMLAttributes
-      tfoot: HTMLAttributes
-      th: HTMLAttributes
-      thead: HTMLAttributes
-      time: HTMLAttributes
-      title: HTMLAttributes
-      tr: HTMLAttributes
-      track: HTMLAttributes
-      u: HTMLAttributes
-      ul: HTMLAttributes
-      var: HTMLAttributes
-      video: HTMLAttributes
-      wbr: HTMLAttributes
+    interface ElementAttributesProperty {}
 
-      // svg
-      svg: SVGAttributes
-      animate: SVGAttributes
-      circle: SVGAttributes
-      clipPath: SVGAttributes
-      defs: SVGAttributes
-      ellipse: SVGAttributes
-      feBlend: SVGAttributes
-      feColorMatrix: SVGAttributes
-      feComponentTransfer: SVGAttributes
-      feComposite: SVGAttributes
-      feConvolveMatrix: SVGAttributes
-      feDiffuseLighting: SVGAttributes
-      feDisplacementMap: SVGAttributes
-      feFlood: SVGAttributes
-      feGaussianBlur: SVGAttributes
-      feImage: SVGAttributes
-      feMerge: SVGAttributes
-      feMergeNode: SVGAttributes
-      feMorphology: SVGAttributes
-      feOffset: SVGAttributes
-      feSpecularLighting: SVGAttributes
-      feTile: SVGAttributes
-      feTurbulence: SVGAttributes
-      filter: SVGAttributes
-      foreignObject: SVGAttributes
-      g: SVGAttributes
-      image: SVGAttributes
-      line: SVGAttributes
-      linearGradient: SVGAttributes
-      marker: SVGAttributes
-      mask: SVGAttributes
-      path: SVGAttributes
-      pattern: SVGAttributes
-      polygon: SVGAttributes
-      polyline: SVGAttributes
-      radialGradient: SVGAttributes
-      rect: SVGAttributes
-      stop: SVGAttributes
-      symbol: SVGAttributes
-      text: SVGAttributes
-      tspan: SVGAttributes
-      use: SVGAttributes
+    interface ElementChildrenAttribute {}
+
+    interface CSSProperties<
+      TLength = (string & {}) | number,
+      TTime = string & {}
+    > extends CSS.Properties<TLength, TTime> {
+      /**
+       * The index signature was removed to enable closed typing for style
+       * using CSSType. You're able to use type assertion or module augmentation
+       * to add properties or an index signature of your own.
+       *
+       * For examples and more information, visit:
+       * https://github.com/frenic/csstype#what-should-i-do-when-i-get-type-errors
+       */
     }
 
-    interface DOMAttributes extends IntrinsicAttributes {
-      // image events
-      onLoad?: GenericEventHandler
-
-      // clipboard events
-      onCopy?: ClipboardEventHandler
-      onCut?: ClipboardEventHandler
-      onPaste?: ClipboardEventHandler
-
-      // composition events
-      onCompositionEnd?: CompositionEventHandler
-      onCompositionStart?: CompositionEventHandler
-      onCompositionUpdate?: CompositionEventHandler
-
-      // focus events
-      onFocus?: FocusEventHandler
-      onBlur?: FocusEventHandler
-
-      // form events
-      onChange?: GenericEventHandler
-      onInput?: GenericEventHandler
-      onSearch?: GenericEventHandler
-      onSubmit?: GenericEventHandler
-
-      // keyboard events
-      onKeyDown?: KeyboardEventHandler
-      onKeyPress?: KeyboardEventHandler
-      onKeyUp?: KeyboardEventHandler
-
-      // media events
-      onAbort?: GenericEventHandler
-      onCanPlay?: GenericEventHandler
-      onCanPlayThrough?: GenericEventHandler
-      onDurationChange?: GenericEventHandler
-      onEmptied?: GenericEventHandler
-      onEncrypted?: GenericEventHandler
-      onEnded?: GenericEventHandler
-      onLoadedData?: GenericEventHandler
-      onLoadedMetadata?: GenericEventHandler
-      onLoadStart?: GenericEventHandler
-      onPause?: GenericEventHandler
-      onPlay?: GenericEventHandler
-      onPlaying?: GenericEventHandler
-      onProgress?: GenericEventHandler
-      onRateChange?: GenericEventHandler
-      onSeeked?: GenericEventHandler
-      onSeeking?: GenericEventHandler
-      onStalled?: GenericEventHandler
-      onSuspend?: GenericEventHandler
-      onTimeUpdate?: GenericEventHandler
-      onVolumeChange?: GenericEventHandler
-      onWaiting?: GenericEventHandler
-
-      // mouse events
-      onClick?: MouseEventHandler
-      onContextMenu?: MouseEventHandler
-      onDblClick?: MouseEventHandler
-      onDrag?: DragEventHandler
-      onDragEnd?: DragEventHandler
-      onDragEnter?: DragEventHandler
-      onDragExit?: DragEventHandler
-      onDragLeave?: DragEventHandler
-      onDragOver?: DragEventHandler
-      onDragStart?: DragEventHandler
-      onDrop?: DragEventHandler
-      onMouseDown?: MouseEventHandler
-      onMouseEnter?: MouseEventHandler
-      onMouseLeave?: MouseEventHandler
-      onMouseMove?: MouseEventHandler
-      onMouseOut?: MouseEventHandler
-      onMouseOver?: MouseEventHandler
-      onMouseUp?: MouseEventHandler
-
-      // selection events
-      onSelect?: GenericEventHandler
-
-      // touch events
-      onTouchCancel?: TouchEventHandler
-      onTouchEnd?: TouchEventHandler
-      onTouchMove?: TouchEventHandler
-      onTouchStart?: TouchEventHandler
-
-      // ui events
-      onScroll?: UIEventHandler
-
-      // wheel events
-      onWheel?: WheelEventHandler
-
-      // animation events
-      onAnimationStart?: AnimationEventHandler
-      onAnimationEnd?: AnimationEventHandler
-      onAnimationIteration?: AnimationEventHandler
-
-      // transition events
-      onTransitionEnd?: TransitionEventHandler
-    }
-
-    interface HTMLAttributes extends DOMAttributes {
-      accept?: string
-      acceptCharset?: string
-      accessKey?: string
-      action?: string
-      allowFullScreen?: boolean
-      allowTransparency?: boolean
-      alt?: string
-      async?: boolean
-      autocomplete?: string
-      autofocus?: boolean
-      autoPlay?: boolean
-      capture?: boolean
-      cellPadding?: number | string
-      cellSpacing?: number | string
-      charSet?: string
-      challenge?: string
-      checked?: boolean
-
-      children?: VNode | VNode[] // TODO!!!!!
-
-      class?: string
-      cols?: number
-      colSpan?: number
-      content?: string
-      contentEditable?: boolean
-      contextMenu?: string
-      controls?: boolean
-      coords?: string
-      crossOrigin?: string
-      data?: string
-      dateTime?: string
-      default?: boolean
-      defer?: boolean
-      dir?: string
-      disabled?: boolean
-      download?: any
-      draggable?: boolean
-      encType?: string
-      form?: string
-      formAction?: string
-      formEncType?: string
-      formMethod?: string
-      formNoValidate?: boolean
-      formTarget?: string
-      frameBorder?: number | string
-      headers?: string
-      height?: number | string
-      hidden?: boolean
-      high?: number
-      href?: string
-      hrefLang?: string
-      for?: string
-      httpEquiv?: string
-      icon?: string
-      id?: string
-      inputMode?: string
-      integrity?: string
-      is?: string
-      keyParams?: string
-      keyType?: string
-      kind?: string
-      label?: string
-      lang?: string
-      list?: string
-      loop?: boolean
-      low?: number
-      manifest?: string
-      marginHeight?: number
-      marginWidth?: number
-      max?: number | string
-      maxLength?: number
-      media?: string
-      mediaGroup?: string
-      method?: string
-      min?: number | string
-      minLength?: number
-      multiple?: boolean
-      muted?: boolean
-      name?: string
-      noValidate?: boolean
-      open?: boolean
-      optimum?: number
-      pattern?: string
-      placeholder?: string
-      poster?: string
-      preload?: string
-      radioGroup?: string
-      readOnly?: boolean
-      rel?: string
-      required?: boolean
-      role?: string
-      rows?: number
-      rowSpan?: number
-      sandbox?: string
-      scope?: string
-      scoped?: boolean
-      scrolling?: string
-      seamless?: boolean
-      selected?: boolean
-      shape?: string
-      size?: number
-      sizes?: string
-      slot?: string
-      span?: number
-      spellCheck?: boolean
-      src?: string
-      srcset?: string
-      srcDoc?: string
-      srcLang?: string
-      srcSet?: string
-      start?: number
-      step?: number | string
-      style?: any
-      summary?: string
-      tabIndex?: number
-      target?: string
-      title?: string
-      type?: string
-      useMap?: string
-      value?: string | string[] | number
-      width?: number | string
-      wmode?: string
-      wrap?: string
-
-      // rdfa attributes
-      about?: string
-      datatype?: string
-      inlist?: any
-      prefix?: string
-      property?: string
-      resource?: string
-      typeof?: string
-      vocab?: string
-    }
-
-    interface SVGAttributes extends HTMLAttributes {
+    interface SVGAttributes<Target extends EventTarget = SVGElement>
+      extends HTMLAttributes<Target> {
       accentHeight?: number | string
       accumulate?: 'none' | 'sum'
       additive?: 'replace' | 'sum'
@@ -616,7 +223,7 @@ declare global {
       strokeDashoffset?: string | number
       strokeLinecap?: 'butt' | 'round' | 'square' | 'inherit'
       strokeLinejoin?: 'miter' | 'round' | 'bevel' | 'inherit'
-      strokeMiterlimit?: string
+      strokeMiterlimit?: string | number
       strokeOpacity?: number | string
       strokeWidth?: number | string
       surfaceScale?: number | string
@@ -677,6 +284,651 @@ declare global {
       yChannelSelector?: string
       z?: number | string
       zoomAndPan?: string
+    }
+
+    interface PathAttributes {
+      d: string
+    }
+
+    type TargetedEvent<
+      Target extends EventTarget = EventTarget,
+      TypedEvent extends Event = Event
+    > = Omit<TypedEvent, 'currentTarget'> & {
+      readonly currentTarget: Target
+    }
+
+    type TargetedAnimationEvent<Target extends EventTarget> = TargetedEvent<
+      Target,
+      AnimationEvent
+    >
+    type TargetedClipboardEvent<Target extends EventTarget> = TargetedEvent<
+      Target,
+      ClipboardEvent
+    >
+    type TargetedCompositionEvent<Target extends EventTarget> = TargetedEvent<
+      Target,
+      CompositionEvent
+    >
+    type TargetedDragEvent<Target extends EventTarget> = TargetedEvent<
+      Target,
+      DragEvent
+    >
+    type TargetedFocusEvent<Target extends EventTarget> = TargetedEvent<
+      Target,
+      FocusEvent
+    >
+    type TargetedKeyboardEvent<Target extends EventTarget> = TargetedEvent<
+      Target,
+      KeyboardEvent
+    >
+    type TargetedMouseEvent<Target extends EventTarget> = TargetedEvent<
+      Target,
+      MouseEvent
+    >
+    type TargetedPointerEvent<Target extends EventTarget> = TargetedEvent<
+      Target,
+      PointerEvent
+    >
+    type TargetedTouchEvent<Target extends EventTarget> = TargetedEvent<
+      Target,
+      TouchEvent
+    >
+    type TargetedTransitionEvent<Target extends EventTarget> = TargetedEvent<
+      Target,
+      TransitionEvent
+    >
+    type TargetedUIEvent<Target extends EventTarget> = TargetedEvent<
+      Target,
+      UIEvent
+    >
+    type TargetedWheelEvent<Target extends EventTarget> = TargetedEvent<
+      Target,
+      WheelEvent
+    >
+
+    interface EventHandler<E extends TargetedEvent> {
+      /**
+       * The `this` keyword always points to the DOM element the event handler
+       * was invoked on. See: https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Event_handlers#Event_handlers_parameters_this_binding_and_the_return_value
+       */
+      (this: E['currentTarget'], event: E): void
+    }
+
+    type AnimationEventHandler<Target extends EventTarget> = EventHandler<
+      TargetedAnimationEvent<Target>
+    >
+    type ClipboardEventHandler<Target extends EventTarget> = EventHandler<
+      TargetedClipboardEvent<Target>
+    >
+    type CompositionEventHandler<Target extends EventTarget> = EventHandler<
+      TargetedCompositionEvent<Target>
+    >
+    type DragEventHandler<Target extends EventTarget> = EventHandler<
+      TargetedDragEvent<Target>
+    >
+    type FocusEventHandler<Target extends EventTarget> = EventHandler<
+      TargetedFocusEvent<Target>
+    >
+    type GenericEventHandler<Target extends EventTarget> = EventHandler<
+      TargetedEvent<Target>
+    >
+    type KeyboardEventHandler<Target extends EventTarget> = EventHandler<
+      TargetedKeyboardEvent<Target>
+    >
+    type MouseEventHandler<Target extends EventTarget> = EventHandler<
+      TargetedMouseEvent<Target>
+    >
+    type PointerEventHandler<Target extends EventTarget> = EventHandler<
+      TargetedPointerEvent<Target>
+    >
+    type TouchEventHandler<Target extends EventTarget> = EventHandler<
+      TargetedTouchEvent<Target>
+    >
+    type TransitionEventHandler<Target extends EventTarget> = EventHandler<
+      TargetedTransitionEvent<Target>
+    >
+    type UIEventHandler<Target extends EventTarget> = EventHandler<
+      TargetedUIEvent<Target>
+    >
+    type WheelEventHandler<Target extends EventTarget> = EventHandler<
+      TargetedWheelEvent<Target>
+    >
+
+    interface DOMAttributes<Target extends EventTarget>
+      extends IntrinsicAttributes {
+      // Image Events
+      onLoad?: GenericEventHandler<Target>
+      onLoadCapture?: GenericEventHandler<Target>
+      onError?: GenericEventHandler<Target>
+      onErrorCapture?: GenericEventHandler<Target>
+
+      // Clipboard Events
+      onCopy?: ClipboardEventHandler<Target>
+      onCopyCapture?: ClipboardEventHandler<Target>
+      onCut?: ClipboardEventHandler<Target>
+      onCutCapture?: ClipboardEventHandler<Target>
+      onPaste?: ClipboardEventHandler<Target>
+      onPasteCapture?: ClipboardEventHandler<Target>
+
+      // Composition Events
+      onCompositionEnd?: CompositionEventHandler<Target>
+      onCompositionEndCapture?: CompositionEventHandler<Target>
+      onCompositionStart?: CompositionEventHandler<Target>
+      onCompositionStartCapture?: CompositionEventHandler<Target>
+      onCompositionUpdate?: CompositionEventHandler<Target>
+      onCompositionUpdateCapture?: CompositionEventHandler<Target>
+
+      // Details Events
+      onToggle?: GenericEventHandler<Target>
+
+      // Focus Events
+      onFocus?: FocusEventHandler<Target>
+      onFocusCapture?: FocusEventHandler<Target>
+      onBlur?: FocusEventHandler<Target>
+      onBlurCapture?: FocusEventHandler<Target>
+
+      // Form Events
+      onChange?: GenericEventHandler<Target>
+      onChangeCapture?: GenericEventHandler<Target>
+      onInput?: GenericEventHandler<Target>
+      onInputCapture?: GenericEventHandler<Target>
+      onSearch?: GenericEventHandler<Target>
+      onSearchCapture?: GenericEventHandler<Target>
+      onSubmit?: GenericEventHandler<Target>
+      onSubmitCapture?: GenericEventHandler<Target>
+      onInvalid?: GenericEventHandler<Target>
+      onInvalidCapture?: GenericEventHandler<Target>
+      onReset?: GenericEventHandler<Target>
+      onResetCapture?: GenericEventHandler<Target>
+      onFormData?: GenericEventHandler<Target>
+      onFormDataCapture?: GenericEventHandler<Target>
+
+      // Keyboard Events
+      onKeyDown?: KeyboardEventHandler<Target>
+      onKeyDownCapture?: KeyboardEventHandler<Target>
+      onKeyPress?: KeyboardEventHandler<Target>
+      onKeyPressCapture?: KeyboardEventHandler<Target>
+      onKeyUp?: KeyboardEventHandler<Target>
+      onKeyUpCapture?: KeyboardEventHandler<Target>
+
+      // Media Events
+      onAbort?: GenericEventHandler<Target>
+      onAbortCapture?: GenericEventHandler<Target>
+      onCanPlay?: GenericEventHandler<Target>
+      onCanPlayCapture?: GenericEventHandler<Target>
+      onCanPlayThrough?: GenericEventHandler<Target>
+      onCanPlayThroughCapture?: GenericEventHandler<Target>
+      onDurationChange?: GenericEventHandler<Target>
+      onDurationChangeCapture?: GenericEventHandler<Target>
+      onEmptied?: GenericEventHandler<Target>
+      onEmptiedCapture?: GenericEventHandler<Target>
+      onEncrypted?: GenericEventHandler<Target>
+      onEncryptedCapture?: GenericEventHandler<Target>
+      onEnded?: GenericEventHandler<Target>
+      onEndedCapture?: GenericEventHandler<Target>
+      onLoadedData?: GenericEventHandler<Target>
+      onLoadedDataCapture?: GenericEventHandler<Target>
+      onLoadedMetadata?: GenericEventHandler<Target>
+      onLoadedMetadataCapture?: GenericEventHandler<Target>
+      onLoadStart?: GenericEventHandler<Target>
+      onLoadStartCapture?: GenericEventHandler<Target>
+      onPause?: GenericEventHandler<Target>
+      onPauseCapture?: GenericEventHandler<Target>
+      onPlay?: GenericEventHandler<Target>
+      onPlayCapture?: GenericEventHandler<Target>
+      onPlaying?: GenericEventHandler<Target>
+      onPlayingCapture?: GenericEventHandler<Target>
+      onProgress?: GenericEventHandler<Target>
+      onProgressCapture?: GenericEventHandler<Target>
+      onRateChange?: GenericEventHandler<Target>
+      onRateChangeCapture?: GenericEventHandler<Target>
+      onSeeked?: GenericEventHandler<Target>
+      onSeekedCapture?: GenericEventHandler<Target>
+      onSeeking?: GenericEventHandler<Target>
+      onSeekingCapture?: GenericEventHandler<Target>
+      onStalled?: GenericEventHandler<Target>
+      onStalledCapture?: GenericEventHandler<Target>
+      onSuspend?: GenericEventHandler<Target>
+      onSuspendCapture?: GenericEventHandler<Target>
+      onTimeUpdate?: GenericEventHandler<Target>
+      onTimeUpdateCapture?: GenericEventHandler<Target>
+      onVolumeChange?: GenericEventHandler<Target>
+      onVolumeChangeCapture?: GenericEventHandler<Target>
+      onWaiting?: GenericEventHandler<Target>
+      onWaitingCapture?: GenericEventHandler<Target>
+
+      // MouseEvents
+      onClick?: MouseEventHandler<Target>
+      onClickCapture?: MouseEventHandler<Target>
+      onContextMenu?: MouseEventHandler<Target>
+      onContextMenuCapture?: MouseEventHandler<Target>
+      onDblClick?: MouseEventHandler<Target>
+      onDblClickCapture?: MouseEventHandler<Target>
+      onDrag?: DragEventHandler<Target>
+      onDragCapture?: DragEventHandler<Target>
+      onDragEnd?: DragEventHandler<Target>
+      onDragEndCapture?: DragEventHandler<Target>
+      onDragEnter?: DragEventHandler<Target>
+      onDragEnterCapture?: DragEventHandler<Target>
+      onDragExit?: DragEventHandler<Target>
+      onDragExitCapture?: DragEventHandler<Target>
+      onDragLeave?: DragEventHandler<Target>
+      onDragLeaveCapture?: DragEventHandler<Target>
+      onDragOver?: DragEventHandler<Target>
+      onDragOverCapture?: DragEventHandler<Target>
+      onDragStart?: DragEventHandler<Target>
+      onDragStartCapture?: DragEventHandler<Target>
+      onDrop?: DragEventHandler<Target>
+      onDropCapture?: DragEventHandler<Target>
+      onMouseDown?: MouseEventHandler<Target>
+      onMouseDownCapture?: MouseEventHandler<Target>
+      onMouseEnter?: MouseEventHandler<Target>
+      onMouseEnterCapture?: MouseEventHandler<Target>
+      onMouseLeave?: MouseEventHandler<Target>
+      onMouseLeaveCapture?: MouseEventHandler<Target>
+      onMouseMove?: MouseEventHandler<Target>
+      onMouseMoveCapture?: MouseEventHandler<Target>
+      onMouseOut?: MouseEventHandler<Target>
+      onMouseOutCapture?: MouseEventHandler<Target>
+      onMouseOver?: MouseEventHandler<Target>
+      onMouseOverCapture?: MouseEventHandler<Target>
+      onMouseUp?: MouseEventHandler<Target>
+      onMouseUpCapture?: MouseEventHandler<Target>
+
+      // Selection Events
+      onSelect?: GenericEventHandler<Target>
+      onSelectCapture?: GenericEventHandler<Target>
+
+      // Touch Events
+      onTouchCancel?: TouchEventHandler<Target>
+      onTouchCancelCapture?: TouchEventHandler<Target>
+      onTouchEnd?: TouchEventHandler<Target>
+      onTouchEndCapture?: TouchEventHandler<Target>
+      onTouchMove?: TouchEventHandler<Target>
+      onTouchMoveCapture?: TouchEventHandler<Target>
+      onTouchStart?: TouchEventHandler<Target>
+      onTouchStartCapture?: TouchEventHandler<Target>
+
+      // Pointer Events
+      onPointerOver?: PointerEventHandler<Target>
+      onPointerOverCapture?: PointerEventHandler<Target>
+      onPointerEnter?: PointerEventHandler<Target>
+      onPointerEnterCapture?: PointerEventHandler<Target>
+      onPointerDown?: PointerEventHandler<Target>
+      onPointerDownCapture?: PointerEventHandler<Target>
+      onPointerMove?: PointerEventHandler<Target>
+      onPointerMoveCapture?: PointerEventHandler<Target>
+      onPointerUp?: PointerEventHandler<Target>
+      onPointerUpCapture?: PointerEventHandler<Target>
+      onPointerCancel?: PointerEventHandler<Target>
+      onPointerCancelCapture?: PointerEventHandler<Target>
+      onPointerOut?: PointerEventHandler<Target>
+      onPointerOutCapture?: PointerEventHandler<Target>
+      onPointerLeave?: PointerEventHandler<Target>
+      onPointerLeaveCapture?: PointerEventHandler<Target>
+      onGotPointerCapture?: PointerEventHandler<Target>
+      onGotPointerCaptureCapture?: PointerEventHandler<Target>
+      onLostPointerCapture?: PointerEventHandler<Target>
+      onLostPointerCaptureCapture?: PointerEventHandler<Target>
+
+      // UI Events
+      onScroll?: UIEventHandler<Target>
+      onScrollCapture?: UIEventHandler<Target>
+
+      // Wheel Events
+      onWheel?: WheelEventHandler<Target>
+      onWheelCapture?: WheelEventHandler<Target>
+
+      // Animation Events
+      onAnimationStart?: AnimationEventHandler<Target>
+      onAnimationStartCapture?: AnimationEventHandler<Target>
+      onAnimationEnd?: AnimationEventHandler<Target>
+      onAnimationEndCapture?: AnimationEventHandler<Target>
+      onAnimationIteration?: AnimationEventHandler<Target>
+      onAnimationIterationCapture?: AnimationEventHandler<Target>
+
+      // Transition Events
+      onTransitionEnd?: TransitionEventHandler<Target>
+      onTransitionEndCapture?: TransitionEventHandler<Target>
+    }
+
+    interface HTMLAttributes<RefType extends EventTarget = EventTarget>
+      extends DOMAttributes<RefType> {
+      // Standard HTML Attributes
+      accept?: string
+      acceptCharset?: string
+      accessKey?: string
+      action?: string
+      allowFullScreen?: boolean
+      allowTransparency?: boolean
+      alt?: string
+      as?: string
+      async?: boolean
+      autocomplete?: string
+      autoComplete?: string
+      autocorrect?: string
+      autoCorrect?: string
+      autofocus?: boolean
+      autoFocus?: boolean
+      autoPlay?: boolean
+      capture?: boolean | string
+      cellPadding?: number | string
+      cellSpacing?: number | string
+      charSet?: string
+      challenge?: string
+      checked?: boolean
+
+      children?: VNode | Vode[] // TODO!!!!!!
+
+      class?: string
+      className?: string
+      cols?: number
+      colSpan?: number
+      content?: string
+      contentEditable?: boolean
+      contextMenu?: string
+      controls?: boolean
+      controlsList?: string
+      coords?: string
+      crossOrigin?: string
+      data?: string
+      dateTime?: string
+      default?: boolean
+      defer?: boolean
+      dir?: 'auto' | 'rtl' | 'ltr'
+      disabled?: boolean
+      disableRemotePlayback?: boolean
+      download?: any
+      draggable?: boolean
+      encType?: string
+      form?: string
+      formAction?: string
+      formEncType?: string
+      formMethod?: string
+      formNoValidate?: boolean
+      formTarget?: string
+      frameBorder?: number | string
+      headers?: string
+      height?: number | string
+      hidden?: boolean
+      high?: number
+      href?: string
+      hrefLang?: string
+      for?: string
+      htmlFor?: string
+      httpEquiv?: string
+      icon?: string
+      id?: string
+      inputMode?: string
+      integrity?: string
+      is?: string
+      keyParams?: string
+      keyType?: string
+      kind?: string
+      label?: string
+      lang?: string
+      list?: string
+      loading?: 'eager' | 'lazy'
+      loop?: boolean
+      low?: number
+      manifest?: string
+      marginHeight?: number
+      marginWidth?: number
+      max?: number | string
+      maxLength?: number
+      media?: string
+      mediaGroup?: string
+      method?: string
+      min?: number | string
+      minLength?: number
+      multiple?: boolean
+      muted?: boolean
+      name?: string
+      nonce?: string
+      noValidate?: boolean
+      open?: boolean
+      optimum?: number
+      pattern?: string
+      placeholder?: string
+      playsInline?: boolean
+      poster?: string
+      preload?: string
+      radioGroup?: string
+      readonly?: boolean
+      readOnly?: boolean
+      rel?: string
+      required?: boolean
+      role?: string
+      rows?: number
+      rowSpan?: number
+      sandbox?: string
+      scope?: string
+      scoped?: boolean
+      scrolling?: string
+      seamless?: boolean
+      selected?: boolean
+      shape?: string
+      size?: number
+      sizes?: string
+      slot?: string
+      span?: number
+      spellcheck?: boolean
+      src?: string
+      srcset?: string
+      srcDoc?: string
+      srcLang?: string
+      srcSet?: string
+      start?: number
+      step?: number | string
+      style?: string | CSSProperties
+      summary?: string
+      tabIndex?: number
+      target?: string
+      title?: string
+      type?: string
+      useMap?: string
+      value?: string | string[] | number
+      volume?: string | number
+      width?: number | string
+      wmode?: string
+      wrap?: string
+
+      // RDFa Attributes
+      about?: string
+      datatype?: string
+      inlist?: any
+      prefix?: string
+      property?: string
+      resource?: string
+      typeof?: string
+      vocab?: string
+
+      // Microdata Attributes
+      itemProp?: string
+      itemScope?: boolean
+      itemType?: string
+      itemID?: string
+      itemRef?: string
+    }
+
+    interface HTMLMarqueeElement extends HTMLElement {
+      behavior?: 'scroll' | 'slide' | 'alternate'
+      bgColor?: string
+      direction?: 'left' | 'right' | 'up' | 'down'
+      height?: number | string
+      hspace?: number | string
+      loop?: number | string
+      scrollAmount?: number | string
+      scrollDelay?: number | string
+      trueSpeed?: boolean
+      vspace?: number | string
+      width?: number | string
+    }
+
+    interface IntrinsicElements {
+      // HTML
+      a: HTMLAttributes<HTMLAnchorElement>
+      abbr: HTMLAttributes<HTMLElement>
+      address: HTMLAttributes<HTMLElement>
+      area: HTMLAttributes<HTMLAreaElement>
+      article: HTMLAttributes<HTMLElement>
+      aside: HTMLAttributes<HTMLElement>
+      audio: HTMLAttributes<HTMLAudioElement>
+      b: HTMLAttributes<HTMLElement>
+      base: HTMLAttributes<HTMLBaseElement>
+      bdi: HTMLAttributes<HTMLElement>
+      bdo: HTMLAttributes<HTMLElement>
+      big: HTMLAttributes<HTMLElement>
+      blockquote: HTMLAttributes<HTMLQuoteElement>
+      body: HTMLAttributes<HTMLBodyElement>
+      br: HTMLAttributes<HTMLBRElement>
+      button: HTMLAttributes<HTMLButtonElement>
+      canvas: HTMLAttributes<HTMLCanvasElement>
+      caption: HTMLAttributes<HTMLTableCaptionElement>
+      cite: HTMLAttributes<HTMLElement>
+      code: HTMLAttributes<HTMLElement>
+      col: HTMLAttributes<HTMLTableColElement>
+      colgroup: HTMLAttributes<HTMLTableColElement>
+      data: HTMLAttributes<HTMLDataElement>
+      datalist: HTMLAttributes<HTMLDataListElement>
+      dd: HTMLAttributes<HTMLElement>
+      del: HTMLAttributes<HTMLModElement>
+      details: HTMLAttributes<HTMLDetailsElement>
+      dfn: HTMLAttributes<HTMLElement>
+      dialog: HTMLAttributes<HTMLDialogElement>
+      div: HTMLAttributes<HTMLDivElement>
+      dl: HTMLAttributes<HTMLDListElement>
+      dt: HTMLAttributes<HTMLElement>
+      em: HTMLAttributes<HTMLElement>
+      embed: HTMLAttributes<HTMLEmbedElement>
+      fieldset: HTMLAttributes<HTMLFieldSetElement>
+      figcaption: HTMLAttributes<HTMLElement>
+      figure: HTMLAttributes<HTMLElement>
+      footer: HTMLAttributes<HTMLElement>
+      form: HTMLAttributes<HTMLFormElement>
+      h1: HTMLAttributes<HTMLHeadingElement>
+      h2: HTMLAttributes<HTMLHeadingElement>
+      h3: HTMLAttributes<HTMLHeadingElement>
+      h4: HTMLAttributes<HTMLHeadingElement>
+      h5: HTMLAttributes<HTMLHeadingElement>
+      h6: HTMLAttributes<HTMLHeadingElement>
+      head: HTMLAttributes<HTMLHeadElement>
+      header: HTMLAttributes<HTMLElement>
+      hgroup: HTMLAttributes<HTMLElement>
+      hr: HTMLAttributes<HTMLHRElement>
+      html: HTMLAttributes<HTMLHtmlElement>
+      i: HTMLAttributes<HTMLElement>
+      iframe: HTMLAttributes<HTMLIFrameElement>
+      img: HTMLAttributes<HTMLImageElement>
+      input: HTMLAttributes<HTMLInputElement>
+      ins: HTMLAttributes<HTMLModElement>
+      kbd: HTMLAttributes<HTMLElement>
+      keygen: HTMLAttributes<HTMLUnknownElement>
+      label: HTMLAttributes<HTMLLabelElement>
+      legend: HTMLAttributes<HTMLLegendElement>
+      li: HTMLAttributes<HTMLLIElement>
+      link: HTMLAttributes<HTMLLinkElement>
+      main: HTMLAttributes<HTMLElement>
+      map: HTMLAttributes<HTMLMapElement>
+      mark: HTMLAttributes<HTMLElement>
+      marquee: HTMLAttributes<HTMLMarqueeElement>
+      menu: HTMLAttributes<HTMLMenuElement>
+      menuitem: HTMLAttributes<HTMLUnknownElement>
+      meta: HTMLAttributes<HTMLMetaElement>
+      meter: HTMLAttributes<HTMLMeterElement>
+      nav: HTMLAttributes<HTMLElement>
+      noscript: HTMLAttributes<HTMLElement>
+      object: HTMLAttributes<HTMLObjectElement>
+      ol: HTMLAttributes<HTMLOListElement>
+      optgroup: HTMLAttributes<HTMLOptGroupElement>
+      option: HTMLAttributes<HTMLOptionElement>
+      output: HTMLAttributes<HTMLOutputElement>
+      p: HTMLAttributes<HTMLParagraphElement>
+      param: HTMLAttributes<HTMLParamElement>
+      picture: HTMLAttributes<HTMLPictureElement>
+      pre: HTMLAttributes<HTMLPreElement>
+      progress: HTMLAttributes<HTMLProgressElement>
+      q: HTMLAttributes<HTMLQuoteElement>
+      rp: HTMLAttributes<HTMLElement>
+      rt: HTMLAttributes<HTMLElement>
+      ruby: HTMLAttributes<HTMLElement>
+      s: HTMLAttributes<HTMLElement>
+      samp: HTMLAttributes<HTMLElement>
+      script: HTMLAttributes<HTMLScriptElement>
+      section: HTMLAttributes<HTMLElement>
+      select: HTMLAttributes<HTMLSelectElement>
+      slot: HTMLAttributes<HTMLSlotElement>
+      small: HTMLAttributes<HTMLElement>
+      source: HTMLAttributes<HTMLSourceElement>
+      span: HTMLAttributes<HTMLSpanElement>
+      strong: HTMLAttributes<HTMLElement>
+      style: HTMLAttributes<HTMLStyleElement>
+      sub: HTMLAttributes<HTMLElement>
+      summary: HTMLAttributes<HTMLElement>
+      sup: HTMLAttributes<HTMLElement>
+      table: HTMLAttributes<HTMLTableElement>
+      tbody: HTMLAttributes<HTMLTableSectionElement>
+      td: HTMLAttributes<HTMLTableCellElement>
+      textarea: HTMLAttributes<HTMLTextAreaElement>
+      tfoot: HTMLAttributes<HTMLTableSectionElement>
+      th: HTMLAttributes<HTMLTableCellElement>
+      thead: HTMLAttributes<HTMLTableSectionElement>
+      time: HTMLAttributes<HTMLTimeElement>
+      title: HTMLAttributes<HTMLTitleElement>
+      tr: HTMLAttributes<HTMLTableRowElement>
+      track: HTMLAttributes<HTMLTrackElement>
+      u: HTMLAttributes<HTMLElement>
+      ul: HTMLAttributes<HTMLUListElement>
+      var: HTMLAttributes<HTMLElement>
+      video: HTMLAttributes<HTMLVideoElement>
+      wbr: HTMLAttributes<HTMLElement>
+
+      //SVG
+      svg: SVGAttributes<SVGSVGElement>
+      animate: SVGAttributes<SVGAnimateElement>
+      circle: SVGAttributes<SVGCircleElement>
+      animateTransform: SVGAttributes<SVGAnimateElement>
+      clipPath: SVGAttributes<SVGClipPathElement>
+      defs: SVGAttributes<SVGDefsElement>
+      desc: SVGAttributes<SVGDescElement>
+      ellipse: SVGAttributes<SVGEllipseElement>
+      feBlend: SVGAttributes<SVGFEBlendElement>
+      feColorMatrix: SVGAttributes<SVGFEColorMatrixElement>
+      feComponentTransfer: SVGAttributes<SVGFEComponentTransferElement>
+      feComposite: SVGAttributes<SVGFECompositeElement>
+      feConvolveMatrix: SVGAttributes<SVGFEConvolveMatrixElement>
+      feDiffuseLighting: SVGAttributes<SVGFEDiffuseLightingElement>
+      feDisplacementMap: SVGAttributes<SVGFEDisplacementMapElement>
+      feDropShadow: SVGAttributes<SVGFEDropShadowElement>
+      feFlood: SVGAttributes<SVGFEFloodElement>
+      feGaussianBlur: SVGAttributes<SVGFEGaussianBlurElement>
+      feImage: SVGAttributes<SVGFEImageElement>
+      feMerge: SVGAttributes<SVGFEMergeElement>
+      feMergeNode: SVGAttributes<SVGFEMergeNodeElement>
+      feMorphology: SVGAttributes<SVGFEMorphologyElement>
+      feOffset: SVGAttributes<SVGFEOffsetElement>
+      feSpecularLighting: SVGAttributes<SVGFESpecularLightingElement>
+      feTile: SVGAttributes<SVGFETileElement>
+      feTurbulence: SVGAttributes<SVGFETurbulenceElement>
+      filter: SVGAttributes<SVGFilterElement>
+      foreignObject: SVGAttributes<SVGForeignObjectElement>
+      g: SVGAttributes<SVGGElement>
+      image: SVGAttributes<SVGImageElement>
+      line: SVGAttributes<SVGLineElement>
+      linearGradient: SVGAttributes<SVGLinearGradientElement>
+      marker: SVGAttributes<SVGMarkerElement>
+      mask: SVGAttributes<SVGMaskElement>
+      path: SVGAttributes<SVGPathElement>
+      pattern: SVGAttributes<SVGPatternElement>
+      polygon: SVGAttributes<SVGPolygonElement>
+      polyline: SVGAttributes<SVGPolylineElement>
+      radialGradient: SVGAttributes<SVGRadialGradientElement>
+      rect: SVGAttributes<SVGRectElement>
+      stop: SVGAttributes<SVGStopElement>
+      symbol: SVGAttributes<SVGSymbolElement>
+      text: SVGAttributes<SVGTextElement>
+      tspan: SVGAttributes<SVGTSpanElement>
+      use: SVGAttributes<SVGUseElement>
     }
   }
 }

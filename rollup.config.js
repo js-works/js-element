@@ -1,4 +1,3 @@
-//import { tslint } from 'rollup-plugin-tslint'
 import resolve from '@rollup/plugin-node-resolve'
 import replace from '@rollup/plugin-replace'
 import commonjs from '@rollup/plugin-commonjs'
@@ -8,8 +7,8 @@ import gzip from 'rollup-plugin-gzip'
 
 const configs = []
 
-for (const pkg of ['root', 'hooks']) {
-  for (const format of ['umd', 'cjs', 'amd', 'esm']) {
+for (const pkg of ['root', 'hooks', 'utils', 'types']) {
+  for (const format of [/*'umd', 'cjs', 'amd',*/ 'esm']) {
     for (const productive of [false, true]) {
       configs.push(createConfig(pkg, format, productive))
     }

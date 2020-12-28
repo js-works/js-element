@@ -1,4 +1,7 @@
-import { component, h, prop } from 'js-elements'
+import { element, html, prop } from 'js-elements'
+import { useEmitter, useStyles } from 'js-elements/hooks'
+import { EventHandler, UIEvent } from 'js-elements/types'
+import { createEvent } from 'js-elements/utils'
 
 const buttonDemoStyles = ` 
   .demo-button {
@@ -8,44 +11,48 @@ const buttonDemoStyles = `
     padding: 5px 8px;
     outline: none;
   }
-
   .demo-button:hover {
     background-color: #444;
   }
-
   .demo-button:active {
     background-color: #555;
   }
 `
 
-const DemoButton = component('demo-button')({
-  props: {
-    text: prop.str.req(),
-    onButtonClick: prop.evt()
-  }
-})((c, props) => {
-  c.addStyles(buttonDemoStyles)
+type ButtonClickEvent = UIEvent<'button-click'>
 
-  const onClick = () => {
-    if (props.onButtonClick) {
-      props.onButtonClick(new CustomEvent('button-click')) // TODO
+@element('demo-button')
+class DemoButton {
+  @prop()
+  text?: string
+
+  @prop()
+  onButtonClick?: EventHandler<ButtonClickEvent>
+
+  static main(self: DemoButton) {
+    const emit = useEmitter()
+    useStyles(buttonDemoStyles)
+
+    const onClick = () => {
+      emit(createEvent('button-click'), self.onButtonClick)
     }
+
+    return () => html`
+      <button class="demo-button" onClick=${onClick}>${self.text}</button>
+    `
   }
+}
 
-  return () => (
-    <button class="demo-button" onClick={onClick}>
-      {props.text}
-    </button>
-  )
-})
+@element('button-demo')
+export default class ButtonDemo {
+  static main() {
+    const onButtonClick = (ev: ButtonClickEvent) => alert(ev.type)
 
-component('button-demo')(() => {
-  const onClick = (e: any) => alert(e.type) // TODO
-
-  return () => (
-    <div>
-      <h3>Button demo</h3>
-      <DemoButton onButtonClick={onClick} text="Click me" />
-    </div>
-  )
-})
+    return () => html`
+      <div>
+        <h3>Button demo</h3>
+        <${DemoButton} onButtonClick=${onButtonClick} text="Click me" />
+      </div>
+    `
+  }
+}

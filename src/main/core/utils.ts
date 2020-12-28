@@ -1,7 +1,3 @@
-// === imports =======================================================
-
-import { Notifier } from './types'
-
 // === exports =======================================================
 
 export { isEqualArray, hasOwnProp, getOwnProp }

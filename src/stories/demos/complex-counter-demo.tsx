@@ -1,67 +1,98 @@
-import { component, h, prop } from 'js-elements'
-import { useState } from 'js-elements/hooks'
+import { element, html, prop } from 'js-elements'
+import { createEvent, createRef } from 'js-elements/utils'
+import { EventHandler, MethodsOf, Ref, UIEvent } from 'js-elements/types'
 
-type CounterMethods = {
-  reset(n: number): void
+import {
+  useEffect,
+  useEmitter,
+  useMethods,
+  useState,
+  useStatus
+} from 'js-elements/hooks'
+
+type CountChangeEvent = UIEvent<
+  'count-change',
+  {
+    count: number
+  }
+>
+
+@element('complex-counter', {
+  methods: ['reset', 'increment', 'decrement']
+})
+class ComplexCounter {
+  @prop({ attr: Number })
+  initialCount = 0
+
+  @prop({ attr: String })
+  label = 'Counter'
+
+  @prop()
+  ref?: Ref<{
+    reset(): void
+    increment(): void
+    decrement(): void
+  }>
+
+  @prop()
+  onCountChange?: EventHandler<CountChangeEvent>
+
+  static main(self: ComplexCounter) {
+    const status = useStatus()
+    const emit = useEmitter()
+
+    const [state, setState] = useState({
+      count: self.initialCount
+    })
+
+    const onClick = () => setState('count', (it) => it + 1)
+
+    useMethods(self.ref, {
+      reset: () => setState('count', 0),
+      increment: () => setState('count', (it) => it + 1),
+      decrement: () => setState('count', (it) => it - 1)
+    })
+
+    useEffect(
+      () => {
+        if (status.hasUpdated()) {
+          emit(
+            createEvent('count-change', { count: state.count }),
+            self.onCountChange
+          )
+        }
+      },
+      () => [state.count]
+    )
+
+    return () => html`
+      <button onClick=${onClick}>${self.label}: ${state.count}</button>
+    `
+  }
 }
 
-const ComplexCounter = component('complex-counter', {
-  props: {
-    initialValue: prop.num.opt(0),
-    label: prop.str.opt('Counter'),
-    ref: prop.obj.opt()
-  },
+@element('complex-counter-demo')
+export default class ComplexCounterDemo {
+  static main() {
+    const counterRef = createRef<MethodsOf<ComplexCounter>>()
+    const decrement = () => counterRef.current!.decrement()
+    const increment = () => counterRef.current!.increment()
+    const reset = () => counterRef.current!.reset()
 
-  methods: ['reset']
-})((c, props) => {
-  const [state, setState] = useState(c, {
-    count: props.initialValue
-  })
-
-  const onIncrement = () => setState({ count: state.count + 1 })
-  const onDecrement = () => setState({ count: state.count - 1 })
-
-  c.setMethods({
-    reset(n: number) {
-      setState({ count: n })
+    const onCountChange = (ev: CountChangeEvent) => {
+      console.log('Count value has changed:', ev.detail.count)
     }
-  })
 
-  c.effect(() => {
-    console.log('Component "complex-counter" has been mounted')
-
-    return () => console.log('Component "complex-counter" will be umounted')
-  }, null)
-
-  c.effect(
-    () => {
-      console.log(`Value of counter "${props.label}": ${state.count}`)
-    },
-    () => [state.count]
-  )
-
-  return () => (
-    <div>
-      <label>{props.label}: </label>
-      <button onClick={onDecrement}>-</button>
-      <span> {state.count} </span>
-      <button onClick={onIncrement}>+</button>
-    </div>
-  )
-})
-
-component('complex-counter-demo', (c) => {
-  const findCounter = () => c.find<CounterMethods>('[data-counter]')!
-  const onSetTo0 = () => findCounter().reset(0)
-  const onSetTo100 = () => findCounter().reset(100)
-
-  return () => (
-    <div>
-      <h3>Complex counter demo</h3>
-      <ComplexCounter data-counter></ComplexCounter>
-      <br />
-      <button onClick={onSetTo0}>Set to 0</button>
-      <button onClick={onSetTo100}>Set to 100</button>
-    </div>
-  )
-})
+    return () => html`
+      <div>
+        <h3>Complex counter demo</h3>
+        <complex-counter ref=${counterRef} onCountChange=${onCountChange} />
+        <div>
+          <button onClick=${reset}>Set to 0</button>
+          <button onClick=${decrement}>-1</button>
+          <button onClick=${increment}>+1</button>
+        </div>
+      </div>
+    `
+  }
+}
