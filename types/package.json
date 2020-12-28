@@ -1,0 +1,10 @@
+{
+  "name": "js-elements-types",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "module": "../dist/js-elements-types.esm.production.js",
+  "unpkg": "../dist/js-elements-types.umd.production.js",
+  "jsdelivr": "../dist/js-elements-types.umd.production.js",
+  "types": "../dist/types/js-elements-types.d.ts"
+}
