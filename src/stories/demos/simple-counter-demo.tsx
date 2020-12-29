@@ -1,39 +1,33 @@
-import { element, h, component, prop } from 'js-elements'
+import { define, h, prop } from 'js-elements'
 import { useState } from 'js-elements/hooks'
 
-@element('simple-counter')
-class _SimpleCounter {
+class CounterProps {
   @prop({ attr: Number })
   initialCount = 0
 
   @prop({ attr: String })
   label = 'Counter'
-
-  static main(self: _SimpleCounter) {
-    const [state, setState] = useState({
-      count: self.initialCount
-    })
-
-    const onClick = () => setState('count', (it) => it + 1)
-
-    return () => (
-      <button onClick={onClick}>
-        {self.label}: {state.count}
-      </button>
-    )
-  }
 }
 
-const SimpleCounter = component(_SimpleCounter)
+const Counter = define('simple-counter', CounterProps, (props) => {
+  const [state, setState] = useState({
+    count: props.initialCount
+  })
 
-@element('simple-counter-demo')
-export default class SimpleCounterDemo {
-  static main() {
-    return () => (
-      <div>
-        <h3>Simple counter demo</h3>
-        <SimpleCounter />
-      </div>
-    )
-  }
-}
+  const onClick = () => setState('count', (it) => it + 1)
+
+  return () => (
+    <button onClick={onClick}>
+      {props.label}: {state.count}
+    </button>
+  )
+})
+
+export default define('simple-counter-demo', () => {
+  return () => (
+    <div>
+      <h3>Simple counter demo</h3>
+      <Counter />
+    </div>
+  )
+})

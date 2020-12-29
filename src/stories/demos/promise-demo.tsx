@@ -1,8 +1,7 @@
-import { element, html, prop } from 'js-elements'
+import { define, h, prop } from 'js-elements'
 import { usePromise, useRefresher, useState } from 'js-elements/hooks'
 
-@element('data-loader')
-class DataLoader {
+class DataLoaderProps {
   @prop()
   loadingText = 'Loading...'
 
@@ -11,65 +10,60 @@ class DataLoader {
 
   @prop()
   key?: number
+}
 
-  static main(self: DataLoader) {
-    const res = usePromise(
-      () => wait(4000),
-      () => [self.key]
-    )
+const DataLoader = define('data-loader', DataLoaderProps, (props) => {
+  const res = usePromise(
+    () => wait(4000),
+    () => [props.key]
+  )
 
-    return () => {
-      if (res.getState() === 'pending') {
-        return html`<div>${self.loadingText}</div>`
-      } else {
-        return html`<div>${self.finishText}</div>`
-      }
+  return () => {
+    if (res.getState() === 'pending') {
+      return <div>{props.loadingText}</div>
+    } else {
+      return <div>{props.finishText}</div>
     }
   }
-}
+})
 
-@element('promise-demo')
-export default class PromiseDemo {
-  static main() {
-    const [state, setState] = useState({
-      key: 0,
-      loadingText: 'Loading...',
-      finishText: 'Finished!'
-    })
+export default define('promise-demo', () => {
+  const [state, setState] = useState({
+    key: 0,
+    loadingText: 'Loading...',
+    finishText: 'Finished!'
+  })
 
-    const refresh = useRefresher()
-    const onRefresh = () => refresh()
-    const onRestart = () => setState('key', (it: any) => it + 1) // TODO
+  const refresh = useRefresher()
+  const onRefresh = () => refresh()
+  const onRestart = () => setState('key', (it: any) => it + 1) // TODO
 
-    const onToggleLoadingText = () =>
-      setState('loadingText', (it) =>
-        it === 'Loading...' ? 'Please wait...' : 'Loading...'
-      )
+  const onToggleLoadingText = () =>
+    setState('loadingText', (it) =>
+      it === 'Loading...' ? 'Please wait...' : 'Loading...'
+    )
 
-    const onToggleFinishText = () =>
-      setState('finishText', (it) =>
-        it === 'Finished!' ? 'Done!' : 'Finished!'
-      )
+  const onToggleFinishText = () =>
+    setState('finishText', (it) => (it === 'Finished!' ? 'Done!' : 'Finished!'))
 
-    return () => html`
-      <div>
-        <h3>Demo (last update ${getTime()})</h3>
-        <section>
-          <${DataLoader}
-            key=${state.key}
-            loadingText=${state.loadingText}
-            finishText=${state.finishText}
-          />
-        </section>
-        <br />
-        <button onClick=${onRefresh}>Refresh</button>
-        <button onClick=${onRestart}>Restart</button>
-        <button onClick=${onToggleLoadingText}>Toggle loading text</button>
-        <button onClick=${onToggleFinishText}>Toggle finish text</button>
-      </div>
-    `
-  }
-}
+  return () => (
+    <div>
+      <h3>Demo (last update {getTime()})</h3>
+      <section>
+        <DataLoader
+          key={state.key}
+          loadingText={state.loadingText}
+          finishText={state.finishText}
+        />
+      </section>
+      <br />
+      <button onClick={onRefresh}>Refresh</button>
+      <button onClick={onRestart}>Restart</button>
+      <button onClick={onToggleLoadingText}>Toggle loading text</button>
+      <button onClick={onToggleFinishText}>Toggle finish text</button>
+    </div>
+  )
+})
 
 function wait(ms: number) {
   return new Promise((resolve) => setTimeout(() => resolve(null), ms))

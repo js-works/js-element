@@ -1,35 +1,29 @@
-import { element, html } from 'js-elements'
-import { createContextHooks, useCtx, useInterval } from 'js-elements/hooks'
+import { define, h } from 'js-elements'
+import { createCtxHooks, useInterval } from 'js-elements/hooks'
 
-const [useThemeProvider, useTheme] = createContextHooks('theme', 'light')
+const [useThemeProvider, useTheme] = createCtxHooks('theme', 'light')
 
-@element('context-demo')
-export default class ContextDemo {
-  static main() {
-    let theme = 'light'
-    const setTheme = useThemeProvider()
+export default define('context-demo', () => {
+  let theme = 'light'
+  const setTheme = useThemeProvider()
 
-    setTheme('light')
+  setTheme('light')
 
-    useInterval(() => {
-      theme = theme === 'light' ? 'dark' : 'light'
-      setTheme(theme)
-    }, 1000)
+  useInterval(() => {
+    theme = theme === 'light' ? 'dark' : 'light'
+    setTheme(theme)
+  }, 1000)
 
-    return () => html`
-      <div>
-        <b>Value for theme will change every second:</b>
-        <br />
-        <${ThemeInfo} />
-      </div>
-    `
-  }
-}
+  return () => (
+    <div>
+      <b>Value for theme will change every second:</b>
+      <br />
+      <ThemeInfo />
+    </div>
+  )
+})
 
-@element('theme-info')
-class ThemeInfo {
-  static main() {
-    const getTheme = useTheme()
-    return () => html`<div>Current theme: ${getTheme()}</div>`
-  }
-}
+const ThemeInfo = define('theme-info', () => {
+  const getTheme = useTheme()
+  return () => <div>Current theme: {getTheme()}</div>
+})

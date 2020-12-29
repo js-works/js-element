@@ -14,9 +14,3 @@ export function createEvent<T extends string, D = null>(
     composed: true
   }) as any
 }
-
-export function component<P extends Props, C extends Component<P>>(
-  componentClass: C
-): Component<Partial<P>> {
-  return componentClass as any // TODO
-}

@@ -84,7 +84,7 @@ function getNewEventType(): string {
   return `$$provision$$_${++eventTypeCounter}`
 }
 
-export function createContextHooks<T>(
+export function createCtxHooks<T>(
   contextName: string,
   defaultValue?: T
 ): [() => (value: T) => void, () => () => T] {

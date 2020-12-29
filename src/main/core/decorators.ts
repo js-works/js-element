@@ -6,11 +6,11 @@ import { patch } from './superfine'
 
 // === exports =======================================================
 
-export { element, prop }
+export { prop, define }
 
 // === local data =====================================================
 
-const propsOptionsByComponentClass = new Map<Component<any>, PropsOptions>()
+const propsOptionsByComponentClass = new Map<{ new (): any }, PropsOptions>()
 
 // === constants =====================================================
 
@@ -37,43 +37,6 @@ type Notifier = {
 
 // === decorators =====================================================
 
-function element(
-  name: `${string}-${string}`
-): (componentClass: Component<any>) => void
-
-function element<M extends string[]>(
-  name: `${string}-${string}`,
-
-  config: {
-    slots?: string[]
-    methods?: M
-  }
-): (componentClass: Component<any>) => void
-
-function element(name: string, config?: any) {
-  return (componentClass: Component<any>) => {
-    const propDefs = propsOptionsByComponentClass.get(componentClass) || null
-    propsOptionsByComponentClass.delete(componentClass) // not needed any longer
-
-    const customElementClass = buildCustomElementClass(
-      name,
-      componentClass,
-      propDefs,
-      config ? config.methods || [] : []
-    )
-
-    try {
-      customElements.define(name, customElementClass)
-    } catch {
-      // TODO
-      console.clear()
-      globalThis.location.reload()
-    }
-
-    ;(componentClass as any)[Symbol.for('tagName')] = name
-  }
-}
-
 function prop(options?: PropOptions): (proto: object, key: string) => void {
   return (proto: any, key: string) => {
     const componentClass = proto.constructor
@@ -90,11 +53,49 @@ function prop(options?: PropOptions): (proto: object, key: string) => void {
 
 // === helpers =======================================================
 
+function define(tagName: string, main: () => () => VNode): Component<{}>
+
+function define<P>(
+  tagName: string,
+  propsClass: { new (): P },
+  main: (props: P) => () => VNode
+): Component<Partial<P>>
+
+function define(tagName: string, arg2: any, arg3?: any): any {
+  const hasThreeArgs = typeof arg3 === 'function'
+  const propsClass = hasThreeArgs ? arg2 : null
+  const propsOptions = propsClass
+    ? propsOptionsByComponentClass.get(propsClass) || null
+    : null
+  const main = hasThreeArgs ? arg3 : arg2
+
+  const customElementClass = buildCustomElementClass(
+    tagName,
+    propsClass,
+    propsOptions,
+    main
+  )
+
+  try {
+    customElements.define(tagName, customElementClass)
+  } catch {
+    // TODO
+    console.clear()
+    globalThis.location.reload()
+  }
+
+  const ret = () => {} // TODO
+
+  ;(ret as any)[Symbol.for('tagName')] = tagName
+
+  return ret
+}
+
 function buildCustomElementClass(
   tagName: string,
-  componentClass: Component<any>,
+  propsClass: { new (): object } | null,
   propsOptions: PropsOptions | null,
-  methodNames: string[]
+  main: (props: any) => () => VNode
 ): CustomElementConstructor {
   const propsOptionsEntries = propsOptions
     ? Array.from(propsOptions.entries())
@@ -146,7 +147,7 @@ function buildCustomElementClass(
     constructor() {
       super()
       const self: any = this
-      const data: any = new componentClass()
+      const data: any = propsClass ? new propsClass() : {}
       const ctrl = createCtrl()
 
       let isInitialized = false
@@ -177,17 +178,23 @@ function buildCustomElementClass(
             }
           })
         } else {
+          let componentMethods: any = null
           data.ref = {}
 
           Object.defineProperty(data.ref, 'current', {
             enumerable: true,
 
             get() {
-              return self.__methods
+              return componentMethods
             },
 
             set(methods: any) {
-              self.__methods = methods
+              if (componentMethods) {
+                throw new Error('Methods can only be set once')
+              } else if (methods) {
+                componentMethods = methods
+                Object.assign(self, componentMethods)
+              }
             }
           })
         }
@@ -257,7 +264,7 @@ function buildCustomElementClass(
           ;(globalThis as any).__currCompCtrl__ = ctrl
 
           try {
-            render = componentClass.main(data)
+            render = main(data)
           } finally {
             ;(globalThis as any).__currCompCtrl__ = null
           }
@@ -371,24 +378,6 @@ function buildCustomElementClass(
         }
       }
     }
-  }
-
-  if (methodNames && methodNames.length > 0) {
-    methodNames.forEach((methodName) => {
-      // TODO
-      ;(customElementClass as any).prototype[methodName] = function () {
-        // TODO
-        const fn = this.__methods[methodName]
-
-        if (!fn) {
-          throw new Error(
-            `Handler for method "${methodName}" of component "${tagName}" has not been set`
-          )
-        }
-
-        return fn.apply(null, arguments)
-      }
-    })
   }
 
   return customElementClass

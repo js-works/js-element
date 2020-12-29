@@ -17,13 +17,10 @@ export type VNode =
 export type Task = () => void
 export type Message = { type: string } & Record<string, any>
 
-export type Component<T> = {
-  new (): T
-  main(self: T): () => VNode
-}
+export type Component<P> = (props?: P, ...children: VNode[]) => VElement<P>
 
-export type MethodsOf<C> = Required<C> extends { ref: Ref<infer M> }
-  ? M extends Methods
+export type MethodsOf<C> = C extends Component<infer P>
+  ? P extends { ref?: Ref<infer M> }
     ? M
     : never
   : never

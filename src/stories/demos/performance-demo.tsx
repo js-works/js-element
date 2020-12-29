@@ -1,4 +1,4 @@
-import { component, element, h, prop } from 'js-elements'
+import { define, h, prop } from 'js-elements'
 import { useOnMount, useRefresher } from 'js-elements/hooks'
 import { VNode } from 'js-elements/types'
 
@@ -10,32 +10,30 @@ const prefs = {
   rowCount: 20
 }
 
-@element('x-tile')
-class _Tile {
+class TileProps {
   @prop()
   color = 'white'
 
   @prop()
   width = 3
-
-  static main(self: _Tile) {
-    return () => {
-      const style = `
-        float: left;
-        width: ${self.width}px;
-        height: ${self.width}px;
-        background-color: ${self.color};
-        padding: 0;
-        margin: 0;
-      `
-
-      return <div style={style} />
-    }
-  }
 }
 
-@element('x-tile-row')
-class _TileRow {
+const Tile = define('x-tile', TileProps, (props) => {
+  return () => {
+    const style = `
+      float: left;
+      width: ${props.width}px;
+      height: ${props.width}px;
+      background-color: ${props.color};
+      padding: 0;
+      margin: 0;
+    `
+
+    return <div style={style} />
+  }
+})
+
+class TileRowProps {
   @prop()
   tileWidth = 3
 
@@ -47,25 +45,24 @@ class _TileRow {
 
   @prop()
   loop = 0
-
-  static main(self: _TileRow) {
-    return () => {
-      const tiles = []
-
-      for (let x = 0; x < self.columnCount; ++x) {
-        const colorIdx = Math.floor(Math.random() * self.colors.length)
-        const color = self.colors[colorIdx]
-
-        tiles.push(<Tile width={self.tileWidth} color={color} key={x} />)
-      }
-
-      return <div style="clear: both">{tiles}</div>
-    }
-  }
 }
 
-@element('x-speed-test')
-class _SpeedTest {
+const TileRow = define('x-tile-row', TileRowProps, (props) => {
+  return () => {
+    const tiles = []
+
+    for (let x = 0; x < props.columnCount; ++x) {
+      const colorIdx = Math.floor(Math.random() * props.colors.length)
+      const color = props.colors[colorIdx]
+
+      tiles.push(<Tile width={props.tileWidth} color={color} key={x} />)
+    }
+
+    return <div style="clear: both">{tiles}</div>
+  }
+})
+
+class SpeedTestProps {
   @prop()
   columnCount = prefs.columnCount
 
@@ -77,78 +74,71 @@ class _SpeedTest {
 
   @prop()
   framesPerSecond = prefs.framesPerSecond
+}
 
-  static main(self: _SpeedTest) {
-    let loop = 0
+const SpeedTest = define('x-speed-test', SpeedTestProps, (props) => {
+  let loop = 0
 
-    let intervalId = null as any
-    let startTime = Date.now()
-    let frameCount = 0
-    let actualFramesPerSecond = '0'
+  let intervalId = null as any
+  let startTime = Date.now()
+  let frameCount = 0
+  let actualFramesPerSecond = '0'
 
-    const refresh = useRefresher()
-    const style = 'margin-top: 40px; margin-left: 40px'
+  const refresh = useRefresher()
+  const style = 'margin-top: 40px; margin-left: 40px'
 
-    useOnMount(() => {
-      intervalId = setInterval(() => {
-        ++frameCount
+  useOnMount(() => {
+    intervalId = setInterval(() => {
+      ++frameCount
 
-        if (frameCount % 10 === 0) {
-          actualFramesPerSecond = (
-            (frameCount * 1000.0) /
-            (Date.now() - startTime)
-          ).toFixed(2)
-        }
-
-        refresh()
-      }, 1000 / self.framesPerSecond)
-
-      return () => clearInterval(intervalId)
-    })
-
-    return () => {
-      const rows: VNode[] = []
-
-      for (let y = 0; y < self.rowCount; ++y) {
-        rows.push(
-          <TileRow
-            tileWidth={self.tileWidth}
-            columnCount={self.columnCount}
-            key={y}
-            loop={loop++}
-          />
-        )
+      if (frameCount % 10 === 0) {
+        actualFramesPerSecond = (
+          (frameCount * 1000.0) /
+          (Date.now() - startTime)
+        ).toFixed(2)
       }
 
-      return (
-        <div>
-          <div>
-            Rows: {self.rowCount}, columns: {self.columnCount}
-            <div style={style}>{rows}</div>
-          </div>
-          <br />
-          <div style="clear: both">
-            (actual frames per second: {actualFramesPerSecond})
-          </div>
-        </div>
+      refresh()
+    }, 1000 / props.framesPerSecond)
+
+    return () => clearInterval(intervalId)
+  })
+
+  return () => {
+    const rows: VNode[] = []
+
+    for (let y = 0; y < props.rowCount; ++y) {
+      rows.push(
+        <TileRow
+          tileWidth={props.tileWidth}
+          columnCount={props.columnCount}
+          key={y}
+          loop={loop++}
+        />
       )
     }
-  }
-}
 
-@element('performance-demo')
-export default class PerformanceDemo {
-  static main() {
-    return () => (
-      <SpeedTest
-        tileWidth={prefs.tileWidth}
-        columnCount={prefs.columnCount}
-        rowCount={prefs.rowCount}
-      />
+    return (
+      <div>
+        <div>
+          Rows: {props.rowCount}, columns: {props.columnCount}
+          <div style={style}>{rows}</div>
+        </div>
+        <br />
+        <div style="clear: both">
+          (actual frames per second: {actualFramesPerSecond})
+        </div>
+      </div>
     )
   }
-}
+})
 
-const Tile = component(_Tile)
-const TileRow = component(_TileRow)
-const SpeedTest = component(_SpeedTest)
+export default define('performance-demo', () => {
+  return () => (
+    <SpeedTest
+      tileWidth={prefs.tileWidth}
+      columnCount={prefs.columnCount}
+      rowCount={prefs.rowCount}
+    />
+  )
+})
