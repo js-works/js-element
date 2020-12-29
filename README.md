@@ -12,13 +12,10 @@ and btw: It is currently not meant to ever be used in production.
 ### Example 1
 
 ```jsx
-import { define, h, prop, render } from 'js-elements'
+import { define, h, render } from 'js-elements'
 
 class SayHelloProps {
-  @prop({ attr: String })
   salutation = 'Hello'
-
-  @prop({ attr: String })
   name = 'World'
 }
 
@@ -36,15 +33,12 @@ render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
 ### Example 2
 
 ```jsx
-import { define, h, prop, render } from 'js-elements'
+import { define, h, render } from 'js-elements'
 import { useEffect, useOnMount, useState, useStyles } from 'js-elements/hooks'
 import counterStyles from './counter.css'
 
 class CounterProps {
-  @prop({ attr: Number })
   initialCount = 0
-
-  @prop({ attr: String })
   label = 'Counter'
 }
 

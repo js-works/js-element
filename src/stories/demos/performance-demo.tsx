@@ -11,10 +11,7 @@ const prefs = {
 }
 
 class TileProps {
-  @prop()
   color = 'white'
-
-  @prop()
   width = 3
 }
 
@@ -34,16 +31,9 @@ const Tile = define('x-tile', TileProps, (props) => {
 })
 
 class TileRowProps {
-  @prop()
   tileWidth = 3
-
-  @prop()
   columnCount = 3
-
-  @prop()
   colors = prefs.colors
-
-  @prop()
   loop = 0
 }
 
@@ -63,16 +53,9 @@ const TileRow = define('x-tile-row', TileRowProps, (props) => {
 })
 
 class SpeedTestProps {
-  @prop()
   columnCount = prefs.columnCount
-
-  @prop()
   rowCount = prefs.rowCount
-
-  @prop()
   tileWidth = 3
-
-  @prop()
   framesPerSecond = prefs.framesPerSecond
 }
 

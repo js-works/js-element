@@ -1,33 +1,16 @@
-// === exports =======================================================
+import { Ref, Component, Props, UIEvent } from './types'
 
-export { isEqualArray, hasOwnProp, getOwnProp }
-
-// === utils =========================================================
-
-function hasOwnProp(obj: object, propName: string) {
-  return (
-    obj !== undefined &&
-    obj !== null &&
-    Object.prototype.hasOwnProperty.call(obj, propName)
-  )
+export function createRef<T>(value: T | null = null): Ref<T> {
+  return { current: value }
 }
 
-function getOwnProp(obj: any, propName: string, defaultValue?: any): any {
-  return hasOwnProp(obj, propName) ? obj[propName] : defaultValue
-}
-
-function isEqualArray(arr1: any[], arr2: any[]) {
-  let ret =
-    Array.isArray(arr1) && Array.isArray(arr2) && arr1.length === arr2.length
-
-  if (ret) {
-    for (let i = 0; i < arr1.length; ++i) {
-      if (arr1[i] !== arr2[i]) {
-        ret = false
-        break
-      }
-    }
-  }
-
-  return ret
+export function createEvent<T extends string, D = null>(
+  type: T,
+  detail?: D
+): UIEvent<T, D> {
+  return new CustomEvent(type, {
+    detail: detail || null,
+    bubbles: true,
+    composed: true
+  }) as any
 }

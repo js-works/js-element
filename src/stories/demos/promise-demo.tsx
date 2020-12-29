@@ -2,13 +2,8 @@ import { define, h, prop } from 'js-elements'
 import { usePromise, useRefresher, useState } from 'js-elements/hooks'
 
 class DataLoaderProps {
-  @prop()
   loadingText = 'Loading...'
-
-  @prop()
   finishText = 'Finished!'
-
-  @prop()
   key?: number
 }
 

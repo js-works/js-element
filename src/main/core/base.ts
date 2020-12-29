@@ -64,9 +64,12 @@ function define<P>(
 function define(tagName: string, arg2: any, arg3?: any): any {
   const hasThreeArgs = typeof arg3 === 'function'
   const propsClass = hasThreeArgs ? arg2 : null
+
   const propsOptions = propsClass
-    ? propsOptionsByComponentClass.get(propsClass) || null
+    ? propsOptionsByComponentClass.get(propsClass) ||
+      new Map(Object.keys(new propsClass()).map((key) => [key, {}]))
     : null
+
   const main = hasThreeArgs ? arg3 : arg2
 
   const customElementClass = buildCustomElementClass(

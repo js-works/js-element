@@ -18,21 +18,15 @@ type CountChangeEvent = UIEvent<
 >
 
 class CounterProps {
-  @prop({ attr: Number })
   initialCount = 0
-
-  @prop({ attr: String })
   label = 'Counter'
+  onCountChange?: EventHandler<CountChangeEvent>
 
-  @prop()
   ref?: Ref<{
     reset(): void
     increment(): void
     decrement(): void
   }>
-
-  @prop()
-  onCountChange?: EventHandler<CountChangeEvent>
 }
 
 const Counter = define('complex-counter', CounterProps, (props) => {
