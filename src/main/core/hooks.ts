@@ -429,19 +429,19 @@ export const useInterval = createCoreHook(
   }
 )
 
-// === useTime =========================================================
+// === useTimer ========================================================
 
-export const useTime = createCoreHook('useTime', timeFn)
+export const useTimer = createCoreHook('useTimer', timerFn)
 
-function timeFn(c: Ctrl, delay: number | (() => number)): () => Date
+function timerFn(c: Ctrl, delay: number | (() => number)): () => Date
 
-function timeFn<T>(
+function timerFn<T>(
   c: Ctrl,
   delay: number | (() => number),
   getter: () => T
 ): () => T
 
-function timeFn(
+function timerFn(
   c: Ctrl,
   delay: number | (() => number),
   getter: Function = getDate

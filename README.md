@@ -82,10 +82,10 @@ render(<Counter />, '#app')
 
 ```jsx
 import { define, h, render } from 'js-elements'
-import { useTime } from 'js-elements/hooks'
+import { useTimer } from 'js-elements/hooks'
 
 const DemoClock = define('demo-clock', () => {
-  const getTime = useTime(1000, () => new Date().toLocaleTimeString())
+  const getTime = useTimer(1000, () => new Date().toLocaleTimeString())
   return () => <div>Current time: {getTime()}</div>
 })
 

@@ -7,7 +7,7 @@ import MouseDemo from './demos/mouse-demo'
 import PromiseDemo from './demos/promise-demo'
 import ContextDemo from './demos/context-demo'
 import PerformanceDemo from './demos/performance-demo'
-import PogoDemo from './demos/pogo-demo'
+import GameDemo from './demos/game-demo'
 
 export default {
   title: 'Demos'
@@ -27,4 +27,4 @@ export const Mouse = demo(MouseDemo)
 export const Promise = demo(PromiseDemo)
 export const Context = demo(ContextDemo)
 export const Performance = demo(PerformanceDemo)
-export const Game = demo(PogoDemo)
+export const Game = demo(GameDemo)
