@@ -2,28 +2,28 @@ import { define, h } from 'js-elements'
 import { useInterval, useState } from 'js-elements/hooks'
 
 export default define('interval-demo', () => {
-  const [state, setState] = useState({
+  const [s, set] = useState({
     count: 0,
     delay: 1000
   })
 
-  const onReset = () => setState('delay', 1000)
+  const onReset = () => set('delay', 1000)
 
   useInterval(
-    () => setState('count', (it) => it + 1),
-    () => state.delay
+    () => set('count', (it) => it + 1),
+    () => s.delay
   )
 
   useInterval(() => {
-    if (state.delay > 10) {
-      setState('delay', (it) => it / 2)
+    if (s.delay > 10) {
+      set('delay', (it) => it / 2)
     }
   }, 1000)
 
   return () => (
     <div>
-      <h1>Counter: {state.count}</h1>
-      <h4>Delay: {state.delay}</h4>
+      <h1>Counter: {s.count}</h1>
+      <h4>Delay: {s.delay}</h4>
       <button onClick={onReset}>Reset delay</button>
     </div>
   )

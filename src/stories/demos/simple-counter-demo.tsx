@@ -1,24 +1,24 @@
-import { define, h, prop } from 'js-elements'
+import { attr, define, h } from 'js-elements'
 import { useState } from 'js-elements/hooks'
 
-class CounterProps {
-  @prop({ attr: Number })
+class CounterP {
+  @attr(Number)
   initialCount = 0
 
-  @prop({ attr: String })
+  @attr(String)
   label = 'Counter'
 }
 
-const Counter = define('simple-counter', CounterProps, (props) => {
-  const [state, setState] = useState({
-    count: props.initialCount
+const Counter = define('simple-counter', CounterP, (p) => {
+  const [s, set] = useState({
+    count: p.initialCount
   })
 
-  const onClick = () => setState('count', (it) => it + 1)
+  const onClick = () => set('count', (it) => it + 1)
 
   return () => (
     <button onClick={onClick}>
-      {props.label}: {state.count}
+      {p.label}: {s.count}
     </button>
   )
 })

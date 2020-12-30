@@ -7,12 +7,12 @@ export default define('mouse-demo', () => {
   return () => {
     if (!mousePos.isValid()) {
       return <div>Please move mouse ...</div>
-    } else {
-      return (
-        <div>
-          Current mouse position: {mousePos.getX()}x{mousePos.getY()}
-        </div>
-      )
     }
+
+    return (
+      <div>
+        Current mouse position: {mousePos.getX()}x{mousePos.getY()}
+      </div>
+    )
   }
 })

@@ -1,4 +1,4 @@
-import { define, h, prop } from 'js-elements'
+import { define, h } from 'js-elements'
 import { createEvent, createRef } from 'js-elements/utils'
 import { EventHandler, MethodsOf, Ref, UIEvent } from 'js-elements/types'
 
@@ -17,7 +17,7 @@ type CountChangeEvent = UIEvent<
   }
 >
 
-class CounterProps {
+class CounterP {
   initialCount = 0
   label = 'Counter'
   onCountChange?: EventHandler<CountChangeEvent>
@@ -29,37 +29,34 @@ class CounterProps {
   }>
 }
 
-const Counter = define('complex-counter', CounterProps, (props) => {
+const Counter = define('complex-counter', CounterP, (p) => {
   const status = useStatus()
   const emit = useEmitter()
 
-  const [state, setState] = useState({
-    count: props.initialCount
+  const [s, set] = useState({
+    count: p.initialCount
   })
 
-  const onClick = () => setState('count', (it) => it + 1)
+  const onClick = () => set('count', (it) => it + 1)
 
-  useMethods(props.ref, {
-    reset: () => setState('count', 0),
-    increment: () => setState('count', (it) => it + 1),
-    decrement: () => setState('count', (it) => it - 1)
+  useMethods(p.ref, {
+    reset: () => set('count', 0),
+    increment: () => set('count', (it) => it + 1),
+    decrement: () => set('count', (it) => it - 1)
   })
 
   useEffect(
     () => {
       if (status.hasUpdated()) {
-        emit(
-          createEvent('count-change', { count: state.count }),
-          props.onCountChange
-        )
+        emit(createEvent('count-change', { count: s.count }), p.onCountChange)
       }
     },
-    () => [state.count]
+    () => [s.count]
   )
 
   return () => (
     <button onClick={onClick}>
-      {props.label}: {state.count}
+      {p.label}: {s.count}
     </button>
   )
 })

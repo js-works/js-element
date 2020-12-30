@@ -33,12 +33,15 @@ render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
 ### Example 2
 
 ```jsx
-import { define, h, render } from 'js-elements'
+import { attr, define, h, render } from 'js-elements'
 import { useEffect, useOnMount, useState, useStyles } from 'js-elements/hooks'
 import counterStyles from './counter.css'
 
 class CounterProps {
+  @attr(Number)
   initialCount = 0
+
+  @attr(String)
   label = 'Counter'
 }
 

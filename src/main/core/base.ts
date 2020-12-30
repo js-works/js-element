@@ -6,11 +6,11 @@ import { patch } from './superfine'
 
 // === exports =======================================================
 
-export { prop, define }
+export { attr, define }
 
 // === local data =====================================================
 
-const propsOptionsByComponentClass = new Map<{ new (): any }, PropsOptions>()
+const attrsOptionsByComponentClass = new Map<{ new (): any }, AttrsOptions>()
 
 // === constants =====================================================
 
@@ -19,11 +19,13 @@ const EMPTY_OBJECT = {}
 
 // === types ==========================================================
 
-type PropOptions = {
-  attr?: StringConstructor | NumberConstructor | BooleanConstructor
+type AttrKind = StringConstructor | NumberConstructor | BooleanConstructor
+
+type AttrOptions = {
+  kind: AttrKind
 }
 
-type PropsOptions = Map<string, PropOptions>
+type AttrsOptions = Map<string, AttrOptions>
 
 type PropConverter<T> = {
   fromPropToString(value: T): string
@@ -37,17 +39,17 @@ type Notifier = {
 
 // === decorators =====================================================
 
-function prop(options?: PropOptions): (proto: object, key: string) => void {
+function attr(kind: AttrKind): (proto: object, key: string) => void {
   return (proto: any, key: string) => {
     const componentClass = proto.constructor
-    let propsOptions = propsOptionsByComponentClass.get(componentClass)
+    let attrsOptions = attrsOptionsByComponentClass.get(componentClass)
 
-    if (!propsOptions) {
-      propsOptions = new Map()
-      propsOptionsByComponentClass.set(componentClass, propsOptions)
+    if (!attrsOptions) {
+      attrsOptions = new Map()
+      attrsOptionsByComponentClass.set(componentClass, attrsOptions)
     }
 
-    propsOptions.set(key, options || EMPTY_OBJECT)
+    attrsOptions.set(key, { kind })
   }
 }
 
@@ -65,9 +67,8 @@ function define(tagName: string, arg2: any, arg3?: any): any {
   const hasThreeArgs = typeof arg3 === 'function'
   const propsClass = hasThreeArgs ? arg2 : null
 
-  const propsOptions = propsClass
-    ? propsOptionsByComponentClass.get(propsClass) ||
-      new Map(Object.keys(new propsClass()).map((key) => [key, {}]))
+  const attrsOptions = propsClass
+    ? attrsOptionsByComponentClass.get(propsClass) || null
     : null
 
   const main = hasThreeArgs ? arg3 : arg2
@@ -75,7 +76,7 @@ function define(tagName: string, arg2: any, arg3?: any): any {
   const customElementClass = buildCustomElementClass(
     tagName,
     propsClass,
-    propsOptions,
+    attrsOptions,
     main
   )
 
@@ -97,20 +98,16 @@ function define(tagName: string, arg2: any, arg3?: any): any {
 function buildCustomElementClass(
   tagName: string,
   propsClass: { new (): object } | null,
-  propsOptions: PropsOptions | null,
+  attrsOptions: AttrsOptions | null,
   main: (props: any) => () => VNode
 ): CustomElementConstructor {
-  const propsOptionsEntries = propsOptions
-    ? Array.from(propsOptions.entries())
-    : []
+  const propNames = propsClass ? Object.keys(new propsClass()) : []
 
   const attrNameToPropNameMap: Map<string, string> = new Map(
-    propsOptionsEntries
-      .filter(([, { attr }]) => !!attr)
-      .map(([key]) => [
-        key.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase(),
-        key
-      ])
+    Array.from(attrsOptions ? attrsOptions.keys() : []).map((propName) => [
+      propName.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase(),
+      propName
+    ])
   )
 
   const propNameToAttrNameMap: Map<string, string> = new Map(
@@ -118,12 +115,12 @@ function buildCustomElementClass(
   )
 
   const propNameToConverterMap: Map<string, PropConverter<any>> = new Map(
-    propsOptionsEntries
-      .filter(([, { attr }]) => !!attr)
-      .map(([propName, { attr }]) => [
-        propName,
-        commonPropConverters[attr!.name]!
-      ])
+    !attrsOptions
+      ? null
+      : Array.from(attrsOptions.entries()).map(([propName, attrOptions]) => [
+          propName,
+          commonPropConverters[attrOptions.kind.name]
+        ])
   )
 
   const customElementClass = class extends HTMLElement {
@@ -168,7 +165,7 @@ function buildCustomElementClass(
       let contentElement: HTMLElement | undefined
       let render: (() => VNode) | undefined
 
-      for (const [key, options] of propsOptionsEntries) {
+      for (const key of propNames) {
         if (key !== 'ref') {
           Object.defineProperty(self, key, {
             get() {
