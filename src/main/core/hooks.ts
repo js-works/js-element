@@ -431,33 +431,24 @@ export const useInterval = createCoreHook(
 
 // === useTimer ========================================================
 
-export const useTimer = createCoreHook('useTimer', timerFn)
-
-function timerFn(c: Ctrl, delay: number | (() => number)): () => Date
-
-function timerFn<T>(
-  c: Ctrl,
-  delay: number | (() => number),
-  getter: () => T
-): () => T
-
-function timerFn(
-  c: Ctrl,
-  delay: number | (() => number),
-  getter: Function = getDate
-): () => any {
+export const useTimer = createCoreHook('useTimer', function <
+  T
+>(c: Ctrl, delay: number | (() => number), getter: (n: number) => T = getDate as any): () => T {
+  let idx = 0
   const getDelay = typeof delay === 'function' ? delay : () => delay
+  const [getValue, setValue] = useValue(getter(idx++))
 
-  const [getValue, setValue] = useValue(getter())
-
-  useInterval(() => {
-    setValue(getter())
-  }, getDelay)
+  useInterval(
+    () => {
+      setValue(getter(idx++))
+    },
+    () => getDelay()
+  )
 
   return getValue
-}
+})
 
-function getDate() {
+function getDate(idx: number) {
   return new Date()
 }
 
