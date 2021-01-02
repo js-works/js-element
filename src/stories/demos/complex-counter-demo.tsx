@@ -1,6 +1,5 @@
-import { define, h } from 'js-elements'
+import { define, h, MethodsOf, EventHandler, Ref, UIEvent } from 'js-elements'
 import { createEvent, createRef } from 'js-elements/utils'
-import { EventHandler, MethodsOf, Ref, UIEvent } from 'js-elements/types'
 
 import {
   useEffect,

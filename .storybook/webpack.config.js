@@ -18,10 +18,6 @@ module.exports = ({ config }) => {
     __dirname,
     '../src/main/js-elements-hooks.ts'
   )
-  alias['js-elements/types$'] = path.resolve(
-    __dirname,
-    '../src/main/js-elements-types.ts'
-  )
   alias['js-elements/utils$'] = path.resolve(
     __dirname,
     '../src/main/js-elements-utils.ts'

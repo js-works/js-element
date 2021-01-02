@@ -1,4 +1,5 @@
-import { Props, VElement } from './core/types'
+export type Props = Record<string, any> // TODO
+export type VElement<T extends Props = Props> = Record<any, any> // TODO
 
 export = JSX
 

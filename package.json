@@ -1,6 +1,6 @@
 {
   "name": "js-elements",
-  "version": "0.1.3",
+  "version": "0.1.5",
   "description": "",
   "main": "./index.js",
   "module": "./dist/js-elements.esm.production.js",
@@ -66,41 +66,20 @@
         "require": "./dist/js-elements-utils.cjs.production.js"
       }
     },
-    "./types": {
-      "development": {
-        "browser": "./dist/js-elements-types.umd.development.js",
-        "umd": "./dist/js-elements-types.umd.development.js",
-        "import": "./dist/js-elements-types.esm.development.js",
-        "require": "./dist/js-elements-types.cjs.development.js"
-      },
-      "production": {
-        "browser": "./dist/js-elements-types.umd.production.js",
-        "umd": "./dist/js-elements-types.umd.production.js",
-        "import": "./dist/js-elements-types.esm.production.js",
-        "require": "./dist/js-elements-types.cjs.production.js"
-      },
-      "default": {
-        "browser": "./dist/js-elements-types.umd.production.js",
-        "umd": "./dist/js-elements-types.umd.production.js",
-        "import": "./dist/js-elements-types.esm.production.js",
-        "require": "./dist/js-elements-types.cjs.production.js"
-      }
-    },
     "./package.json": "./package.json",
     "./": "./"
   },
   "files": [
     "dist",
     "hooks",
-    "utils",
-    "types"
+    "utils"
   ],
   "scripts": {
     "clean": "shx rm -rf ./build ./dist",
     "test": "echo \"Error: no test specified\" && exit 1",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
-    "build": "npm run clean && cross-env NODE_OPTIONS=--max_old_space_size=4096 rollup --c rollup.config.js && tsc -p tsconfig.dist.json -d --emitDeclarationOnly --declarationDir dist/types",
+    "build": "npm run clean && cross-env NODE_OPTIONS=--max_old_space_size=4096 rollup --c rollup.config.js && tsc -p tsconfig.dist.json -d --emitDeclarationOnly --declarationDir dist/types && shx cp ./src/main/jsx.d.ts ./dist/types",
     "dist": "npm run build && npm run zipsource",
     "zipsource": "shx rm -rf ./build/source && shx mkdir -p ./build/source && copyfiles -a ./* ./build/source && shx cp -r ./src ./build/source && shx mkdir -p ./dist/source && cd build && bestzip --force node ../dist/source/source.zip source && cd .."
   },
@@ -123,7 +102,7 @@
     "bestzip": "^2.1.7",
     "copyfiles": "^2.4.1",
     "cross-env": "^7.0.3",
-    "eslint": "^7.16.0",
+    "eslint": "^7.17.0",
     "htm": "^3.0.4",
     "html-webpack-plugin": "^5.0.0-alpha.17",
     "js-immutables": "^0.0.5",
@@ -140,7 +119,7 @@
     "rollup-plugin-typescript2": "^0.29.0",
     "rxjs": "^6.6.3",
     "shx": "^0.3.3",
-    "ts-loader": "^8.0.12",
+    "ts-loader": "^8.0.13",
     "ts-node": "^9.1.1",
     "typescript": "^4.1.3"
   }

@@ -22,7 +22,6 @@
     "paths": {
       "js-elements/hooks": ["src/main/js-elements-hooks.ts"],
       "js-elements/utils": ["src/main/js-elements-utils.ts"],
-      "js-elements/types": ["src/main/js-elements-types.ts"],
       "js-elements": ["src/main/js-elements.ts"]
     },
     "typeRoots": ["node_modules/@types"],
@@ -30,7 +29,6 @@
   },
   "files": [
     "src/main/js-elements.ts",
-    "src/main/js-elements-types.ts",
     "src/main/js-elements-hooks.ts",
     "src/main/js-elements-utils.ts"
   ],

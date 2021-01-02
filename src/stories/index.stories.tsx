@@ -8,6 +8,9 @@ import PromiseDemo from './demos/promise-demo'
 import ContextDemo from './demos/context-demo'
 import PerformanceDemo from './demos/performance-demo'
 import GameDemo from './demos/game-demo'
+import DatePickerDemo from './demos/date-picker'
+import DataTableDemo from './demos/data-table-demo'
+import SvgDemo from './demos/svg-demo'
 
 export default {
   title: 'Demos'
@@ -28,3 +31,6 @@ export const Promise = demo(PromiseDemo)
 export const Context = demo(ContextDemo)
 export const Performance = demo(PerformanceDemo)
 export const Game = demo(GameDemo)
+export const DatePicker = demo(DatePickerDemo)
+export const DataTable = demo(DataTableDemo)
+export const Svg = demo(SvgDemo)
