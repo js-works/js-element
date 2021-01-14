@@ -28,7 +28,6 @@ const SayHello = component(SayHelloProps, (props) => {
 })
 
 register('say-hello', SayHello)
-
 render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
 ```
 
@@ -78,14 +77,13 @@ const Counter = component(CounterProps, (props) => {
 })
 
 register('demo-counter', Counter)
-
 render(<Counter />, '#app')
 ```
 
 ### Example 3
 
 ```jsx
-import { component, h, render } from 'js-elements'
+import { component, h, register, render } from 'js-elements'
 import { useTimer } from 'js-elements/hooks'
 
 const Clock = component(() => {
@@ -94,6 +92,5 @@ const Clock = component(() => {
 })
 
 register('demo-clock', Clock)
-
 render(<DemoClock />, '#app')
 ```
