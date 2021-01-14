@@ -19,7 +19,11 @@ const EMPTY_OBJECT = {}
 
 // === types ==========================================================
 
-type AttrKind = StringConstructor | NumberConstructor | BooleanConstructor
+type AttrKind =
+  | StringConstructor
+  | NumberConstructor
+  | BooleanConstructor
+  | DateConstructor
 
 type AttrOptions = {
   kind: AttrKind
@@ -415,5 +419,15 @@ const commonPropConverters: Record<string, PropConverter<any>> = {
   Boolean: {
     fromPropToString: (it: boolean) => (it ? 'true' : 'false'),
     fromStringToProp: (it: string) => (it === 'true' ? true : false)
+  },
+
+  Date: {
+    fromPropToString: (it: Date) => it.toISOString().substr(0, 10),
+
+    fromStringToProp: (it: string) => {
+      ;/^[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}$/.test(it)
+        ? new Date(Date.parse(it))
+        : new Date(NaN)
+    }
   }
 }

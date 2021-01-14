@@ -261,7 +261,7 @@ export const useEmitter = createCoreHook('useEmitter', function (c: Ctrl): <
 
 export const useStyles = createCoreHook(
   'useStyles',
-  function (c, styles: string | string[]) {
+  function (c, ...styles: string[]) {
     c.addStyles(styles)
   }
 )
