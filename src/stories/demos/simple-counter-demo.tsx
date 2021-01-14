@@ -1,7 +1,7 @@
-import { attr, define, h } from 'js-elements'
+import { attr, component, h, register } from 'js-elements'
 import { useState } from 'js-elements/hooks'
 
-class CounterP {
+class CounterProps {
   @attr(Number)
   initialCount = 0
 
@@ -9,7 +9,7 @@ class CounterP {
   label = 'Counter'
 }
 
-const Counter = define('simple-counter', CounterP, (p) => {
+const Counter = component(CounterProps, (p) => {
   const [s, set] = useState({
     count: p.initialCount
   })
@@ -23,7 +23,7 @@ const Counter = define('simple-counter', CounterP, (p) => {
   )
 })
 
-export default define('simple-counter-demo', () => {
+const CounterDemo = component(() => {
   return () => (
     <div>
       <h3>Simple counter demo</h3>
@@ -31,3 +31,10 @@ export default define('simple-counter-demo', () => {
     </div>
   )
 })
+
+register({
+  'simple-counter': Counter,
+  'simple-counter-demo': CounterDemo
+})
+
+export default CounterDemo

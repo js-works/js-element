@@ -1,6 +1,6 @@
 # js-elements
 
-A R&D project to evaluate an alternative approach to define custom elements.
+A R&D project to evaluate an alternative approach to component custom elements.
 
 #### Disclaimer:
 
@@ -12,14 +12,14 @@ and btw: It is currently not meant to ever be used in production.
 ### Example 1
 
 ```jsx
-import { define, h, render } from 'js-elements'
+import { component, h, register, render } from 'js-elements'
 
 class SayHelloProps {
   salutation = 'Hello'
   name = 'World'
 }
 
-const SayHello = define('say-hello', SayHelloProps, (props) => {
+const SayHello = component(SayHelloProps, (props) => {
   return () => (
     <div>
       {props.salutation}, {props.name}!
@@ -27,13 +27,15 @@ const SayHello = define('say-hello', SayHelloProps, (props) => {
   )
 })
 
+register('say-hello', SayHello)
+
 render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
 ```
 
 ### Example 2
 
 ```jsx
-import { attr, define, h, render } from 'js-elements'
+import { attr, component, h, register, render } from 'js-elements'
 import { useEffect, useOnMount, useState, useStyles } from 'js-elements/hooks'
 import counterStyles from './counter.css'
 
@@ -45,7 +47,7 @@ class CounterProps {
   label = 'Counter'
 }
 
-const Counter = define('demo-counter', CounterProps, (props) => {
+const Counter = component(CounterProps, (props) => {
   const [state, setState] = useState({
     count: props.initialCount
   })
@@ -75,19 +77,23 @@ const Counter = define('demo-counter', CounterProps, (props) => {
   )
 })
 
+register('demo-counter', Counter)
+
 render(<Counter />, '#app')
 ```
 
 ### Example 3
 
 ```jsx
-import { define, h, render } from 'js-elements'
+import { component, h, render } from 'js-elements'
 import { useTimer } from 'js-elements/hooks'
 
-const DemoClock = define('demo-clock', () => {
+const Clock = component(() => {
   const getTime = useTimer(1000, () => new Date().toLocaleTimeString())
   return () => <div>Current time: {getTime()}</div>
 })
+
+register('demo-clock', Clock)
 
 render(<DemoClock />, '#app')
 ```

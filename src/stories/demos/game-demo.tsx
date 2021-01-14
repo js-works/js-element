@@ -1,4 +1,4 @@
-import { define, h } from 'js-elements'
+import { component, h, register } from 'js-elements'
 import { defineMessages } from 'js-messages'
 import { createReducer, on } from 'js-reducers'
 import { of } from 'rxjs'
@@ -193,7 +193,7 @@ const [useStoreProvider, useSelectors] = createStoreHooks<AppState>()
 
 // === components ====================================================
 
-const Field = define('x-field', () => {
+const Field = component(() => {
   useStyles(styles.field)
 
   const style = `
@@ -208,7 +208,7 @@ const Field = define('x-field', () => {
   )
 })
 
-const Ball = define('x-ball', () => {
+const Ball = component(() => {
   const stateSel = useSelectors(StateSel)
 
   useStyles(styles.ball)
@@ -224,7 +224,7 @@ const Ball = define('x-ball', () => {
   }
 })
 
-const Racket = define('x-racket', () => {
+const Racket = component(() => {
   const stateSel = useSelectors(StateSel)
 
   useStyles(styles.racket)
@@ -240,7 +240,7 @@ const Racket = define('x-racket', () => {
   }
 })
 
-const Scoreboard = define('x-scoreboard', () => {
+const Scoreboard = component(() => {
   const stateSel = useSelectors(StateSel)
 
   useStyles(styles.scoreboard)
@@ -256,7 +256,7 @@ const Scoreboard = define('x-scoreboard', () => {
   }
 })
 
-const CountdownPane = define('x-countdown-pane', () => {
+const CountdownPane = component(() => {
   const [s, set] = useState({
     text: '',
     fontSize: 20
@@ -280,7 +280,7 @@ const CountdownPane = define('x-countdown-pane', () => {
   )
 })
 
-const AlarmPane = define('x-alert-pane', () => {
+const AlarmPane = component(() => {
   const getLightClass = useTimer(150, (idx) =>
     idx % 2 === 0 ? 'light' : 'dark'
   )
@@ -290,7 +290,7 @@ const AlarmPane = define('x-alert-pane', () => {
   return () => <div class={`root ${getLightClass()}`} />
 })
 
-const Game = define('x-game', () => {
+const Game = component(() => {
   useStyles(styles.game)
   const actions = useActions(ActionMsg)
   const stateSel = useSelectors(StateSel)
@@ -326,7 +326,7 @@ const Game = define('x-game', () => {
   }
 })
 
-const App = define('x-app', () => {
+const App = component(() => {
   useStoreProvider(new GameLogic().getStore())
   useOnMount(() => window.focus())
 
@@ -412,6 +412,19 @@ const styles = {
     }
   `
 }
+
+// === component registration ========================================
+
+register({
+  'x-field': Field,
+  'x-ball': Ball,
+  'x-racket': Racket,
+  'x-scoreboard': Scoreboard,
+  'x-countdown-pane': CountdownPane,
+  'x-alarm-pane': AlarmPane,
+  'x-game': Game,
+  'x-app': App
+})
 
 // === exports =======================================================
 

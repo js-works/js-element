@@ -30,6 +30,10 @@ function h(t: any, p: any) {
   const argc = arguments.length
   const type = typeof t === 'function' ? t[TAGNAME_SYMBOL] : t
 
+  if (typeof t === 'function' && type === undefined) {
+    throw new Error('Component cannot be rendered as it is not registered yet')
+  }
+
   const props =
     p === undefined ||
     p === null ||

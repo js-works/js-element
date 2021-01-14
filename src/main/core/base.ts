@@ -1,4 +1,4 @@
-import { Component, Ctrl, Message, VElement, VNode } from './types'
+import { Component, Ctrl, VNode } from './types'
 import { renderer } from './vdom'
 
 // @ts-ignore
@@ -6,10 +6,12 @@ import { patch } from './superfine'
 
 // === exports =======================================================
 
-export { attr, define }
+export { attr, component, register }
 
 // === local data =====================================================
 
+const componentToCustomElementClassMap = new Map<Component<any>, any>() // TODO
+const tagNameToComponentMap = new Map<string, Component<any>>()
 const attrsOptionsByComponentClass = new Map<{ new (): any }, AttrsOptions>()
 
 // === constants =====================================================
@@ -59,15 +61,14 @@ function attr(kind: AttrKind): (proto: object, key: string) => void {
 
 // === helpers =======================================================
 
-function define(tagName: string, main: () => () => VNode): Component<{}>
+function component(main: () => () => VNode): Component<{}>
 
-function define<P>(
-  tagName: string,
+function component<P>(
   propsClass: { new (): P },
   main: (props: P) => () => VNode
 ): Component<Partial<P>>
 
-function define(tagName: string, arg2: any, arg3?: any): any {
+function component(arg2: any, arg3?: any): any {
   const hasThreeArgs = typeof arg3 === 'function'
   const propsClass = hasThreeArgs ? arg2 : null
 
@@ -78,29 +79,63 @@ function define(tagName: string, arg2: any, arg3?: any): any {
   const main = hasThreeArgs ? arg3 : arg2
 
   const customElementClass = buildCustomElementClass(
-    tagName,
     propsClass,
     attrsOptions,
     main
   )
 
-  try {
-    customElements.define(tagName, customElementClass)
-  } catch {
-    // TODO
-    console.clear()
-    globalThis.location.reload()
+  const component: Component<any> = (() => {}) as any // TODO!!!!!!!!!!!!!!!!!
+  componentToCustomElementClassMap.set(component, customElementClass)
+
+  return component
+}
+
+function register(tagName: string, component: Component<any> | any): void // TODO
+function register(obj: Record<string, Component<any> | any>): void // TODO
+
+function register(arg1: any, arg2?: any): void {
+  if (typeof arg1 === 'object') {
+    for (const tagName of Object.keys(arg1)) {
+      register(tagName, arg1[tagName])
+    }
+  } else if (arg2.prototype instanceof Element) {
+    if (customElements.get(arg1)) {
+      console.clear()
+      location.reload()
+    } else {
+      customElements.define(arg1, arg2)
+    }
+  } else {
+    const tagName = arg1
+    const component = arg2
+    const registeredComponent = tagNameToComponentMap.get(tagName)
+    const registeredTagName = (component as any)[Symbol.for('tagName')]
+    const customElementClass = componentToCustomElementClassMap.get(component)
+
+    if (!/^[a-z][a-z0-9-]*(-[a-z][a-z0-9]*)$/.test(tagName)) {
+      throw Error(
+        `Tried to register component with invalid tag name "${tagName}"`
+      )
+    } else if (!customElementClass) {
+      throw Error('Tried to register invalid component')
+    } else if (registeredComponent && registeredComponent !== component) {
+      register(tagName, customElementClass)
+      //throw Error(
+      //  `A different component has already registered as "${tagName}"`
+      //)
+    } else if (registeredTagName && registeredTagName !== tagName) {
+      throw Error(
+        `The component has already been registered as "${registeredTagName}"`
+      )
+    } else if (!registeredComponent) {
+      register(tagName, customElementClass)
+      ;(component as any)[Symbol.for('tagName')] = tagName
+      tagNameToComponentMap.set(tagName, component)
+    }
   }
-
-  const ret = () => {} // TODO
-
-  ;(ret as any)[Symbol.for('tagName')] = tagName
-
-  return ret
 }
 
 function buildCustomElementClass(
-  tagName: string,
   propsClass: { new (): object } | null,
   attrsOptions: AttrsOptions | null,
   main: (props: any) => () => VNode
@@ -280,7 +315,7 @@ function buildCustomElementClass(
         try {
           renderer(content, contentElement!)
         } catch (e) {
-          console.error(`Render error in "${tagName}"`)
+          console.error(`Render error in "${ctrl.getName()}"`)
           throw e
         }
 
@@ -297,7 +332,7 @@ function buildCustomElementClass(
 
       function createCtrl(): Ctrl {
         return {
-          getName: () => tagName,
+          getName: () => (customElementClass as any)[Symbol.for('tagName')],
           isInitialized: () => isInitialized,
           isMounted: () => isMounted,
           hasUpdated: () => hasUpdated,

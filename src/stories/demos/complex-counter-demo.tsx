@@ -1,4 +1,13 @@
-import { define, h, MethodsOf, EventHandler, Ref, UIEvent } from 'js-elements'
+import {
+  component,
+  h,
+  register,
+  MethodsOf,
+  EventHandler,
+  Ref,
+  UIEvent
+} from 'js-elements'
+
 import { createEvent, createRef } from 'js-elements/utils'
 
 import {
@@ -16,7 +25,7 @@ type CountChangeEvent = UIEvent<
   }
 >
 
-class CounterP {
+class CounterProps {
   initialCount = 0
   label = 'Counter'
   onCountChange?: EventHandler<CountChangeEvent>
@@ -28,7 +37,7 @@ class CounterP {
   }>
 }
 
-const Counter = define('complex-counter', CounterP, (p) => {
+const Counter = component(CounterProps, (p) => {
   const status = useStatus()
   const emit = useEmitter()
 
@@ -60,7 +69,7 @@ const Counter = define('complex-counter', CounterP, (p) => {
   )
 })
 
-export default define('complex-counter-demo', () => {
+const CounterDemo = component(() => {
   const counterRef = createRef<MethodsOf<typeof Counter>>()
   const decrement = () => counterRef.current!.decrement()
   const increment = () => counterRef.current!.increment()
@@ -82,3 +91,10 @@ export default define('complex-counter-demo', () => {
     </div>
   )
 })
+
+register({
+  'complex-counter': Counter,
+  'complex-counter-demo': CounterDemo
+})
+
+export default CounterDemo

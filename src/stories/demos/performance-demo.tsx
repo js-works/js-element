@@ -1,4 +1,4 @@
-import { define, h, VNode } from 'js-elements'
+import { component, h, register, VNode } from 'js-elements'
 import { useOnMount, useRefresher } from 'js-elements/hooks'
 
 const prefs = {
@@ -9,12 +9,12 @@ const prefs = {
   rowCount: 20
 }
 
-class TileP {
+class TileProps {
   color = 'white'
   width = 3
 }
 
-const Tile = define('x-tile', TileP, (p) => {
+const Tile = component(TileProps, (p) => {
   return () => {
     const style = `
       float: left;
@@ -29,14 +29,14 @@ const Tile = define('x-tile', TileP, (p) => {
   }
 })
 
-class TileRowP {
+class TileRowProps {
   tileWidth = 3
   columnCount = 3
   colors = prefs.colors
   loop = 0
 }
 
-const TileRow = define('x-tile-row', TileRowP, (p) => {
+const TileRow = component(TileRowProps, (p) => {
   return () => {
     const tiles = []
 
@@ -51,14 +51,14 @@ const TileRow = define('x-tile-row', TileRowP, (p) => {
   }
 })
 
-class SpeedTestP {
+class SpeedTestProps {
   columnCount = prefs.columnCount
   rowCount = prefs.rowCount
   tileWidth = 3
   framesPerSecond = prefs.framesPerSecond
 }
 
-const SpeedTest = define('x-speed-test', SpeedTestP, (p) => {
+const SpeedTest = component(SpeedTestProps, (p) => {
   let loop = 0
 
   let intervalId = null as any
@@ -115,7 +115,7 @@ const SpeedTest = define('x-speed-test', SpeedTestP, (p) => {
   }
 })
 
-export default define('performance-demo', () => {
+const PerformanceDemo = component(() => {
   return () => (
     <SpeedTest
       tileWidth={prefs.tileWidth}
@@ -124,3 +124,12 @@ export default define('performance-demo', () => {
     />
   )
 })
+
+register({
+  'x-tile': Tile,
+  'x-tile-row': TileRow,
+  'x-speed-test': SpeedTest,
+  'performance-demo': PerformanceDemo
+})
+
+export default PerformanceDemo

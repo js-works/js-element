@@ -1,7 +1,7 @@
-import { define, h } from 'js-elements'
+import { component, h, register } from 'js-elements'
 import { useInterval, useState } from 'js-elements/hooks'
 
-export default define('interval-demo', () => {
+const IntervalDemo = component(() => {
   const [s, set] = useState({
     count: 0,
     delay: 1000
@@ -28,3 +28,7 @@ export default define('interval-demo', () => {
     </div>
   )
 })
+
+register('interval-demo', IntervalDemo)
+
+export default IntervalDemo

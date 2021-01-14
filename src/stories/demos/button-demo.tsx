@@ -1,4 +1,11 @@
-import { attr, define, h, EventHandler, UIEvent } from 'js-elements'
+import {
+  attr,
+  component,
+  h,
+  EventHandler,
+  UIEvent,
+  register
+} from 'js-elements'
 import { useEmitter, useStyles } from 'js-elements/hooks'
 import { createEvent } from 'js-elements/utils'
 
@@ -27,7 +34,7 @@ class ButtonProps {
   onButtonClick?: EventHandler<ButtonClickEvent>
 }
 
-const DemoButton = define('demo-button', ButtonProps, (props) => {
+const DemoButton = component(ButtonProps, (props) => {
   const emit = useEmitter()
   useStyles(buttonDemoStyles)
 
@@ -42,7 +49,7 @@ const DemoButton = define('demo-button', ButtonProps, (props) => {
   )
 })
 
-export default define('button-demo', () => {
+const ButtonDemo = component(() => {
   const onButtonClick = (ev: ButtonClickEvent) => alert(ev.type)
 
   return () => (
@@ -52,3 +59,10 @@ export default define('button-demo', () => {
     </div>
   )
 })
+
+register({
+  'demo-button': DemoButton,
+  'button-demo': ButtonDemo
+})
+
+export default ButtonDemo
