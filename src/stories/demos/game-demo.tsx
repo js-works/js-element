@@ -1,8 +1,8 @@
 import { component, h, register } from 'js-elements'
 import { defineMessages } from 'js-messages'
 import { createReducer, on } from 'js-reducers'
-import { of } from 'rxjs'
-import { delay, map, mergeMap, repeat, repeatWhen, tap } from 'rxjs/operators'
+import { createStore, createEffects, ofType } from '../libs/js-stores'
+import { delay, map, mergeMap, tap } from 'rxjs/operators'
 
 import {
   createStoreHooks,
@@ -12,8 +12,6 @@ import {
   useStyles,
   useTimer
 } from 'js-elements/hooks'
-
-import { createStore, createEffects, ofType } from '../libs/js-stores'
 
 // === constants =====================================================
 
@@ -220,6 +218,7 @@ const Ball = component(() => {
       width: ${BALL_RADIUS * 2}px;
       height: ${BALL_RADIUS * 2}px;
     `
+
     return <div class="root" style={style} />
   }
 })
@@ -257,7 +256,7 @@ const Scoreboard = component(() => {
 })
 
 const CountdownPane = component(() => {
-  const [s, set] = useState({
+  const [state, setState] = useState({
     text: '',
     fontSize: 20
   })
@@ -267,15 +266,15 @@ const CountdownPane = component(() => {
   useStyles(styles.countdownPane)
 
   useOnMount(() => {
-    setTimeout(() => set('text', 'Ready...'), ms)
-    setTimeout(() => set({ text: 'Steady...', fontSize: 21 }), 2 * ms)
-    setTimeout(() => set({ text: 'GOOOOOO!', fontSize: 26 }), 3 * ms)
-    setTimeout(() => set('text', ''), 4 * ms)
+    setTimeout(() => setState('text', 'Ready...'), ms)
+    setTimeout(() => setState({ text: 'Steady...', fontSize: 21 }), 2 * ms)
+    setTimeout(() => setState({ text: 'GOOOOOO!', fontSize: 26 }), 3 * ms)
+    setTimeout(() => setState('text', ''), 4 * ms)
   })
 
   return () => (
-    <div class="root" style={`font-size: ${s.fontSize}px`}>
-      {s.text}
+    <div class="root" style={`font-size: ${state.fontSize}px`}>
+      {state.text}
     </div>
   )
 })
