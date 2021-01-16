@@ -1,4 +1,4 @@
-import { Ctrl, Ref } from './types'
+import { Ctrl, Ref, State, Store } from './types'
 
 // === constants =====================================================
 
@@ -8,7 +8,6 @@ const STORE_KEY = 'js-elements::ext::store'
 
 type Task = () => void
 type Methods = Record<string, (...args: any[]) => any>
-type State = Record<string, any>
 
 type StateUpdater<T extends Record<string, any>> = {
   (newState: Partial<T>): void
@@ -29,12 +28,6 @@ type Selectors<S extends State> = {
 
 type SelectorsOf<S extends State, U extends Selectors<S>> = {
   [K in keyof U]: U[K] extends (state: S) => infer R ? R : never
-}
-
-type Store<S extends State> = {
-  getState(): State
-  subscribe(listener: () => void): () => void
-  dispatch(msg: Message): void
 }
 
 // === createCoreHook ================================================
@@ -584,6 +577,32 @@ export const useActions = createCoreHook('useActions', function <
 
   return ret
 })
+
+// === createStoreHook ===============================================
+
+export function createStoreHook<S extends State>(store: Store<S>): () => S {
+  return () => {
+    const ret: any = {} // will be filled below
+    const refresh = useRefresher()
+
+    for (const key of Object.keys(store.getState())) {
+      Object.defineProperty(ret, key, {
+        get: () => store.getState()[key]
+      })
+    }
+
+    useOnMount(() => {
+      const unsubscribe = store.subscribe(() => {
+        console.log('refresh')
+        refresh()
+      })
+
+      return unsubscribe
+    })
+
+    return ret
+  }
+}
 
 // === createStoreHooks ==============================================
 

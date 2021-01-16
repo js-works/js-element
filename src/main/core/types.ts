@@ -16,7 +16,7 @@ export type VNode =
 
 export type Task = () => void
 export type Message = { type: string } & Record<string, any>
-
+export type State = Record<string, any>
 export type Component<P> = (props?: P, ...children: VNode[]) => VElement<P>
 
 export type MethodsOf<C> = C extends Component<infer P>
@@ -41,4 +41,11 @@ export type Ctrl = {
   addStyles(styles: string | string[]): void
   send(message: Message): void
   receive(type: string, handler: (message: Message) => void): () => void
+}
+
+export type Store<S extends State> = {
+  getState(): S
+  subscribe(listener: () => void): () => void
+  dispatch(msg: Message): void
+  destroy?(): void
 }

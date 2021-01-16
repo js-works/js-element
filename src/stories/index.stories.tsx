@@ -1,6 +1,7 @@
 import ButtonDemo from './demos/button-demo'
 import SimpleCounterDemo from './demos/simple-counter-demo'
-import CounterDemo from './demos/complex-counter-demo'
+import ComplexCounterDemo from './demos/complex-counter-demo'
+import StoreCounterDemo from './demos/store-counter-demo'
 import ClockDemo from './demos/clock-demo'
 import IntervalDemo from './demos/interval-demo'
 import MouseDemo from './demos/mouse-demo'
@@ -20,7 +21,8 @@ function demo(demoClass: any) {
 
 export const Button = demo(ButtonDemo)
 export const SimpleCounter = demo(SimpleCounterDemo)
-export const ComplexCounter = demo(CounterDemo)
+export const ComplexCounter = demo(ComplexCounterDemo)
+export const StoreCounter = demo(StoreCounterDemo)
 export const Clock = demo(ClockDemo)
 export const Interval = demo(IntervalDemo)
 export const Mouse = demo(MouseDemo)
