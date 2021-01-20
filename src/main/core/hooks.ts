@@ -85,7 +85,7 @@ export function createCtxHooks<T>(
   const subscribeEventType = getNewEventType()
 
   const useCtxProvider = createCoreHook(`${hookName}Provider`, (c: Ctrl) => {
-    const root = c.getRoot()
+    const root = c.getHost()
     const subscribers: ((value: T) => void)[] = []
 
     const setCtxValue = (value: T) => {
@@ -104,7 +104,7 @@ export function createCtxHooks<T>(
   })
 
   const useCtx = createCoreHook(hookName, (c: Ctrl) => {
-    const root = c.getRoot()
+    const root = c.getHost()
     let cancel: null | (() => void) = null
 
     const cancelled = new Promise<null>((resolve) => {
@@ -136,6 +136,12 @@ export function createCtxHooks<T>(
 
   return [useCtxProvider, useCtx]
 }
+
+// === useHost =======================================================
+
+export const useHost = createCoreHook('useHost', (c) => {
+  return c.getHost()
+})
 
 // === useMethods ====================================================
 
@@ -242,7 +248,7 @@ export const useEmitter = createCoreHook('useEmitter', function (c: Ctrl): <
   handler?: (ev: E) => void
 ) => void {
   return (ev, handler?) => {
-    c.getRoot().dispatchEvent(ev)
+    c.getHost().dispatchEvent(ev)
 
     if (handler) {
       handler(ev)
@@ -252,10 +258,31 @@ export const useEmitter = createCoreHook('useEmitter', function (c: Ctrl): <
 
 // === useStyles =======================================================
 
+function addStyles(
+  stylesContainer: Element,
+  styles: string[] | HTMLStyleElement
+): void {
+  if (styles instanceof HTMLStyleElement) {
+    stylesContainer.appendChild(styles)
+  } else {
+    const css = styles.join('\n\n/* =============== */\n\n')
+    const styleElem = document.createElement('style')
+
+    styleElem.appendChild(document.createTextNode(css))
+    stylesContainer.appendChild(styleElem)
+  }
+}
+
 export const useStyles = createCoreHook(
   'useStyles',
-  function (c, ...styles: string[]) {
-    c.addStyles(styles)
+  (c, ...styles: string[]) => {
+    const ret = (...styles: string[]) => {
+      addStyles(c.getHost().shadowRoot!.firstChild as Element, styles)
+    }
+
+    ret.apply(null, styles)
+
+    return ret
   }
 )
 

@@ -37,8 +37,7 @@ export type Ctrl = {
   beforeUpdate(task: Task): void
   afterUpdate(task: Task): void
   beforeUnmount(task: Task): void
-  getRoot(): HTMLElement
-  addStyles(styles: string | string[]): void
+  getHost(): HTMLElement
   send(message: Message): void
   receive(type: string, handler: (message: Message) => void): () => void
 }

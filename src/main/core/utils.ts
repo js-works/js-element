@@ -34,6 +34,11 @@ function initStore<S extends State>(
 
 function initStore<S extends State>(arg1: any, arg2?: any): InitStoreResult<S> {
   let state: S = typeof arg1 === 'string' ? arg2 : arg1
+  let subscribers: ((() => void) | null)[] = []
+  let notifying = false
+  let unsubscribedWhileNotifying = false
+  let destroyed = false
+
   const name = typeof arg1 === 'string' ? arg1 : '' // TODO
   const getState = () => state
 
@@ -41,9 +46,7 @@ function initStore<S extends State>(arg1: any, arg2?: any): InitStoreResult<S> {
     state = Object.assign({}, state, fn(state)) // TODO
 
     if (notifying) {
-      throw new Error(
-        'Not allowed to dispatch while store is already dispatching'
-      )
+      throw new Error('Not allowed to set state while store is notifying')
     }
 
     const subscriberCount = subscribers.length
@@ -66,11 +69,6 @@ function initStore<S extends State>(arg1: any, arg2?: any): InitStoreResult<S> {
       notifying = false
     }
   }
-
-  let subscribers: ((() => void) | null)[] = []
-  let notifying = false
-  let unsubscribedWhileNotifying = false
-  let destroyed = false
 
   const store: Store<S> = {
     getState,

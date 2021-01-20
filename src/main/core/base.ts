@@ -373,18 +373,8 @@ function buildCustomElementClass(
             beforeUnmountNotifier.subscribe(task)
           },
 
-          getRoot() {
+          getHost() {
             return self
-          },
-
-          addStyles(styles: string | string[]): void {
-            const css = Array.isArray(styles)
-              ? styles.join('\n\n/* =============== */\n\n')
-              : styles
-
-            const styleElem = document.createElement('style')
-            styleElem.appendChild(document.createTextNode(css))
-            stylesElement!.appendChild(styleElem)
           },
 
           send(msg): void {
