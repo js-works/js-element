@@ -1,7 +1,7 @@
-import { component, h, register } from 'js-elements'
+import { component, h } from 'js-elements'
 import { useMousePosition } from 'js-elements/hooks'
 
-const MouseDemo = component(() => {
+const MouseDemo = component('mouse-demo', () => {
   const mousePos = useMousePosition()
 
   return () => {
@@ -16,7 +16,5 @@ const MouseDemo = component(() => {
     )
   }
 })
-
-register('mouse-demo', MouseDemo)
 
 export default MouseDemo

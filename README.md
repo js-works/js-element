@@ -12,14 +12,14 @@ and btw: It is currently not meant to ever be used in production.
 ### Example 1
 
 ```jsx
-import { component, h, register, render } from 'js-elements'
+import { component, h, render } from 'js-elements'
 
 class SayHelloProps {
   salutation = 'Hello'
   name = 'World'
 }
 
-const SayHello = component(SayHelloProps, (props) => {
+const SayHello = component('say-hello', SayHelloProps, (props) => {
   return () => (
     <div>
       {props.salutation}, {props.name}!
@@ -27,14 +27,13 @@ const SayHello = component(SayHelloProps, (props) => {
   )
 })
 
-register('say-hello', SayHello)
 render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
 ```
 
 ### Example 2
 
 ```jsx
-import { attr, component, h, register, render } from 'js-elements'
+import { attr, component, h, render } from 'js-elements'
 import { useEffect, useOnMount, useState, useStyles } from 'js-elements/hooks'
 import counterStyles from './counter.css'
 
@@ -46,7 +45,7 @@ class CounterProps {
   label = 'Counter'
 }
 
-const Counter = component(CounterProps, (props) => {
+const Counter = component('demo-counter', CounterProps, (props) => {
   const [state, setState] = useState({
     count: props.initialCount
   })
@@ -76,21 +75,19 @@ const Counter = component(CounterProps, (props) => {
   )
 })
 
-register('demo-counter', Counter)
 render(<Counter />, '#app')
 ```
 
 ### Example 3
 
 ```jsx
-import { component, h, register, render } from 'js-elements'
+import { component, h, render } from 'js-elements'
 import { useTimer } from 'js-elements/hooks'
 
-const Clock = component(() => {
+const Clock = component('demo-clock', () => {
   const getTime = useTimer(1000, () => new Date().toLocaleTimeString())
   return () => <div>Current time: {getTime()}</div>
 })
 
-register('demo-clock', Clock)
 render(<DemoClock />, '#app')
 ```

@@ -10,7 +10,6 @@ export { h, html }
 
 const EMPTY_ARR: any[] = []
 const EMPTY_OBJ = {}
-const TAGNAME_SYMBOL = Symbol.for('tagName')
 
 // === h ==============================================================
 
@@ -28,7 +27,7 @@ function h<P extends Props>(
 
 function h(t: any, p: any) {
   const argc = arguments.length
-  const type = typeof t === 'function' ? t[TAGNAME_SYMBOL] : t
+  const type = typeof t === 'function' ? t.tagName : t
 
   if (typeof t === 'function' && type === undefined) {
     throw new Error('Component cannot be rendered as it is not registered yet')

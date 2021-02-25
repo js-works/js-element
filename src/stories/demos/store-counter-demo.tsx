@@ -1,7 +1,6 @@
 import {
   component,
   h,
-  register,
   MethodsOf,
   EventHandler,
   Ref,
@@ -23,7 +22,7 @@ function createCounterStore() {
 
 const useCounterStore = createStoreHook(createCounterStore())
 
-const Counter = component(() => {
+const Counter = component('store-counter', () => {
   const counter = useCounterStore()
 
   const onClick = () => counter.increment()
@@ -31,7 +30,7 @@ const Counter = component(() => {
   return () => <button onClick={onClick}>Counter: {counter.count}</button>
 })
 
-const CounterDemo = component(() => {
+const CounterDemo = component('store-counter-demo', () => {
   const counter = useCounterStore()
   const onIncrement = () => counter.increment()
   const onDecrement = () => counter.decrement()
@@ -43,11 +42,6 @@ const CounterDemo = component(() => {
       <button onClick={onIncrement}>+</button>
     </div>
   )
-})
-
-register({
-  'store-counter': Counter,
-  'store-counter-demo': CounterDemo
 })
 
 export default CounterDemo

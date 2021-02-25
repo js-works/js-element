@@ -1,4 +1,4 @@
-import { component, h, register, VNode } from 'js-elements'
+import { component, h, VNode } from 'js-elements'
 import { useOnMount, useRefresher } from 'js-elements/hooks'
 
 const prefs = {
@@ -14,7 +14,7 @@ class TileProps {
   width = 3
 }
 
-const Tile = component(TileProps, (p) => {
+const Tile = component('x-tile', TileProps, (p) => {
   return () => {
     const style = `
       float: left;
@@ -36,7 +36,7 @@ class TileRowProps {
   loop = 0
 }
 
-const TileRow = component(TileRowProps, (p) => {
+const TileRow = component('x-tile-row', TileRowProps, (p) => {
   return () => {
     const tiles = []
 
@@ -58,7 +58,7 @@ class SpeedTestProps {
   framesPerSecond = prefs.framesPerSecond
 }
 
-const SpeedTest = component(SpeedTestProps, (p) => {
+const SpeedTest = component('x-speed-test', SpeedTestProps, (p) => {
   let loop = 0
 
   let intervalId = null as any
@@ -115,7 +115,7 @@ const SpeedTest = component(SpeedTestProps, (p) => {
   }
 })
 
-const PerformanceDemo = component(() => {
+const PerformanceDemo = component('x-performance-demo', () => {
   return () => (
     <SpeedTest
       tileWidth={prefs.tileWidth}
@@ -123,13 +123,6 @@ const PerformanceDemo = component(() => {
       rowCount={prefs.rowCount}
     />
   )
-})
-
-register({
-  'x-tile': Tile,
-  'x-tile-row': TileRow,
-  'x-speed-test': SpeedTest,
-  'performance-demo': PerformanceDemo
 })
 
 export default PerformanceDemo

@@ -15,7 +15,7 @@ export default {
 }
 
 function demo(demoClass: any) {
-  const tagName = demoClass[Symbol.for('tagName')]
+  const tagName = demoClass.tagName
   return () => `<${tagName}></${tagName}`
 }
 

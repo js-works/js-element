@@ -1,4 +1,4 @@
-import { component, h, register } from 'js-elements'
+import { component, h } from 'js-elements'
 import { usePromise, useRefresher, useState } from 'js-elements/hooks'
 
 class DataLoaderProps {
@@ -7,7 +7,7 @@ class DataLoaderProps {
   key?: number
 }
 
-const DataLoader = component(DataLoaderProps, (p) => {
+const DataLoader = component('data-loader', DataLoaderProps, (p) => {
   const res = usePromise(
     () => wait(4000),
     () => [p.key]
@@ -22,7 +22,7 @@ const DataLoader = component(DataLoaderProps, (p) => {
   }
 })
 
-const PromiseDemo = component(() => {
+const PromiseDemo = component('promise-demo', () => {
   const [s, set] = useState({
     key: 0,
     loadingText: 'Loading...',
@@ -67,10 +67,5 @@ function wait(ms: number) {
 function getTime() {
   return new Date().toTimeString().substr(0, 8)
 }
-
-register({
-  'data-loader': DataLoader,
-  'promise-demo': PromiseDemo
-})
 
 export default PromiseDemo

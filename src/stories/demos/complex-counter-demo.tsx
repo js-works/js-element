@@ -1,7 +1,6 @@
 import {
   component,
   h,
-  register,
   MethodsOf,
   EventHandler,
   Ref,
@@ -37,7 +36,7 @@ class CounterProps {
   }>
 }
 
-const Counter = component(CounterProps, (p) => {
+const Counter = component('complex-counter', CounterProps, (p) => {
   const status = useStatus()
   const emit = useEmitter()
 
@@ -69,7 +68,7 @@ const Counter = component(CounterProps, (p) => {
   )
 })
 
-const CounterDemo = component(() => {
+const CounterDemo = component('complex-counter-demo', () => {
   const counterRef = createRef<MethodsOf<typeof Counter>>()
   const decrement = () => counterRef.current!.decrement()
   const increment = () => counterRef.current!.increment()
@@ -90,11 +89,6 @@ const CounterDemo = component(() => {
       </div>
     </div>
   )
-})
-
-register({
-  'complex-counter': Counter,
-  'complex-counter-demo': CounterDemo
 })
 
 export default CounterDemo
