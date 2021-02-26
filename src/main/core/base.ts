@@ -15,7 +15,6 @@ const attrsOptionsByComponentClass = new Map<{ new (): any }, AttrsOptions>()
 // === constants =====================================================
 
 const MESSAGE_TYPE_SUFFIX = '$$js-elements$$::'
-const EMPTY_OBJECT = {}
 
 // === types ==========================================================
 
@@ -61,57 +60,33 @@ function attr(kind: AttrKind): (proto: object, key: string) => void {
 
 function component(tagName: string, main: () => () => VNode): Component<{}>
 
-function component(
-  main: () => () => VNode
-): { as(tagName: string): Component<{}> }
-
 function component<P>(
   tagName: string,
   propsClass: { new (): P },
   main: (props: P) => () => VNode
 ): Component<Partial<P>>
 
-function component<P>(
-  propsClass: { new (): P },
-  main: (props: P) => () => VNode
-): { as(tagName: string): Component<Partial<P>> }
-
-function component(arg1: any, arg2?: any, arg3?: any): any {
+function component(tagName: string, arg2: any, arg3?: any): any {
   if (process.env.NODE_ENV === ('development' as string)) {
-    if (typeof arg1 === 'string') {
-      if (typeof arg2 !== 'function') {
-        throw new TypeError('[component] Expected function as second argument')
-      }
+    const argc = arguments.length
 
-      if (arg3 !== undefined && typeof arg3 !== 'function') {
-        throw new TypeError(
-          '[component] Expected function or undefined as third argument'
-        )
-      }
-    } else {
-      if (typeof arg1 !== 'function') {
-        throw new TypeError('[component] Expected function as first argument')
-      }
+    if (typeof tagName !== 'string') {
+      throw new TypeError('[component] First argument must be a string')
+    }
 
-      if (arg2 !== undefined && typeof arg2 !== 'function') {
-        throw new TypeError('[component] Expected function as second argument')
-      }
+    if (typeof arg2 !== 'function') {
+      throw new TypeError('[component] Expected function as second argument')
+    }
 
-      if (arg3 !== undefined) {
-        throw new TypeError('[component] Did not expect third argument')
-      }
+    if (argc > 2 && typeof arg3 !== 'function') {
+      throw new TypeError('[component] Expected function as third argument')
+    }
+
+    if (argc > 3) {
+      throw new TypeError('[component] Unexpected fourth argument')
     }
   }
 
-  if (typeof arg1 !== 'string') {
-    const args = Array.from(arguments)
-
-    return {
-      as: (tagName: string) => (component as any)(tagName, ...args)
-    }
-  }
-
-  const tagName = arg1
   const propsClass = typeof arg3 === 'function' ? arg2 : null
   const main = propsClass ? arg3 : arg2
 
