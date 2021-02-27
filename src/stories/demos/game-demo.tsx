@@ -1,4 +1,4 @@
-import { component, h } from 'js-elements'
+import { elem, h } from 'js-elements'
 import { defineMessages } from 'js-messages'
 import { createReducer, on } from 'js-reducers'
 import { createStore, createEffects, ofType } from '../libs/js-stores'
@@ -191,7 +191,7 @@ const [useStoreProvider, useSelectors] = createStoreHooks<AppState>()
 
 // === components ====================================================
 
-const Field = component('x-field', () => {
+const Field = elem('x-field', () => {
   useStyles(styles.field)
 
   const style = `
@@ -206,7 +206,7 @@ const Field = component('x-field', () => {
   )
 })
 
-const Ball = component('x-ball', () => {
+const Ball = elem('x-ball', () => {
   const stateSel = useSelectors(StateSel)
 
   useStyles(styles.ball)
@@ -223,7 +223,7 @@ const Ball = component('x-ball', () => {
   }
 })
 
-const Racket = component('x-racket', () => {
+const Racket = elem('x-racket', () => {
   const stateSel = useSelectors(StateSel)
 
   useStyles(styles.racket)
@@ -239,7 +239,7 @@ const Racket = component('x-racket', () => {
   }
 })
 
-const Scoreboard = component('x-scoreboard', () => {
+const Scoreboard = elem('x-scoreboard', () => {
   const stateSel = useSelectors(StateSel)
 
   useStyles(styles.scoreboard)
@@ -255,7 +255,7 @@ const Scoreboard = component('x-scoreboard', () => {
   }
 })
 
-const CountdownPane = component('x-countdown-pane', () => {
+const CountdownPane = elem('x-countdown-pane', () => {
   const [state, setState] = useState({
     text: '',
     fontSize: 20
@@ -279,7 +279,7 @@ const CountdownPane = component('x-countdown-pane', () => {
   )
 })
 
-const AlarmPane = component('x-alarm-pane', () => {
+const AlarmPane = elem('x-alarm-pane', () => {
   const getLightClass = useTimer(150, (idx) =>
     idx % 2 === 0 ? 'light' : 'dark'
   )
@@ -289,7 +289,7 @@ const AlarmPane = component('x-alarm-pane', () => {
   return () => <div class={`root ${getLightClass()}`} />
 })
 
-const Game = component('x-game', () => {
+const Game = elem('x-game', () => {
   useStyles(styles.game)
   const actions = useActions(ActionMsg)
   const stateSel = useSelectors(StateSel)
@@ -325,7 +325,7 @@ const Game = component('x-game', () => {
   }
 })
 
-const App = component('x-app', () => {
+const App = elem('x-app', () => {
   useStoreProvider(new GameLogic().getStore())
   useOnMount(() => window.focus())
 

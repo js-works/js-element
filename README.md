@@ -12,14 +12,14 @@ and btw: It is currently not meant to ever be used in production.
 ### Example 1
 
 ```jsx
-import { component, h, render } from 'js-elements'
+import { elem, h, render } from 'js-elements'
 
 class SayHelloProps {
   salutation = 'Hello'
   name = 'World'
 }
 
-const SayHello = component('say-hello', SayHelloProps, (props) => {
+const SayHello = elem('say-hello', SayHelloProps, (props) => {
   return () => (
     <div>
       {props.salutation}, {props.name}!
@@ -33,7 +33,7 @@ render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
 ### Example 2
 
 ```jsx
-import { attr, component, h, render } from 'js-elements'
+import { attr, elem, h, render } from 'js-elements'
 import { useEffect, useOnMount, useState, useStyles } from 'js-elements/hooks'
 import counterStyles from './counter.css'
 
@@ -45,7 +45,7 @@ class CounterProps {
   label = 'Counter'
 }
 
-const Counter = component('demo-counter', CounterProps, (props) => {
+const Counter = elem('demo-counter', CounterProps, (props) => {
   const [state, setState] = useState({
     count: props.initialCount
   })
@@ -81,10 +81,10 @@ render(<Counter />, '#app')
 ### Example 3
 
 ```jsx
-import { component, h, render } from 'js-elements'
+import { elem, h, render } from 'js-elements'
 import { useTimer } from 'js-elements/hooks'
 
-const Clock = component('demo-clock', () => {
+const Clock = elem('demo-clock', () => {
   const getTime = useTimer(1000, () => new Date().toLocaleTimeString())
   return () => <div>Current time: {getTime()}</div>
 })

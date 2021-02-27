@@ -1,4 +1,4 @@
-import { attr, component, h } from 'js-elements'
+import { attr, elem, h } from 'js-elements'
 import { useState } from 'js-elements/hooks'
 
 class CounterProps {
@@ -9,7 +9,7 @@ class CounterProps {
   label = 'Counter'
 }
 
-const Counter = component('simple-counter', CounterProps, (p) => {
+const Counter = elem('simple-counter', CounterProps, (p) => {
   const [s, set] = useState({
     count: p.initialCount
   })
@@ -23,7 +23,7 @@ const Counter = component('simple-counter', CounterProps, (p) => {
   )
 })
 
-const CounterDemo = component('simple-counter-demo', () => {
+const CounterDemo = elem('simple-counter-demo', () => {
   return () => (
     <div>
       <h3>Simple counter demo</h3>

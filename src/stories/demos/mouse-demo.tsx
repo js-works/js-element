@@ -1,7 +1,7 @@
-import { component, h } from 'js-elements'
+import { elem, h } from 'js-elements'
 import { useMousePosition } from 'js-elements/hooks'
 
-const MouseDemo = component('mouse-demo', () => {
+const MouseDemo = elem('mouse-demo', () => {
   const mousePos = useMousePosition()
 
   return () => {

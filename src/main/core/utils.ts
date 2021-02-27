@@ -1,10 +1,6 @@
-import { Ref, Component, Props, State, Store, UIEvent } from './types'
+import { State, Store, UIEvent } from './types'
 
-export { createRef, createEvent, initStore }
-
-function createRef<T>(value: T | null = null): Ref<T> {
-  return { current: value }
-}
+export { createEvent, initStore }
 
 function createEvent<T extends string, D = null>(
   type: T,

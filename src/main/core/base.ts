@@ -1,4 +1,4 @@
-import { Component, Ctrl, VNode } from './types'
+import { Component, Ctrl, Ref, VNode } from './types'
 import { h, renderer } from './vdom'
 
 // @ts-ignore
@@ -6,7 +6,7 @@ import { patch } from './superfine'
 
 // === exports =======================================================
 
-export { attr, component }
+export { attr, elem, ref }
 
 // === local data =====================================================
 
@@ -58,15 +58,19 @@ function attr(kind: AttrKind): (proto: object, key: string) => void {
 
 // === pulbic API ====================================================
 
-function component(tagName: string, main: () => () => VNode): Component<{}>
+function ref<T>(value: T | null = null): Ref<T> {
+  return { current: value }
+}
 
-function component<P>(
+function elem(tagName: string, main: () => () => VNode): Component<{}>
+
+function elem<P>(
   tagName: string,
   propsClass: { new (): P },
   main: (props: P) => () => VNode
 ): Component<Partial<P>>
 
-function component(tagName: string, arg2: any, arg3?: any): any {
+function elem(tagName: string, arg2: any, arg3?: any): any {
   if (process.env.NODE_ENV === ('development' as string)) {
     const argc = arguments.length
 

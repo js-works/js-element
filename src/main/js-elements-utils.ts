@@ -1,1 +1,1 @@
-export { createRef, createEvent, initStore } from './core/utils'
+export { createEvent, initStore } from './core/utils'

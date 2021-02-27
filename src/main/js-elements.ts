@@ -1,4 +1,4 @@
-export { component, attr } from './core/base'
+export { elem, attr, ref } from './core/base'
 export { h, html, render } from './core/vdom'
 
 export {
