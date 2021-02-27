@@ -6,7 +6,7 @@ import { patch } from './superfine'
 
 // === exports =======================================================
 
-export { attr, elem, ref }
+export { attr, define, ref }
 
 // === local data =====================================================
 
@@ -62,15 +62,15 @@ function ref<T>(value: T | null = null): Ref<T> {
   return { current: value }
 }
 
-function elem(tagName: string, main: () => () => VNode): Component<{}>
+function define(tagName: string, main: () => () => VNode): Component<{}>
 
-function elem<P>(
+function define<P>(
   tagName: string,
   propsClass: { new (): P },
   main: (props: P) => () => VNode
 ): Component<Partial<P>>
 
-function elem(tagName: string, arg2: any, arg3?: any): any {
+function define(tagName: string, arg2: any, arg3?: any): any {
   if (process.env.NODE_ENV === ('development' as string)) {
     const argc = arguments.length
 

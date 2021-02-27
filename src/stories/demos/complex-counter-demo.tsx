@@ -1,5 +1,5 @@
 import {
-  elem,
+  define,
   h,
   ref,
   MethodsOf,
@@ -37,7 +37,7 @@ class CounterProps {
   }>
 }
 
-const Counter = elem('complex-counter', CounterProps, (p) => {
+const Counter = define('complex-counter', CounterProps, (p) => {
   const status = useStatus()
   const emit = useEmitter()
 
@@ -69,7 +69,7 @@ const Counter = elem('complex-counter', CounterProps, (p) => {
   )
 })
 
-const CounterDemo = elem('complex-counter-demo', () => {
+const CounterDemo = define('complex-counter-demo', () => {
   const counterRef = ref<MethodsOf<typeof Counter>>()
   const decrement = () => counterRef.current!.decrement()
   const increment = () => counterRef.current!.increment()

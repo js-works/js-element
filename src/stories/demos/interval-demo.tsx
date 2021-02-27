@@ -1,7 +1,7 @@
-import { elem, h } from 'js-elements'
+import { define, h } from 'js-elements'
 import { useInterval, useState } from 'js-elements/hooks'
 
-const IntervalDemo = elem('interval-demo', () => {
+const IntervalDemo = define('interval-demo', () => {
   const [s, set] = useState({
     count: 0,
     delay: 1000

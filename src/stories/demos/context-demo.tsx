@@ -1,9 +1,9 @@
-import { elem, h } from 'js-elements'
+import { define, h } from 'js-elements'
 import { createCtxHooks, useInterval } from 'js-elements/hooks'
 
 const [useThemeProvider, useTheme] = createCtxHooks('theme', 'light')
 
-const ContextDemo = elem('context-demo', () => {
+const ContextDemo = define('context-demo', () => {
   let theme = 'light'
   const setTheme = useThemeProvider()
 
@@ -23,7 +23,7 @@ const ContextDemo = elem('context-demo', () => {
   )
 })
 
-const ThemeInfo = elem('theme-info', () => {
+const ThemeInfo = define('theme-info', () => {
   const getTheme = useTheme()
   return () => <div>Current theme: {getTheme()}</div>
 })

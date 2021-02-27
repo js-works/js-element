@@ -1,4 +1,4 @@
-import { elem, h, VNode } from 'js-elements'
+import { define, h, VNode } from 'js-elements'
 import { useOnMount, useRefresher } from 'js-elements/hooks'
 
 const prefs = {
@@ -14,7 +14,7 @@ class TileProps {
   width = 3
 }
 
-const Tile = elem('x-tile', TileProps, (p) => {
+const Tile = define('x-tile', TileProps, (p) => {
   return () => {
     const style = `
       float: left;
@@ -36,7 +36,7 @@ class TileRowProps {
   loop = 0
 }
 
-const TileRow = elem('x-tile-row', TileRowProps, (p) => {
+const TileRow = define('x-tile-row', TileRowProps, (p) => {
   return () => {
     const tiles = []
 
@@ -58,7 +58,7 @@ class SpeedTestProps {
   framesPerSecond = prefs.framesPerSecond
 }
 
-const SpeedTest = elem('x-speed-test', SpeedTestProps, (p) => {
+const SpeedTest = define('x-speed-test', SpeedTestProps, (p) => {
   let loop = 0
 
   let intervalId = null as any
@@ -115,7 +115,7 @@ const SpeedTest = elem('x-speed-test', SpeedTestProps, (p) => {
   }
 })
 
-const PerformanceDemo = elem('x-performance-demo', () => {
+const PerformanceDemo = define('x-performance-demo', () => {
   return () => (
     <SpeedTest
       tileWidth={prefs.tileWidth}

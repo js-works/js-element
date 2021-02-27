@@ -1,4 +1,4 @@
-import { elem, h } from 'js-elements'
+import { define, h } from 'js-elements'
 import { usePromise, useRefresher, useState } from 'js-elements/hooks'
 
 class DataLoaderProps {
@@ -7,7 +7,7 @@ class DataLoaderProps {
   key?: number
 }
 
-const DataLoader = elem('data-loader', DataLoaderProps, (p) => {
+const DataLoader = define('data-loader', DataLoaderProps, (p) => {
   const res = usePromise(
     () => wait(4000),
     () => [p.key]
@@ -22,7 +22,7 @@ const DataLoader = elem('data-loader', DataLoaderProps, (p) => {
   }
 })
 
-const PromiseDemo = elem('promise-demo', () => {
+const PromiseDemo = define('promise-demo', () => {
   const [s, set] = useState({
     key: 0,
     loadingText: 'Loading...',
