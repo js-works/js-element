@@ -32,7 +32,7 @@ const Tile = define('x-tile', TileProps, (p) => {
 class TileRowProps {
   tileWidth = 3
   columnCount = 3
-  colors = prefs.colors
+  colors = ['red', 'green', 'blue']
   loop = 0
 }
 
@@ -55,6 +55,7 @@ class SpeedTestProps {
   columnCount = prefs.columnCount
   rowCount = prefs.rowCount
   tileWidth = 3
+  colors = ['red', 'green', 'blue']
   framesPerSecond = prefs.framesPerSecond
 }
 
@@ -94,6 +95,7 @@ const SpeedTest = define('x-speed-test', SpeedTestProps, (p) => {
         <TileRow
           tileWidth={p.tileWidth}
           columnCount={p.columnCount}
+          colors={p.colors}
           key={y}
           loop={loop++}
         />
@@ -121,6 +123,7 @@ const PerformanceDemo = define('x-performance-demo', () => {
       tileWidth={prefs.tileWidth}
       columnCount={prefs.columnCount}
       rowCount={prefs.rowCount}
+      colors={prefs.colors}
     />
   )
 })
