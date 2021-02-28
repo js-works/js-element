@@ -12,17 +12,9 @@ export { attr, define, ref }
 
 const attrsOptionsByComponentClass = new Map<{ new (): any }, AttrsOptions>()
 
-// === constants =====================================================
-
-const MESSAGE_TYPE_SUFFIX = '$$js-elements$$::'
-
 // === types ==========================================================
 
-type AttrKind =
-  | StringConstructor
-  | NumberConstructor
-  | BooleanConstructor
-  | DateConstructor
+type AttrKind = StringConstructor | NumberConstructor | BooleanConstructor
 
 type AttrOptions = {
   kind: AttrKind
@@ -147,7 +139,7 @@ function buildCustomElementClass(
       ? null
       : Array.from(attrsOptions.entries()).map(([propName, attrOptions]) => [
           propName,
-          commonPropConverters[attrOptions.kind.name]
+          commonPropConverters.get(attrOptions.kind)!
         ])
   )
 
@@ -322,6 +314,7 @@ function buildCustomElementClass(
       function createCtrl(): Ctrl {
         return {
           getName: () => name,
+          getHost: () => self,
           isInitialized: () => isInitialized,
           isMounted: () => isMounted,
           hasUpdated: () => hasUpdated,
@@ -360,38 +353,6 @@ function buildCustomElementClass(
           beforeUnmount(task) {
             beforeUnmountNotifier || (beforeUnmountNotifier = createNotifier())
             beforeUnmountNotifier.subscribe(task)
-          },
-
-          getHost() {
-            return self
-          },
-
-          send(msg): void {
-            self.dispatchEvent(
-              new CustomEvent(MESSAGE_TYPE_SUFFIX + msg.type, {
-                bubbles: true,
-                composed: true,
-                detail: msg
-              })
-            )
-          },
-
-          receive(type, handler) {
-            const root = contentElement!
-
-            const listener = (ev: Event) => {
-              ev.stopPropagation()
-              handler((ev as any).detail)
-            }
-
-            const unsubscribe = () => {
-              root.removeEventListener(MESSAGE_TYPE_SUFFIX + type, listener)
-            }
-
-            root.addEventListener(MESSAGE_TYPE_SUFFIX + type, listener)
-            this.beforeUnmount(unsubscribe)
-
-            return unsubscribe
           }
         }
       }
@@ -419,29 +380,19 @@ function createNotifier(): Notifier {
 
 // === attribute converters ==========================================
 
-const commonPropConverters: Record<string, PropConverter<any>> = {
-  String: {
-    fromPropToString: (it: string) => it,
-    fromStringToProp: (it: string) => it
-  },
+const commonPropConverters = new Map<AttrKind, PropConverter<any>>()
 
-  Number: {
-    fromPropToString: (it: number) => String(it),
-    fromStringToProp: (it: string) => Number.parseFloat(it)
-  },
+commonPropConverters.set(String, {
+  fromPropToString: (it: string) => it,
+  fromStringToProp: (it: string) => it
+})
 
-  Boolean: {
-    fromPropToString: (it: boolean) => (it ? 'true' : 'false'),
-    fromStringToProp: (it: string) => (it === 'true' ? true : false)
-  },
+commonPropConverters.set(Number, {
+  fromPropToString: (it: number) => String(it),
+  fromStringToProp: (it: string) => Number.parseFloat(it)
+})
 
-  Date: {
-    fromPropToString: (it: Date) => it.toISOString().substr(0, 10),
-
-    fromStringToProp: (it: string) => {
-      ;/^[0-9]{1,4}-[0-9]{1,2}-[0-9]{1,2}$/.test(it)
-        ? new Date(Date.parse(it))
-        : new Date(NaN)
-    }
-  }
-}
+commonPropConverters.set(Boolean, {
+  fromPropToString: (it: boolean) => (it ? 'true' : 'false'),
+  fromStringToProp: (it: string) => (it === 'true' ? true : false)
+})

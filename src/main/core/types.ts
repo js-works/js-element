@@ -38,8 +38,6 @@ export type Ctrl = {
   afterUpdate(task: Task): void
   beforeUnmount(task: Task): void
   getHost(): HTMLElement
-  send(message: Message): void
-  receive(type: string, handler: (message: Message) => void): () => void
 }
 
 export type Store<S extends State> = {

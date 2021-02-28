@@ -582,7 +582,7 @@ export const useActions = createCoreHook('useActions', function <
 
   const ret: any = {}
 
-  c.send({
+  send(c, {
     type: STORE_KEY,
 
     payload: {
@@ -642,11 +642,11 @@ export function createStoreHooks<S extends State>(): [
   const STORE_KEY2 = STORE_KEY + ++eventKeyCounter
 
   const useStore = createCoreHook('useStore', (c, store: Store<S>): void => {
-    c.receive(STORE_KEY, (msg: Message) => {
+    receive(c, STORE_KEY, (msg: Message) => {
       msg.payload.setStore(store)
     })
 
-    c.receive(STORE_KEY2, (msg: Message) => {
+    receive(c, STORE_KEY2, (msg: Message) => {
       msg.payload.setStore(store)
     })
   })
@@ -658,7 +658,7 @@ export function createStoreHooks<S extends State>(): [
 
     const ret: any = {}
 
-    c.send({
+    send(c, {
       type: STORE_KEY2,
 
       payload: {
@@ -708,4 +708,40 @@ function isEqualArray(arr1: any[], arr2: any[]) {
   }
 
   return ret
+}
+
+// === helpers =======================================================
+
+const SEND_RECEIVE_MESSAGE_TYPE_SUFFIX = '$$js-elements$$::'
+
+function send(c: Ctrl, msg: Message): void {
+  c.getHost().dispatchEvent(
+    new CustomEvent(SEND_RECEIVE_MESSAGE_TYPE_SUFFIX + msg.type, {
+      bubbles: true,
+      composed: true,
+      detail: msg
+    })
+  )
+}
+
+function receive(
+  c: Ctrl,
+  type: string,
+  handler: (message: Message) => void
+): () => void {
+  const host = c.getHost()
+
+  const listener = (ev: Event) => {
+    ev.stopPropagation()
+    handler((ev as any).detail)
+  }
+
+  const unsubscribe = () => {
+    host.removeEventListener(SEND_RECEIVE_MESSAGE_TYPE_SUFFIX + type, listener)
+  }
+
+  host.addEventListener(SEND_RECEIVE_MESSAGE_TYPE_SUFFIX + type, listener)
+  c.beforeUnmount(unsubscribe)
+
+  return unsubscribe
 }
