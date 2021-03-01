@@ -15,7 +15,7 @@ const EMPTY_OBJ = {}
 
 function h(
   type: string,
-  props?: Props | null, // TODO!!!!!
+  props?: Props | null, // TODO!!!
   ...children: VNode[]
 ): VElement
 
@@ -25,39 +25,33 @@ function h<P extends Props>(
   ...children: VNode[]
 ): VElement
 
-function h(t: any, p: any) {
+function h(type: string | Component<any>, props?: Props | null): VElement {
   const argc = arguments.length
-  const type = typeof t === 'function' ? t.tagName : t
+  const tagName = typeof type === 'function' ? (type as any).tagName : type
 
-  if (typeof t === 'function' && type === undefined) {
-    throw new Error('Component cannot be rendered as it is not registered yet')
-  }
-
-  const props =
-    p === undefined ||
-    p === null ||
-    typeof p !== 'object' ||
-    p.isVElement === true ||
-    typeof p[Symbol.iterator] === 'function'
-      ? EMPTY_OBJ
-      : p
-
-  const firstChildIdx =
-    p === undefined || p === null || props !== EMPTY_OBJ ? 2 : 1
-
-  let children = EMPTY_ARR
-
-  if (firstChildIdx === argc - 1) {
-    children = asVNode(arguments[firstChildIdx])
-  } else if (firstChildIdx < argc - 1) {
-    children = []
-
-    for (let i = firstChildIdx; i < argc; ++i) {
-      children.push(asVNode(arguments[i]))
+  if (process.env.NODE_ENV === ('development' as string)) {
+    if (typeof tagName !== 'string') {
+      throw new Error('[h] First argument must be a string or a component')
     }
   }
 
-  const ret: any = createElement(type, props, children)
+  const children = argc > 2 ? [] : EMPTY_ARR
+
+  if (argc > 2) {
+    for (let i = 2; i < argc; ++i) {
+      const child = arguments[i]
+
+      if (!Array.isArray(child)) {
+        children.push(asVNode(child))
+      } else {
+        for (let j = 0; j < child.length; ++j) {
+          children.push(asVNode(child[j]))
+        }
+      }
+    }
+  }
+
+  const ret: any = createElement(tagName, props || EMPTY_OBJ, children)
   ret.isVElement = true
   return ret
 }
@@ -65,15 +59,17 @@ function h(t: any, p: any) {
 // === render ========================================================
 
 export function render(content: VElement, container: Element | string) {
-  if (content !== null && (!content || content.isVElement !== true)) {
-    throw new TypeError()
-    ;('First argument "content" of function "render" must be a virtual element or null')
-  }
+  if (process.env.NODE_ENV === ('development' as string)) {
+    if (content !== null && (!content || content.isVElement !== true)) {
+      throw new TypeError()
+      ;('First argument "content" of function "render" must be a virtual element or null')
+    }
 
-  if (!container || (typeof container !== 'string' && !container.tagName)) {
-    throw new TypeError(
-      'Second argument "container" of function "render" must either be a DOM element or selector string for the DOM element'
-    )
+    if (!container || (typeof container !== 'string' && !container.tagName)) {
+      throw new TypeError(
+        'Second argument "container" of function "render" must either be a DOM element or selector string for the DOM element'
+      )
+    }
   }
 
   const target =

@@ -1,1 +1,1 @@
-export { createEvent, initStore } from './core/utils'
+export { initStore } from './core/utils'

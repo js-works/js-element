@@ -1,14 +1,13 @@
 import {
   define,
   h,
+  event,
   ref,
   MethodsOf,
   EventHandler,
   Ref,
   UIEvent
 } from 'js-elements'
-
-import { createEvent } from 'js-elements/utils'
 
 import {
   useEffect,
@@ -56,7 +55,7 @@ const Counter = define('complex-counter', CounterProps, (p) => {
   useEffect(
     () => {
       if (status.hasUpdated()) {
-        emit(createEvent('count-change', { count: s.count }), p.onCountChange)
+        emit(event('count-change', { count: s.count }), p.onCountChange)
       }
     },
     () => [s.count]

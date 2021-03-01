@@ -47,6 +47,7 @@ function createConfig(pkg, moduleFormat, productive) {
       replace({
         exclude: 'node_modules/**',
         delimiters: ['', ''],
+        preventAssignment: false,
 
         values: {
           'process.env.NODE_ENV': productive ? "'production'" : "'development'"

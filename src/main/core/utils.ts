@@ -1,17 +1,6 @@
 import { State, Store, UIEvent } from './types'
 
-export { createEvent, initStore }
-
-function createEvent<T extends string, D = null>(
-  type: T,
-  detail?: D
-): UIEvent<T, D> {
-  return new CustomEvent(type, {
-    detail: detail || null,
-    bubbles: true,
-    composed: true
-  }) as any
-}
+export { initStore }
 
 // === store =========================================================
 

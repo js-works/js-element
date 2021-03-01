@@ -1,7 +1,5 @@
-import { attr, define, h, EventHandler, UIEvent } from 'js-elements'
-
+import { attr, define, event, h, EventHandler, UIEvent } from 'js-elements'
 import { useEmitter, useStyles } from 'js-elements/hooks'
-import { createEvent } from 'js-elements/utils'
 
 const buttonDemoStyles = ` 
   .demo-button {
@@ -33,7 +31,7 @@ const DemoButton = define('demo-button', ButtonProps, (props) => {
   useStyles(buttonDemoStyles)
 
   const onClick = () => {
-    emit(createEvent('button-click'), props.onButtonClick)
+    emit(event('button-click'), props.onButtonClick)
   }
 
   return () => (

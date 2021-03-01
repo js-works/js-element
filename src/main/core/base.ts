@@ -1,4 +1,4 @@
-import { Component, Ctrl, Ref, VNode } from './types'
+import { Component, Ctrl, Ref, UIEvent, VNode } from './types'
 import { h, renderer } from './vdom'
 
 // @ts-ignore
@@ -6,7 +6,7 @@ import { patch } from './superfine'
 
 // === exports =======================================================
 
-export { attr, define, ref }
+export { attr, define, event, ref }
 
 // === local data =====================================================
 
@@ -52,6 +52,21 @@ function attr(kind: AttrKind): (proto: object, key: string) => void {
 
 function ref<T>(value: T | null = null): Ref<T> {
   return { current: value }
+}
+
+function event<T extends string, D = null>(
+  type: T,
+  detail?: D,
+  options?: { bubbles: boolean; cancelable?: boolean }
+): UIEvent<T, D> {
+  const params = {
+    detail: detail || null,
+    bubbles: !options || !!options.bubbles,
+    cancabble: !options || !!options.cancelable,
+    composed: true
+  }
+
+  return new CustomEvent(type, params) as UIEvent<T, D>
 }
 
 function define(tagName: string, main: () => () => VNode): Component<{}>
@@ -130,17 +145,22 @@ function buildCustomElementClass(
     ])
   )
 
-  const propNameToAttrNameMap: Map<string, string> = new Map(
-    Array.from(attrNameToPropNameMap).map(([k, v]) => [v, k])
-  )
-
   const propNameToConverterMap: Map<string, PropConverter<any>> = new Map(
     !attrsOptions
       ? null
-      : Array.from(attrsOptions.entries()).map(([propName, attrOptions]) => [
-          propName,
-          commonPropConverters.get(attrOptions.kind)!
-        ])
+      : Array.from(attrsOptions.entries()).map(([propName, attrOptions]) => {
+          const kind = attrOptions.kind
+
+          // TODO!!!
+          const propConv =
+            kind === Boolean
+              ? booleanPropConv
+              : kind === Number
+              ? numberPropConv
+              : stringPropConv
+
+          return [propName, propConv]
+        })
   )
 
   const customElementClass = class extends HTMLElement {
@@ -378,21 +398,19 @@ function createNotifier(): Notifier {
   }
 }
 
-// === attribute converters ==========================================
+// === prop converters ===============================================
 
-const commonPropConverters = new Map<AttrKind, PropConverter<any>>()
-
-commonPropConverters.set(String, {
+const stringPropConv = {
   fromPropToString: (it: string) => it,
   fromStringToProp: (it: string) => it
-})
+}
 
-commonPropConverters.set(Number, {
+const numberPropConv = {
   fromPropToString: (it: number) => String(it),
   fromStringToProp: (it: string) => Number.parseFloat(it)
-})
+}
 
-commonPropConverters.set(Boolean, {
+const booleanPropConv = {
   fromPropToString: (it: boolean) => (it ? 'true' : 'false'),
   fromStringToProp: (it: string) => (it === 'true' ? true : false)
-})
+}

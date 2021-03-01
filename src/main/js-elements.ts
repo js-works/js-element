@@ -1,4 +1,4 @@
-export { attr, define, ref } from './core/base'
+export { attr, define, event, ref } from './core/base'
 export { h, html, render } from './core/vdom'
 
 export {
