@@ -130,11 +130,11 @@ function define(tagName: string, arg2: any, arg3?: any): any {
 
 // === locals ========================================================
 
-function buildCustomElementClass(
+function buildCustomElementClass<T extends object>(
   name: string,
-  propsClass: { new (): object } | null,
+  propsClass: { new (): T } | null,
   attrsOptions: AttrsOptions | null,
-  main: (props: any) => () => VNode
+  main: (props: T) => () => VNode
 ): CustomElementConstructor {
   const propNames = propsClass ? Object.keys(new propsClass()) : []
 
