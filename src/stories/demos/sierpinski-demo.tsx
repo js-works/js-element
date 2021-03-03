@@ -78,7 +78,6 @@ const Triangle = define('x-triangle', TriangleProps, (p) => {
 })
 
 const Main = define('x-main', () => {
-  //const [s, set] = useState({ seconds: 0 })
   const refresh = useRefresher()
   const start = Date.now()
   let seconds = 0
@@ -86,7 +85,6 @@ const Main = define('x-main', () => {
   useOnMount(() => {
     const intervalId = setInterval(() => {
       seconds = (seconds % 10) + 1
-      //set('seconds', (it) => (it % 10) + 1)
     }, 1000)
 
     return () => clearInterval(intervalId)
