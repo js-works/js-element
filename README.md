@@ -1,11 +1,11 @@
 # js-elements
 
-A R&D project to evaluate an alternative approach to component custom elements.
+A R&D project to evaluate an alternative approach to develop custom elements.
 
 #### Disclaimer:
 
 Project is in an early state ...
-and btw: It is currently not meant to ever be used in production.
+and it is currently not meant to ever be used in production.
 
 ## Examples
 
