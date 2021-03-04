@@ -42,8 +42,6 @@ function createConfig(pkg, moduleFormat, productive) {
     plugins: [
       resolve(),
       commonjs(),
-      // tslint({
-      //}),
       replace({
         exclude: 'node_modules/**',
         delimiters: ['', ''],

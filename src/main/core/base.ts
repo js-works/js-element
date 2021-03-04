@@ -1,4 +1,4 @@
-import { Component, Ctrl, Ref, UIEvent, VNode } from './types'
+import { Component, Ctrl, Props, Ref, UIEvent, VNode } from './types'
 import { h, renderer } from './vdom'
 
 // @ts-ignore
@@ -32,7 +32,7 @@ type Notifier = {
   notify(): void
 }
 
-// === decorators =====================================================
+// === public decorators =============================================
 
 function attr(kind: AttrKind): (proto: object, key: string) => void {
   return (proto: any, key: string) => {
@@ -48,7 +48,7 @@ function attr(kind: AttrKind): (proto: object, key: string) => void {
   }
 }
 
-// === pulbic API ====================================================
+// === public functions ==============================================
 
 function ref<T>(value: T | null = null): Ref<T> {
   return { current: value }
@@ -71,7 +71,7 @@ function event<T extends string, D = null>(
 
 function define(tagName: string, main: () => () => VNode): Component<{}>
 
-function define<P>(
+function define<P extends Props>(
   tagName: string,
   propsClass: { new (): P },
   main: (props: P) => () => VNode
