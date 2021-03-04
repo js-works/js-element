@@ -1,10 +1,10 @@
 {
   "name": "js-elements",
-  "version": "0.1.12",
+  "version": "0.1.16",
   "description": "",
   "main": "./index.js",
   "module": "./dist/js-elements.esm.production.js",
-  "types": "dist/types/js-elements.d.ts",
+  "types": "dist/types/index.d.ts",
   "exports": {
     ".": {
       "development": {
@@ -79,7 +79,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
-    "build": "npm run clean && cross-env NODE_OPTIONS=--max_old_space_size=4096 rollup --c rollup.config.js && tsc -p tsconfig.dist.json -d --emitDeclarationOnly --declarationDir dist/types && shx cp ./src/main/jsx.d.ts ./dist/types",
+    "build": "npm run clean && cross-env NODE_OPTIONS=--max_old_space_size=4096 rollup --c rollup.config.js && tsc -p tsconfig.dist.json -d --emitDeclarationOnly --declarationDir dist/types && shx cp ./src/main/jsx.d.ts ./dist/types && shx cp ./assets/index.d.ts ./dist/types",
     "dist": "npm run build && npm run zipsource",
     "zipsource": "shx rm -rf ./build/source && shx mkdir -p ./build/source && copyfiles -a ./* ./build/source && shx cp -r ./src ./build/source && shx mkdir -p ./dist/source && cd build && bestzip --force node ../dist/source/source.zip source && cd .."
   },
