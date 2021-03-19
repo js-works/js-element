@@ -1,7 +1,5 @@
 import { Component, Ctrl, Props, Ref, UIEvent, VNode } from './types'
 import { h, renderer } from './vdom'
-
-// @ts-ignore
 import { patch } from './superfine'
 
 // === exports =======================================================
@@ -388,13 +386,8 @@ function createNotifier(): Notifier {
   const subscribers: (() => void)[] = []
 
   return {
-    subscribe(subscriber: () => void) {
-      subscribers.push(subscriber)
-    },
-
-    notify() {
-      subscribers.forEach((subscriber) => subscriber())
-    }
+    subscribe: (subscriber: () => void) => void subscribers.push(subscriber),
+    notify: () => subscribers.forEach((subscriber) => subscriber())
   }
 }
 

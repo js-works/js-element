@@ -106,5 +106,7 @@ export const renderer = (content: VNode, target: Element) => {
 }
 
 function asVNode(x: any): any {
-  return typeof x === 'number' || typeof x === 'string' ? createText(x) : x
+  return typeof x === 'number' || typeof x === 'string'
+    ? createText(x, null)
+    : x
 }
