@@ -1,4 +1,4 @@
-import { Ctrl, Ref, State, Store } from './base'
+import { Ctrl, Ref, State } from './base'
 
 // === constants =====================================================
 
@@ -8,6 +8,13 @@ const STORE_KEY = 'js-elements::ext::store'
 
 type Task = () => void
 type Methods = Record<string, (...args: any[]) => any>
+
+type Store<S extends State> = {
+  getState(): S
+  subscribe(subscriber: () => void): () => void
+  dispatch(msg: any): void // TODO
+  destroy?(): void
+}
 
 type StateUpdater<T extends Record<string, any>> = {
   (newState: Partial<T>): void

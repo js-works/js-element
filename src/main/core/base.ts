@@ -1,8 +1,4 @@
-import {
-  h as createElement,
-  text as createText,
-  patch
-} from './lib/patched-superfine'
+import { h as createElement, text, patch } from './lib/patched-superfine'
 import htm from 'htm'
 
 // === exports =======================================================
@@ -24,12 +20,10 @@ const attrsOptionsByComponentClass = new Map<{ new (): any }, AttrsOptions>()
 type Props = Record<string, any> // TODO
 type VElement<T extends Props = Props> = Record<any, any> // TODO
 type Ref<T> = { current: T | null }
-type Methods = Record<string, (...args: any[]) => any>
 type EventHandler<T> = (ev: T) => void
 type UIEvent<T extends string, D = null> = CustomEvent<D> & { type: T }
 type VNode = null | boolean | number | string | VElement | Iterable<VNode>
 type Task = () => void
-type Message = { type: string } & Record<string, any>
 type State = Record<string, any>
 
 type Component<P> = {
@@ -39,7 +33,9 @@ type Component<P> = {
 
 type MethodsOf<C> = C extends Component<infer P>
   ? P extends { ref?: Ref<infer M> }
-    ? M
+    ? M extends Record<string, (...args: any[]) => any>
+      ? M
+      : never
     : never
   : never
 
@@ -57,30 +53,18 @@ type Ctrl = {
   beforeUnmount(task: Task): void
 }
 
-export type Store<S extends State> = {
-  getState(): S
-  subscribe(subscriber: () => void): () => void
-  dispatch(msg: Message): void
-  destroy?(): void
-}
-
 type AttrKind = StringConstructor | NumberConstructor | BooleanConstructor
-type AttrOptions = { kind: AttrKind }
+type AttrOptions = { kind: AttrKind; reflect: boolean }
 type AttrsOptions = Map<string, AttrOptions>
 
 type PropConverter<T> = {
-  fromPropToString(value: T): string
-  fromStringToProp(value: string): T
-}
-
-type Notifier = {
-  subscribe(subscriber: () => void): void
-  notify(): void
+  fromPropToAttr(value: T): string
+  fromAttrToProp(value: string): T
 }
 
 // === public decorators =============================================
 
-function attr(kind: AttrKind): (proto: object, key: string) => void {
+function attr(kind: AttrKind, reflect?: boolean) {
   return (proto: any, key: string) => {
     const componentClass = proto.constructor
     let attrsOptions = attrsOptionsByComponentClass.get(componentClass)
@@ -90,7 +74,7 @@ function attr(kind: AttrKind): (proto: object, key: string) => void {
       attrsOptionsByComponentClass.set(componentClass, attrsOptions)
     }
 
-    attrsOptions.set(key, { kind })
+    attrsOptions.set(key, { kind, reflect: !!reflect })
   }
 }
 
@@ -296,7 +280,7 @@ function buildCustomElementClass<T extends object>(
         if (propName) {
           return propNameToConverterMap
             .get(propName)!
-            .fromPropToString(self[propName])
+            .fromPropToAttr(self[propName])
         }
 
         return super.getAttribute(attrName)
@@ -312,7 +296,7 @@ function buildCustomElementClass<T extends object>(
         if (propName && typeof value === 'string') {
           self[propName] = propNameToConverterMap
             .get(propName)!
-            .fromStringToProp(value)
+            .fromAttrToProp(value)
         }
       }
 
@@ -394,30 +378,32 @@ function buildCustomElementClass<T extends object>(
 
 // === createNotifier ================================================
 
-function createNotifier(): Notifier {
+function createNotifier() {
   const subscribers: (() => void)[] = []
 
   return {
     subscribe: (subscriber: () => void) => void subscribers.push(subscriber),
-    notify: () => subscribers.forEach((subscriber) => subscriber())
+
+    notify: () =>
+      subscribers.length && subscribers.forEach((subscriber) => subscriber())
   }
 }
 
 // === prop converters ===============================================
 
-const stringPropConv = {
-  fromPropToString: (it: string) => it,
-  fromStringToProp: (it: string) => it
+const stringPropConv: PropConverter<string> = {
+  fromPropToAttr: (it: string) => it,
+  fromAttrToProp: (it: string) => it
 }
 
-const numberPropConv = {
-  fromPropToString: (it: number) => String(it),
-  fromStringToProp: (it: string) => Number.parseFloat(it)
+const numberPropConv: PropConverter<number> = {
+  fromPropToAttr: (it: number) => String(it),
+  fromAttrToProp: (it: string) => Number.parseFloat(it)
 }
 
-const booleanPropConv = {
-  fromPropToString: (it: boolean) => (it ? 'true' : 'false'),
-  fromStringToProp: (it: string) => (it === 'true' ? true : false)
+const booleanPropConv: PropConverter<boolean> = {
+  fromPropToAttr: (it: boolean) => (it ? 'true' : 'false'),
+  fromAttrToProp: (it: string) => (it === 'true' ? true : false)
 }
 
 // === h ==============================================================
@@ -509,13 +495,11 @@ export const renderer = (content: VNode, target: Element) => {
   } else {
     const newTarget = document.createElement('span')
 
-    target.appendChild(newTarget)
+    target.append(newTarget)
     patch(newTarget, content)
   }
 }
 
 function asVNode(x: any): any {
-  return typeof x === 'number' || typeof x === 'string'
-    ? createText(x, null)
-    : x
+  return typeof x === 'number' || typeof x === 'string' ? text(x, null) : x
 }

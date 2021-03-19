@@ -1,8 +1,14 @@
-import { State, Store, UIEvent } from './base'
-
+import { State } from './base'
 export { initStore }
 
 // === store =========================================================
+
+type Store<S extends State> = {
+  getState(): S
+  subscribe(subscriber: () => void): () => void
+  dispatch(msg: any): void // TODO
+  destroy?(): void
+}
 
 type InitStoreResult<S extends State> = [
   Store<S>,
