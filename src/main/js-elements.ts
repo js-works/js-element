@@ -3,7 +3,7 @@ import { h as createElement, text, patch } from './lib/patched-superfine'
 // === exports =======================================================
 
 // public API
-export { attr, define, event, getCurrentCtrl, h, ref } // methods
+export { attr, define, event, h, hook, ref } // methods
 export { Ctrl, Component, EventHandler, MethodsOf } // types
 export { Ref, UIEvent, VElement, VNode } // types
 
@@ -80,6 +80,38 @@ function attr(kind: AttrKind, reflect?: boolean) {
 
 function ref<T>(value: T | null = null): Ref<T> {
   return { current: value }
+}
+
+function hook<A extends any[], R extends any>(
+  name: string,
+  fn: (...args: A) => R
+): (...args: A) => R
+function hook<A extends any[], R extends any>(config: {
+  name: string
+  fn: (c: Ctrl, ...args: A) => R
+}): (...args: A) => R
+
+function hook(arg1: any, arg2?: any): Function {
+  // TODO: optimize whole function body
+  if (typeof arg1 === 'string') {
+    return hook({ name: arg1, fn: (c, ...args: any[]) => arg2(...args) })
+  }
+
+  const { name, fn } = arg1
+
+  const ret = (...args: any[]) => {
+    if (!currentCtrl) {
+      throw new Error(
+        `Hook function "${name}" has been called outside of component initialization phase`
+      )
+    }
+
+    return fn(currentCtrl, ...args)
+  }
+
+  Object.defineProperty(ret, 'name', { value: name })
+
+  return ret
 }
 
 function event<T extends string, D = null>(
@@ -401,12 +433,6 @@ const numberPropConv: PropConverter<number> = {
 const booleanPropConv: PropConverter<boolean> = {
   fromPropToAttr: (it: boolean) => (it ? 'true' : 'false'),
   fromAttrToProp: (it: string) => (it === 'true' ? true : false)
-}
-
-// === getCurrentCtrl =================================================
-
-function getCurrentCtrl() {
-  return currentCtrl
 }
 
 // === h ==============================================================

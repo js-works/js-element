@@ -1,4 +1,4 @@
-import { getCurrentCtrl, Ctrl, Ref } from 'js-elements'
+import { hook, Ctrl, Ref } from 'js-elements'
 
 // === constants =====================================================
 
@@ -38,38 +38,13 @@ type SelectorsOf<S extends State, U extends Selectors<S>> = {
   [K in keyof U]: U[K] extends (state: S) => infer R ? R : never
 }
 
-// === createCoreHook ================================================
+// === coreHook ================================================
 
-function createCoreHook<A extends any[], R>(
+function coreHook<A extends any[], R>(
   name: string,
-  func: (ctrl: Ctrl, ...args: A) => R
+  fn: (ctrl: Ctrl, ...args: A) => R
 ): (...args: A) => R {
-  function ret(...args: A) {
-    const ctrl = getCurrentCtrl()
-
-    if (!ctrl) {
-      throw new Error(
-        `Hook function "${name}" has been called outside of component initialization phase`
-      )
-    }
-
-    return func(ctrl, ...args)
-  }
-
-  Object.defineProperty(ret, 'name', {
-    value: name
-  })
-
-  return ret
-}
-
-// === createHook =================================================
-
-export function createHook<A extends any[], R>(
-  name: string,
-  func: (...args: A) => R
-): (...args: A) => R {
-  return createCoreHook(name, (ctrl: Ctrl, ...args: A) => func(...args))
+  return hook({ name, fn })
 }
 
 // === createContextHooks ============================================
@@ -92,7 +67,7 @@ export function createCtxHooks<T>(
   const hookName = 'use' + contextName[0].toUpperCase() + contextName.substr(1)
   const subscribeEventType = getNewEventType()
 
-  const useCtxProvider = createCoreHook(`${hookName}Provider`, (c: Ctrl) => {
+  const useCtxProvider = coreHook(`${hookName}Provider`, (c: Ctrl) => {
     const root = c.getHost()
     const subscribers: ((value: T) => void)[] = []
 
@@ -111,7 +86,7 @@ export function createCtxHooks<T>(
     return setCtxValue
   })
 
-  const useCtx = createCoreHook(hookName, (c: Ctrl) => {
+  const useCtx = coreHook(hookName, (c: Ctrl) => {
     const root = c.getHost()
     let cancel: null | (() => void) = null
 
@@ -147,13 +122,13 @@ export function createCtxHooks<T>(
 
 // === useHost =======================================================
 
-export const useHost = createCoreHook('useHost', (c) => {
+export const useHost = coreHook('useHost', (c) => {
   return c.getHost()
 })
 
 // === useMethods ====================================================
 
-export const useMethods = createHook(
+export const useMethods = hook(
   'useMethods',
   <M extends Methods, R extends Ref<M>>(
     ref: R | undefined,
@@ -167,16 +142,13 @@ export const useMethods = createHook(
 
 // === useRefresher ==================================================
 
-export const useRefresher = createCoreHook(
-  'useRefresher',
-  function (c: Ctrl): Task {
-    return c.refresh
-  }
-)
+export const useRefresher = coreHook('useRefresher', function (c: Ctrl): Task {
+  return c.refresh
+})
 
 // === useStatus =====================================================
 
-export const useStatus = createCoreHook('useStatus', function (c: Ctrl): {
+export const useStatus = coreHook('useStatus', function (c: Ctrl): {
   isMounted: () => boolean
   hasUpdated: () => boolean
 } {
@@ -188,7 +160,7 @@ export const useStatus = createCoreHook('useStatus', function (c: Ctrl): {
 
 // === useValue ======================================================
 
-export const useValue = createCoreHook('useValue', function <
+export const useValue = coreHook('useValue', function <
   T
 >(c: Ctrl, initialValue: T): [
   () => T,
@@ -213,7 +185,7 @@ export const useValue = createCoreHook('useValue', function <
 
 // === useState ======================================================--
 
-export const useState = createCoreHook('useState', function <
+export const useState = coreHook('useState', function <
   T extends Record<string, any>
 >(c: Ctrl, initialState: T): [T, StateUpdater<T>] {
   let nextState: any, // TODO
@@ -249,7 +221,7 @@ export const useState = createCoreHook('useState', function <
 
 // === useEmitter ======================================================
 
-export const useEmitter = createCoreHook('useEmitter', function (c: Ctrl): <
+export const useEmitter = coreHook('useEmitter', function (c: Ctrl): <
   E extends CustomEvent<any>
 >(
   ev: E,
@@ -281,24 +253,21 @@ function addStyles(
   }
 }
 
-export const useStyles = createCoreHook(
-  'useStyles',
-  (c, ...styles: string[]) => {
-    const ret = (...styles: string[]) => {
-      addStyles(c.getHost().shadowRoot!.firstChild as Element, styles)
-    }
-
-    ret.apply(null, styles)
-
-    return ret
+export const useStyles = coreHook('useStyles', (c, ...styles: string[]) => {
+  const ret = (...styles: string[]) => {
+    addStyles(c.getHost().shadowRoot!.firstChild as Element, styles)
   }
-)
+
+  ret.apply(null, styles)
+
+  return ret
+})
 
 // === useMemo =========================================================
 
 // TODO - this is not really optimized, is it?
 
-export const useMemo = createCoreHook('useMemo', function <
+export const useMemo = coreHook('useMemo', function <
   T,
   A extends any[],
   G extends () => A
@@ -323,7 +292,7 @@ export const useMemo = createCoreHook('useMemo', function <
 
 // === useOnMount ====================================================
 
-export const useOnMount = createCoreHook(
+export const useOnMount = coreHook(
   'useOnMount',
   function (c, action: () => void | undefined | null | (() => void)) {
     let cleanup: Task | null | undefined | void
@@ -344,7 +313,7 @@ export const useOnMount = createCoreHook(
 
 // === useOnUpdate ===================================================
 
-export const useOnUpdate = createCoreHook(
+export const useOnUpdate = coreHook(
   'useOnUpdate',
   function (c, action: () => void | undefined | null | (() => void)) {
     let cleanup: Task | null | undefined | void
@@ -369,7 +338,7 @@ export const useOnUpdate = createCoreHook(
 
 // === useOnUnmount ==================================================
 
-export const useOnUnmount = createCoreHook(
+export const useOnUnmount = coreHook(
   'useOnUnmount',
   function (c, action: () => void) {
     c.beforeUnmount(action)
@@ -378,7 +347,7 @@ export const useOnUnmount = createCoreHook(
 
 // === useEffect =====================================================
 
-export const useEffect = createCoreHook(
+export const useEffect = coreHook(
   'useEffect',
   function (
     c,
@@ -422,7 +391,7 @@ type CtxOf<CC extends CtxConfig<any>> = {
   [K in keyof CC]: ReturnType<CC[K]>
 }
 
-export const useCtx = createCoreHook('useCtx', function <
+export const useCtx = coreHook('useCtx', function <
   CC extends CtxConfig<any>
 >(c: Ctrl, config: CC): CtxOf<CC> {
   const ctx: any = {}
@@ -441,7 +410,7 @@ export const useCtx = createCoreHook('useCtx', function <
 
 // === useInterval ======================================================
 
-export const useInterval = createCoreHook(
+export const useInterval = coreHook(
   'useInterval',
   (c, task: Task, delay: number | (() => number)) => {
     const getDelay = typeof delay === 'function' ? delay : () => delay
@@ -464,7 +433,7 @@ type TimerSignature = {
   <T>(delay: number | (() => number), getValue: (n: number) => T): () => T
 }
 
-export const useTimer = createHook(
+export const useTimer = hook(
   'useTimer',
   (delay: number | (() => number), get: (n: number) => any = getDate) => {
     let idx = 0
@@ -511,7 +480,7 @@ const initialState: PromiseRes<any> = {
   state: 'pending'
 }
 
-export const usePromise = createCoreHook('usePromise', function <
+export const usePromise = coreHook('usePromise', function <
   T
 >(c: Ctrl, getPromise: () => Promise<T>, getDeps?: () => any[]) {
   const [state, setState] = useState<PromiseRes<T>>(initialState)
@@ -558,7 +527,7 @@ export const usePromise = createCoreHook('usePromise', function <
 
 // === useMousePosition ================================================
 
-export const useMousePosition = createHook('useMousePosition', () => {
+export const useMousePosition = hook('useMousePosition', () => {
   const [mousePos, setMousePos] = useState({ x: -1, y: -1 })
 
   useOnMount(() => {
@@ -589,7 +558,7 @@ type ActionsOf<C extends MessageCreators> = {
     : never
 }
 
-export const useActions = createCoreHook('useActions', function <
+export const useActions = coreHook('useActions', function <
   C extends MessageCreators
 >(c: Ctrl, msgCreators: C): ActionsOf<C> {
   let store: Store<any> | null = null
@@ -655,7 +624,7 @@ export function createStoreHooks<S extends State>(): [
 ] {
   const STORE_KEY2 = STORE_KEY + ++eventKeyCounter
 
-  const useStore = createCoreHook('useStore', (c, store: Store<S>): void => {
+  const useStore = coreHook('useStore', (c, store: Store<S>): void => {
     receive(c, STORE_KEY, (msg: Message) => {
       msg.payload.setStore(store)
     })
@@ -665,7 +634,7 @@ export function createStoreHooks<S extends State>(): [
     })
   })
 
-  const useSelectors = createCoreHook('useSelectors', function <
+  const useSelectors = coreHook('useSelectors', function <
     U extends Selectors<S>
   >(c: Ctrl, selectors: U): SelectorsOf<S, U> {
     let store: Store<S> | null = null
