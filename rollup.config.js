@@ -36,8 +36,14 @@ function createConfig(pkg, moduleFormat, productive) {
 
       format: moduleFormat,
       sourcemap: false, // productive ? false : 'inline', // TODO
-      name: pkg === 'root' ? 'jsElements' : 'jsElements.' + pkg
+      name: pkg === 'root' ? 'jsElements' : 'jsElements.' + pkg,
+
+      globals: {
+        'js-elements': 'jsElements'
+      }
     },
+
+    external: ['js-elements'],
 
     plugins: [
       resolve(),
