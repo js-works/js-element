@@ -1,7 +1,8 @@
-export { attr, define, event, ref } from './core/base'
-export { h, html, render } from './core/vdom'
-
 export {
+  attr,
+  define,
+  event,
+  ref,
   Component,
   EventHandler,
   MethodsOf,
@@ -9,4 +10,6 @@ export {
   UIEvent,
   VNode,
   VElement
-} from './core/types'
+} from './core/base'
+
+export { h, html, render } from './core/vdom'

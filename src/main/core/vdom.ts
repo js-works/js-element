@@ -1,6 +1,6 @@
 import { h as createElement, text as createText, patch } from './superfine'
 import htm from 'htm'
-import { Component, Props, VElement, VNode } from './types'
+import { Component, Props, VElement, VNode } from './base'
 
 // === exports =======================================================
 

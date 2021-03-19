@@ -1,4 +1,4 @@
-import { State, Store, UIEvent } from './types'
+import { State, Store, UIEvent } from './base'
 
 export { initStore }
 

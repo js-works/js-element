@@ -1,4 +1,4 @@
-import { Ctrl, Ref, State, Store } from './types'
+import { Ctrl, Ref, State, Store } from './base'
 
 // === constants =====================================================
 

@@ -1,16 +1,64 @@
-import { Component, Ctrl, Props, Ref, UIEvent, VNode } from './types'
 import { h, renderer } from './vdom'
 import { patch } from './superfine'
 
 // === exports =======================================================
 
-export { attr, define, event, ref }
+// public API
+export { attr, define, event, ref, EventHandler, MethodsOf }
+
+// internally used exports
+export { Component, Ctrl, Props, Ref, State, UIEvent, VElement, VNode }
 
 // === local data =====================================================
 
 const attrsOptionsByComponentClass = new Map<{ new (): any }, AttrsOptions>()
 
 // === types ==========================================================
+
+type Props = Record<string, any> // TODO
+type VElement<T extends Props = Props> = Record<any, any> // TODO
+type Ref<T> = { current: T | null }
+type Methods = Record<string, (...args: any[]) => any>
+type EventHandler<T> = (ev: T) => void
+type UIEvent<T extends string, D = null> = CustomEvent<D> & { type: T }
+
+type VNode = null | boolean | number | string | VElement | Iterable<VNode>
+
+type Task = () => void
+type Message = { type: string } & Record<string, any>
+type State = Record<string, any>
+
+type Component<P> = {
+  (props?: P, ...children: VNode[]): VElement<P>
+  tagName: string
+}
+
+type MethodsOf<C> = C extends Component<infer P>
+  ? P extends { ref?: Ref<infer M> }
+    ? M
+    : never
+  : never
+
+type Ctrl = {
+  getName(): string
+  getHost(): HTMLElement
+  isInitialized(): boolean
+  isMounted(): boolean
+  hasUpdated(): boolean
+  refresh(): void
+  afterMount(task: Task): void
+  onceBeforeUpdate(task: Task): void
+  beforeUpdate(task: Task): void
+  afterUpdate(task: Task): void
+  beforeUnmount(task: Task): void
+}
+
+export type Store<S extends State> = {
+  getState(): S
+  subscribe(subscriber: () => void): () => void
+  dispatch(msg: Message): void
+  destroy?(): void
+}
 
 type AttrKind = StringConstructor | NumberConstructor | BooleanConstructor
 
