@@ -1,16 +1,22 @@
-import { h, renderer } from './vdom'
-import { patch } from './superfine'
+import {
+  h as createElement,
+  text as createText,
+  patch
+} from './lib/patched-superfine'
+import htm from 'htm'
 
 // === exports =======================================================
 
 // public API
-export { attr, define, event, ref, EventHandler, MethodsOf }
+export { attr, define, event, h, html, ref, EventHandler, MethodsOf }
 
 // internally used exports
 export { Component, Ctrl, Props, Ref, State, UIEvent, VElement, VNode }
 
 // === local data =====================================================
 
+const EMPTY_ARR: any[] = []
+const EMPTY_OBJ = {}
 const attrsOptionsByComponentClass = new Map<{ new (): any }, AttrsOptions>()
 
 // === types ==========================================================
@@ -21,9 +27,7 @@ type Ref<T> = { current: T | null }
 type Methods = Record<string, (...args: any[]) => any>
 type EventHandler<T> = (ev: T) => void
 type UIEvent<T extends string, D = null> = CustomEvent<D> & { type: T }
-
 type VNode = null | boolean | number | string | VElement | Iterable<VNode>
-
 type Task = () => void
 type Message = { type: string } & Record<string, any>
 type State = Record<string, any>
@@ -61,11 +65,7 @@ export type Store<S extends State> = {
 }
 
 type AttrKind = StringConstructor | NumberConstructor | BooleanConstructor
-
-type AttrOptions = {
-  kind: AttrKind
-}
-
+type AttrOptions = { kind: AttrKind }
 type AttrsOptions = Map<string, AttrOptions>
 
 type PropConverter<T> = {
@@ -234,19 +234,17 @@ function buildCustomElementClass<T extends object>(
       super()
       const self: any = this
       const data: any = propsClass ? new propsClass() : {}
+      const afterMountNotifier = createNotifier()
+      const beforeUpdateNotifier = createNotifier()
+      const afterUpdateNotifier = createNotifier()
+      const beforeUnmountNotifier = createNotifier()
+      const onceBeforeUpdateActions: Task[] = []
       const ctrl = createCtrl()
 
       let isInitialized = false
       let isMounted = false
       let hasUpdated = false
       let hasRequestedRefresh = false
-
-      let afterMountNotifier: Notifier | undefined
-      let beforeUpdateNotifier: Notifier | undefined
-      let afterUpdateNotifier: Notifier | undefined
-      let beforeUnmountNotifier: Notifier | undefined
-      let onceBeforeUpdateActions: (() => void)[] | undefined
-
       let stylesElement: HTMLElement | undefined
       let contentElement: HTMLElement | undefined
       let render: (() => VNode) | undefined
@@ -254,14 +252,8 @@ function buildCustomElementClass<T extends object>(
       for (const key of propNames) {
         if (key !== 'ref') {
           Object.defineProperty(self, key, {
-            get() {
-              return data[key]
-            },
-
-            set(value: any) {
-              data[key] = value
-              ctrl.refresh()
-            }
+            get: () => data[key],
+            set: (value: any) => ((data[key] = value), ctrl.refresh())
           })
         } else {
           let componentMethods: any = null
@@ -269,10 +261,7 @@ function buildCustomElementClass<T extends object>(
 
           Object.defineProperty(data.ref, 'current', {
             enumerable: true,
-
-            get() {
-              return componentMethods
-            },
+            get: () => componentMethods,
 
             set(methods: any) {
               if (componentMethods) {
@@ -287,23 +276,17 @@ function buildCustomElementClass<T extends object>(
       }
 
       self.connectedCallback = () => {
-        self.attachShadow({ mode: 'open' })
-        const root = self.shadowRoot!
-
+        const root = self.attachShadow({ mode: 'open' })
         stylesElement = document.createElement('span')
         contentElement = document.createElement('span')
-
         stylesElement.setAttribute('data-role', 'styles')
         contentElement.setAttribute('data-role', 'content')
-
-        root.appendChild(stylesElement)
-        root.appendChild(contentElement)
-
+        root.append(stylesElement, contentElement)
         refresh()
       }
 
       self.disconnectedCallback = () => {
-        beforeUnmountNotifier && beforeUnmountNotifier.notify()
+        beforeUnmountNotifier.notify()
         contentElement!.innerHTML = ''
       }
 
@@ -343,7 +326,7 @@ function buildCustomElementClass<T extends object>(
             }
           }
 
-          beforeUpdateNotifier && beforeUpdateNotifier.notify()
+          beforeUpdateNotifier.notify()
         }
 
         if (!render) {
@@ -370,10 +353,10 @@ function buildCustomElementClass<T extends object>(
 
         if (!isMounted) {
           isMounted = true
-          afterMountNotifier && afterMountNotifier.notify()
+          afterMountNotifier.notify()
         } else {
           hasUpdated = true
-          afterUpdateNotifier && afterUpdateNotifier.notify()
+          afterUpdateNotifier.notify()
         }
       }
 
@@ -396,30 +379,11 @@ function buildCustomElementClass<T extends object>(
             }
           },
 
-          afterMount(task) {
-            afterMountNotifier || (afterMountNotifier = createNotifier())
-            afterMountNotifier.subscribe(task)
-          },
-
-          onceBeforeUpdate(task) {
-            onceBeforeUpdateActions || (onceBeforeUpdateActions = [])
-            onceBeforeUpdateActions.push(task)
-          },
-
-          beforeUpdate(task) {
-            beforeUpdateNotifier || (beforeUpdateNotifier = createNotifier())
-            beforeUpdateNotifier.subscribe(task)
-          },
-
-          afterUpdate(task) {
-            afterUpdateNotifier || (afterUpdateNotifier = createNotifier())
-            afterUpdateNotifier.subscribe(task)
-          },
-
-          beforeUnmount(task) {
-            beforeUnmountNotifier || (beforeUnmountNotifier = createNotifier())
-            beforeUnmountNotifier.subscribe(task)
-          }
+          afterMount: afterMountNotifier.subscribe,
+          onceBeforeUpdate: (task) => void onceBeforeUpdateActions.push(task),
+          beforeUpdate: beforeUpdateNotifier.subscribe,
+          afterUpdate: afterUpdateNotifier.subscribe,
+          beforeUnmount: beforeUnmountNotifier.subscribe
         }
       }
     }
@@ -454,4 +418,104 @@ const numberPropConv = {
 const booleanPropConv = {
   fromPropToString: (it: boolean) => (it ? 'true' : 'false'),
   fromStringToProp: (it: string) => (it === 'true' ? true : false)
+}
+
+// === h ==============================================================
+
+function h(
+  type: string,
+  props?: Props | null, // TODO!!!
+  ...children: VNode[]
+): VElement
+
+function h<P extends Props>(
+  type: Component<P>,
+  props?: Partial<P> | null,
+  ...children: VNode[]
+): VElement
+
+function h(type: string | Component<any>, props?: Props | null): VElement {
+  const argc = arguments.length
+  const tagName = typeof type === 'function' ? (type as any).tagName : type
+
+  if (process.env.NODE_ENV === ('development' as string)) {
+    if (typeof tagName !== 'string') {
+      throw new Error('[h] First argument must be a string or a component')
+    }
+  }
+
+  const children = argc > 2 ? [] : EMPTY_ARR
+
+  if (argc > 2) {
+    for (let i = 2; i < argc; ++i) {
+      const child = arguments[i]
+
+      if (!Array.isArray(child)) {
+        children.push(asVNode(child))
+      } else {
+        for (let j = 0; j < child.length; ++j) {
+          children.push(asVNode(child[j]))
+        }
+      }
+    }
+  }
+
+  const ret: any = createElement(tagName, props || EMPTY_OBJ, children)
+  ret.isVElement = true
+  return ret
+}
+
+// === render ========================================================
+
+export function render(content: VElement, container: Element | string) {
+  if (process.env.NODE_ENV === ('development' as string)) {
+    if (content !== null && (!content || content.isVElement !== true)) {
+      throw new TypeError()
+      ;('First argument "content" of function "render" must be a virtual element or null')
+    }
+
+    if (!container || (typeof container !== 'string' && !container.tagName)) {
+      throw new TypeError(
+        'Second argument "container" of function "render" must either be a DOM element or selector string for the DOM element'
+      )
+    }
+  }
+
+  const target =
+    typeof container === 'string'
+      ? document.querySelector(container)
+      : container
+
+  if (!target) {
+    throw new TypeError(`Could not find container DOM element "${container}"`)
+  }
+
+  target.innerHTML = ''
+
+  if (content !== null) {
+    renderer(content, target)
+  }
+}
+
+// === html ==========================================================
+
+const html = htm.bind(h)
+
+// === helpers =======================================================
+
+export const renderer = (content: VNode, target: Element) => {
+  if (target.hasChildNodes()) {
+    patch(target.firstChild, content)
+  } else {
+    const newTarget = document.createElement('span')
+
+    target.appendChild(newTarget)
+    patch(newTarget, content)
+  }
+}
+
+function asVNode(x: any): any {
+  return typeof x === 'number' || typeof x === 'string'
+    ? createText(x, null)
+    : x
 }

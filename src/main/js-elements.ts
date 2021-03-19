@@ -2,7 +2,10 @@ export {
   attr,
   define,
   event,
+  h,
+  html,
   ref,
+  render,
   Component,
   EventHandler,
   MethodsOf,
@@ -11,5 +14,3 @@ export {
   VNode,
   VElement
 } from './core/base'
-
-export { h, html, render } from './core/vdom'
