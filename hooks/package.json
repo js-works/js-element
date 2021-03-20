@@ -1,10 +1,10 @@
 {
-  "name": "js-elements-hooks",
+  "name": "js-element-hooks",
   "version": "0.0.1",
   "description": "",
   "main": "index.js",
-  "module": "../dist/js-elements-hooks.esm.production.js",
-  "unpkg": "../dist/js-elements-hooks.umd.production.js",
-  "jsdelivr": "../dist/js-elements-hooks.umd.production.js",
-  "types": "../dist/types/js-elements-hooks.d.ts"
+  "module": "../dist/js-element-hooks.esm.production.js",
+  "unpkg": "../dist/js-element-hooks.umd.production.js",
+  "jsdelivr": "../dist/js-element-hooks.umd.production.js",
+  "types": "../dist/types/js-element-hooks.d.ts"
 }

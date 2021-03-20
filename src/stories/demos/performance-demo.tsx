@@ -1,5 +1,5 @@
-import { define, h, VNode } from 'js-elements'
-import { useOnMount, useRefresher } from 'js-elements/hooks'
+import { define, h, VNode } from 'js-element'
+import { useOnMount, useRefresher } from 'js-element/hooks'
 
 const prefs = {
   framesPerSecond: 240,

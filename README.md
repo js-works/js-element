@@ -1,4 +1,4 @@
-# js-elements
+# js-element
 
 A R&D project to evaluate an alternative approach to develop custom elements.
 
@@ -12,7 +12,7 @@ and it is currently not meant to ever be used in production.
 ### Example 1
 
 ```jsx
-import { define, h, render } from 'js-elements'
+import { define, h, render } from 'js-element'
 
 class SayHelloProps {
   salutation = 'Hello'
@@ -33,8 +33,8 @@ render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
 ### Example 2
 
 ```jsx
-import { attr, define, h, render } from 'js-elements'
-import { useEffect, useOnMount, useState, useStyles } from 'js-elements/hooks'
+import { attr, define, h, render } from 'js-element'
+import { useEffect, useOnMount, useState, useStyles } from 'js-element/hooks'
 import counterStyles from './counter.css'
 
 class CounterProps {
@@ -81,8 +81,8 @@ render(<Counter />, '#app')
 ### Example 3
 
 ```jsx
-import { define, h, render } from 'js-elements'
-import { useTimer } from 'js-elements/hooks'
+import { define, h, render } from 'js-element'
+import { useTimer } from 'js-element/hooks'
 
 const Clock = define('demo-clock', () => {
   const getTime = useTimer(1000, () => new Date().toLocaleTimeString())

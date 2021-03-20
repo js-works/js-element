@@ -1,8 +1,8 @@
-import { hook, Ctrl, Ref } from 'js-elements'
+import { hook, Ctrl, Ref } from 'js-element'
 
 // === constants =====================================================
 
-const STORE_KEY = 'js-elements::ext::store'
+const STORE_KEY = 'js-element::ext::store'
 
 // === types =========================================================
 
@@ -695,7 +695,7 @@ function isEqualArray(arr1: any[], arr2: any[]) {
 
 // === helpers =======================================================
 
-const SEND_RECEIVE_MESSAGE_TYPE_SUFFIX = '$$js-elements$$::'
+const SEND_RECEIVE_MESSAGE_TYPE_SUFFIX = '$$js-element$$::'
 
 function send(c: Ctrl, msg: Message): void {
   c.getHost().dispatchEvent(

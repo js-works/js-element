@@ -1,5 +1,5 @@
-import { define, h } from 'js-elements'
-import { useOnMount, useRefresher, useState } from 'js-elements/hooks'
+import { define, h } from 'js-element'
+import { useOnMount, useRefresher, useState } from 'js-element/hooks'
 
 const targetSize = 25
 

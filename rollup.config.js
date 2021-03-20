@@ -25,25 +25,25 @@ function createConfig(pkg, moduleFormat, productive) {
   return {
     input:
       pkg === 'root'
-        ? 'src/main/js-elements.ts'
-        : `src/main/js-elements-${pkg}.ts`,
+        ? 'src/main/js-element.ts'
+        : `src/main/js-element-${pkg}.ts`,
 
     output: {
       file:
         pkg === 'root'
-          ? `dist/js-elements.${moduleFormat}.${env}.js`
-          : `dist/js-elements-${pkg}.${moduleFormat}.${env}.js`,
+          ? `dist/js-element.${moduleFormat}.${env}.js`
+          : `dist/js-element-${pkg}.${moduleFormat}.${env}.js`,
 
       format: moduleFormat,
       sourcemap: false, // productive ? false : 'inline', // TODO
-      name: pkg === 'root' ? 'jsElements' : 'jsElements.' + pkg,
+      name: pkg === 'root' ? 'jsElement' : 'jsElement.' + pkg,
 
       globals: {
-        'js-elements': 'jsElements'
+        'js-element': 'jsElement'
       }
     },
 
-    external: ['js-elements'],
+    external: ['js-element'],
 
     plugins: [
       resolve(),

@@ -20,17 +20,17 @@
     "skipLibCheck": true,
     "experimentalDecorators": true,
     "paths": {
-      "js-elements/hooks": ["src/main/js-elements-hooks.ts"],
-      "js-elements/utils": ["src/main/js-elements-utils.ts"],
-      "js-elements": ["src/main/js-elements.ts"]
+      "js-element/hooks": ["src/main/js-element-hooks.ts"],
+      "js-element/utils": ["src/main/js-element-utils.ts"],
+      "js-element": ["src/main/js-element.ts"]
     },
     "typeRoots": ["node_modules/@types"],
     "types": ["node", "mocha", "chai"]
   },
   "files": [
-    "src/main/js-elements.ts",
-    "src/main/js-elements-hooks.ts",
-    "src/main/js-elements-utils.ts"
+    "src/main/js-element.ts",
+    "src/main/js-element-hooks.ts",
+    "src/main/js-element-utils.ts"
   ],
   "include": ["./src/main/**/*.*", "./src/stories/**/*.*"],
   "exclude": ["node_modules"]

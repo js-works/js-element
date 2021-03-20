@@ -7,7 +7,7 @@ import {
   EventHandler,
   Ref,
   UIEvent
-} from 'js-elements'
+} from 'js-element'
 
 import {
   useEffect,
@@ -15,7 +15,7 @@ import {
   useMethods,
   useState,
   useStatus
-} from 'js-elements/hooks'
+} from 'js-element/hooks'
 
 type CountChangeEvent = UIEvent<
   'count-change',

@@ -13,14 +13,14 @@ module.exports = ({ config }) => {
 
   const alias = (config.resolve && config.resolve.alias) || {}
 
-  alias['js-elements$'] = path.resolve(__dirname, '../src/main/js-elements.ts')
-  alias['js-elements/hooks$'] = path.resolve(
+  alias['js-element$'] = path.resolve(__dirname, '../src/main/js-element.ts')
+  alias['js-element/hooks$'] = path.resolve(
     __dirname,
-    '../src/main/js-elements-hooks.ts'
+    '../src/main/js-element-hooks.ts'
   )
-  alias['js-elements/utils$'] = path.resolve(
+  alias['js-element/utils$'] = path.resolve(
     __dirname,
-    '../src/main/js-elements-utils.ts'
+    '../src/main/js-element-utils.ts'
   )
   config.resolve.alias = alias
   config.resolve.extensions.push('.ts', '.tsx')

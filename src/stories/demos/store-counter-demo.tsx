@@ -1,7 +1,7 @@
-import { define, h, MethodsOf, EventHandler, Ref, UIEvent } from 'js-elements'
+import { define, h, MethodsOf, EventHandler, Ref, UIEvent } from 'js-element'
 
-import { initStore } from 'js-elements/utils'
-import { createStoreHook } from 'js-elements/hooks'
+import { initStore } from 'js-element/utils'
+import { createStoreHook } from 'js-element/hooks'
 
 function createCounterStore() {
   const [store, set] = initStore({

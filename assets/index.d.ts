@@ -1,5 +1,5 @@
 import './jsx.d'
-export * from './js-elements.d'
+export * from './js-element.d'
 
 export = JSX
 

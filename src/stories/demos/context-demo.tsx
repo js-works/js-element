@@ -1,5 +1,5 @@
-import { define, h } from 'js-elements'
-import { createCtxHooks, useInterval } from 'js-elements/hooks'
+import { define, h } from 'js-element'
+import { createCtxHooks, useInterval } from 'js-element/hooks'
 
 const [useThemeProvider, useTheme] = createCtxHooks('theme', 'light')
 

@@ -1,4 +1,4 @@
-import { define, h } from 'js-elements'
+import { define, h } from 'js-element'
 import { defineMessages } from 'js-messages'
 import { createReducer, on } from 'js-reducers'
 import { createStore, createEffects, ofType } from '../libs/js-stores'
@@ -11,7 +11,7 @@ import {
   useState,
   useStyles,
   useTimer
-} from 'js-elements/hooks'
+} from 'js-element/hooks'
 
 // === constants =====================================================
 

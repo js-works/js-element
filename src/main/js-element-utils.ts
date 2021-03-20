@@ -1,4 +1,4 @@
-import { h } from 'js-elements'
+import { h } from 'js-element'
 import htm from 'htm'
 
 export { html, initStore }

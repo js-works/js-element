@@ -1,5 +1,5 @@
-import { define, h } from 'js-elements'
-import { usePromise, useRefresher, useState } from 'js-elements/hooks'
+import { define, h } from 'js-element'
+import { usePromise, useRefresher, useState } from 'js-element/hooks'
 
 class DataLoaderProps {
   loadingText = 'Loading...'

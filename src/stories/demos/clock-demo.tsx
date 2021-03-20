@@ -1,5 +1,5 @@
-import { define, h } from 'js-elements'
-import { useTimer } from 'js-elements/hooks'
+import { define, h } from 'js-element'
+import { useTimer } from 'js-element/hooks'
 
 const ClockDemo = define('clock-demo', () => {
   const getTime = useTimer(1000, () => new Date().toLocaleTimeString())

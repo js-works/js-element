@@ -1,5 +1,5 @@
-import { attr, define, h } from 'js-elements'
-import { useState } from 'js-elements/hooks'
+import { attr, define, h } from 'js-element'
+import { useState } from 'js-element/hooks'
 
 class CounterProps {
   @attr(Number)

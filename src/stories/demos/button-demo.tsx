@@ -1,5 +1,5 @@
-import { attr, define, event, h, EventHandler, UIEvent } from 'js-elements'
-import { useEmitter, useStyles } from 'js-elements/hooks'
+import { attr, define, event, h, EventHandler, UIEvent } from 'js-element'
+import { useEmitter, useStyles } from 'js-element/hooks'
 
 const buttonDemoStyles = ` 
   .demo-button {
