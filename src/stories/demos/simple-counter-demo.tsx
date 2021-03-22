@@ -2,10 +2,10 @@ import { attr, define, h } from 'js-element'
 import { useState } from 'js-element/hooks'
 
 class CounterProps {
-  @attr(Number)
+  @attr(Number, true)
   initialCount = 0
 
-  @attr(String)
+  @attr(String, true)
   label = 'Counter'
 }
 
@@ -27,7 +27,7 @@ const CounterDemo = define('simple-counter-demo', () => {
   return () => (
     <div>
       <h3>Simple counter demo</h3>
-      <Counter />
+      <Counter label="My Counter" initialCount={100} />
     </div>
   )
 })

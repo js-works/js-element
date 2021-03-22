@@ -11,8 +11,9 @@ export { Ref, UIEvent, VElement, VNode } // types
 
 const EMPTY_ARR: any[] = []
 const EMPTY_OBJ = {}
-const attrsOptionsByComponentClass = new Map<{ new (): any }, AttrsOptions>()
+const attrInfoMapByPropsClass = new Map<PropsClass, AttrInfoMap>()
 let currentCtrl: Ctrl | null = null
+let ignoreAttributeChange = false
 
 // === types ==========================================================
 
@@ -23,11 +24,25 @@ type EventHandler<T> = (ev: T) => void
 type UIEvent<T extends string, D = null> = CustomEvent<D> & { type: T }
 type VNode = null | boolean | number | string | VElement | Iterable<VNode>
 type Task = () => void
+type PropsClass = { new (): object }
 
 type Component<P> = {
   (props?: P, ...children: VNode[]): VElement<P>
   tagName: string
 }
+
+type AttrInfo = {
+  propName: string
+  hasAttr: true
+  attrName: string
+  reflect: boolean
+  mapPropToAttr: (value: unknown) => string
+  mapAttrToProp: (value: string) => unknown
+}
+
+type PropInfo = { propName: string; hasAttr: false } | AttrInfo
+type AttrInfoMap = Map<string, AttrInfo>
+type PropInfoMap = Map<string, PropInfo>
 
 type MethodsOf<C> = C extends Component<infer P>
   ? P extends { ref?: Ref<infer M> }
@@ -51,28 +66,40 @@ type Ctrl = {
   beforeUnmount(task: Task): void
 }
 
-type AttrKind = StringConstructor | NumberConstructor | BooleanConstructor
-type AttrOptions = { kind: AttrKind; reflect: boolean }
-type AttrsOptions = Map<string, AttrOptions>
+type AttrKind =
+  | StringConstructor
+  | NumberConstructor
+  | BooleanConstructor
+  | PropConverter
 
-type PropConverter<T> = {
-  fromPropToAttr(value: T): string
-  fromAttrToProp(value: string): T
+type PropConverter<T = any> = {
+  mapPropToAttr(value: T): string
+  mapAttrToProp(value: string): T
 }
 
 // === public decorators =============================================
 
 function attr(kind: AttrKind, reflect?: boolean) {
-  return (proto: any, key: string) => {
-    const componentClass = proto.constructor
-    let attrsOptions = attrsOptionsByComponentClass.get(componentClass)
+  return (proto: any, propName: string) => {
+    const propsClass = proto.constructor
+    let attrInfoMap = attrInfoMapByPropsClass.get(propsClass)
 
-    if (!attrsOptions) {
-      attrsOptions = new Map()
-      attrsOptionsByComponentClass.set(componentClass, attrsOptions)
+    if (!attrInfoMap) {
+      attrInfoMap = new Map()
+      attrInfoMapByPropsClass.set(propsClass, attrInfoMap)
     }
 
-    attrsOptions.set(key, { kind, reflect: !!reflect })
+    const attrName = propNameToAttrName(propName)
+    const { mapPropToAttr, mapAttrToProp } = getPropConv(kind)
+
+    attrInfoMap.set(attrName, {
+      propName,
+      hasAttr: true,
+      attrName,
+      reflect: !!reflect,
+      mapPropToAttr,
+      mapAttrToProp
+    })
   }
 }
 
@@ -143,17 +170,11 @@ function define(tagName: string, arg2: any, arg3?: any): any {
 
     if (typeof tagName !== 'string') {
       throw new TypeError('[component] First argument must be a string')
-    }
-
-    if (typeof arg2 !== 'function') {
+    } else if (typeof arg2 !== 'function') {
       throw new TypeError('[component] Expected function as second argument')
-    }
-
-    if (argc > 2 && typeof arg3 !== 'function') {
+    } else if (argc > 2 && typeof arg3 !== 'function') {
       throw new TypeError('[component] Expected function as third argument')
-    }
-
-    if (argc > 3) {
+    } else if (argc > 3) {
       throw new TypeError('[component] Unexpected fourth argument')
     }
   }
@@ -161,14 +182,14 @@ function define(tagName: string, arg2: any, arg3?: any): any {
   const propsClass = typeof arg3 === 'function' ? arg2 : null
   const main = propsClass ? arg3 : arg2
 
-  const attrsOptions = propsClass
-    ? attrsOptionsByComponentClass.get(propsClass) || null
-    : null
+  const attrInfoMap =
+    (propsClass && attrInfoMapByPropsClass.get(propsClass)) || null
 
   const customElementClass = buildCustomElementClass(
     tagName,
     propsClass,
-    attrsOptions,
+    propsClass ? getPropInfoMap(propsClass, attrInfoMap) : null,
+    attrInfoMap,
     main
   )
 
@@ -193,38 +214,15 @@ function define(tagName: string, arg2: any, arg3?: any): any {
 function buildCustomElementClass<T extends object>(
   name: string,
   propsClass: { new (): T } | null,
-  attrsOptions: AttrsOptions | null,
+  propInfoMap: PropInfoMap | null,
+  attrInfoMap: AttrInfoMap | null,
   main: (props: T) => () => VNode
 ): CustomElementConstructor {
-  const propNames = propsClass ? Object.keys(new propsClass()) : []
-
-  const attrNameToPropNameMap: Map<string, string> = new Map(
-    Array.from(attrsOptions ? attrsOptions.keys() : []).map((propName) => [
-      propName.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase(),
-      propName
-    ])
-  )
-
-  const propNameToConverterMap: Map<string, PropConverter<any>> = new Map(
-    !attrsOptions
-      ? null
-      : Array.from(attrsOptions.entries()).map(([propName, attrOptions]) => {
-          const kind = attrOptions.kind
-
-          // TODO!!!
-          const propConv =
-            kind === Boolean
-              ? booleanPropConv
-              : kind === Number
-              ? numberPropConv
-              : stringPropConv
-
-          return [propName, propConv]
-        })
-  )
+  const propNames = propInfoMap ? Array.from(propInfoMap.keys()) : []
+  const attrNames = attrInfoMap ? Array.from(attrInfoMap.keys()) : []
 
   const customElementClass = class extends HTMLElement {
-    static observedAttributes = Array.from(attrNameToPropNameMap.keys())
+    static observedAttributes = attrNames
 
     connectedCallback() {
       // TODO - this is extremely odd
@@ -264,10 +262,30 @@ function buildCustomElementClass<T extends object>(
       let render: (() => VNode) | undefined
 
       for (const key of propNames) {
+        const propInfo = propInfoMap!.get(key)!
+
         if (key !== 'ref') {
           Object.defineProperty(self, key, {
             get: () => data[key],
-            set: (value: any) => ((data[key] = value), ctrl.refresh())
+
+            set: (value: any) => {
+              data[key] = value
+
+              if (propInfo.hasAttr && propInfo.reflect) {
+                try {
+                  ignoreAttributeChange = true
+
+                  this.setAttribute(
+                    propInfo.attrName,
+                    propInfo.mapPropToAttr(value)
+                  )
+                } finally {
+                  ignoreAttributeChange = false
+                }
+              }
+
+              ctrl.refresh()
+            }
           })
         } else {
           let componentMethods: any = null
@@ -305,15 +323,11 @@ function buildCustomElementClass<T extends object>(
       }
 
       self.getAttribute = (attrName: string): string | null => {
-        const propName = attrNameToPropNameMap.get(attrName)
+        const attrInfo = attrInfoMap && attrInfoMap.get(attrName)
 
-        if (propName) {
-          return propNameToConverterMap
-            .get(propName)!
-            .fromPropToAttr(self[propName])
-        }
-
-        return super.getAttribute(attrName)
+        return attrInfo
+          ? attrInfo.mapPropToAttr(self[attrInfo.propName])
+          : super.getAttribute(attrName)
       }
 
       self.attributeChangedCallback = (
@@ -321,12 +335,12 @@ function buildCustomElementClass<T extends object>(
         oldValue: string | null,
         value: string | null
       ) => {
-        const propName = attrNameToPropNameMap.get(attrName)
+        if (!ignoreAttributeChange) {
+          const attrInfo = attrInfoMap!.get(attrName)!
 
-        if (propName && typeof value === 'string') {
-          self[propName] = propNameToConverterMap
-            .get(propName)!
-            .fromAttrToProp(value)
+          if (typeof value === 'string') {
+            self[attrInfo.propName] = attrInfo.mapAttrToProp(value)
+          }
         }
       }
 
@@ -405,6 +419,42 @@ function buildCustomElementClass<T extends object>(
   return customElementClass
 }
 
+// === tools ========================================================
+
+function propNameToAttrName(propName: string) {
+  return propName.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase()
+}
+
+function getPropConv(kind: AttrKind): PropConverter {
+  return kind === String
+    ? stringPropConv
+    : kind === Boolean
+    ? booleanPropConv
+    : kind === Number
+    ? numberPropConv
+    : (kind as PropConverter)
+}
+
+function getPropInfoMap(
+  propsClass: PropsClass,
+  attrInfoMap: AttrInfoMap | null
+): PropInfoMap {
+  const ret: PropInfoMap = new Map()
+
+  Object.keys(new propsClass()).forEach((propName) => {
+    const attrName = propNameToAttrName(propName)
+
+    ret.set(
+      propName,
+      attrInfoMap && attrInfoMap.has(attrName)
+        ? attrInfoMap.get(attrName)!
+        : { propName, hasAttr: false }
+    )
+  })
+
+  return ret
+}
+
 // === createNotifier ================================================
 
 function createNotifier() {
@@ -412,27 +462,25 @@ function createNotifier() {
 
   return {
     subscribe: (subscriber: () => void) => void subscribers.push(subscriber),
-
-    notify: () =>
-      subscribers.length && subscribers.forEach((subscriber) => subscriber())
+    notify: () => void (subscribers.length && subscribers.forEach((it) => it()))
   }
 }
 
 // === prop converters ===============================================
 
 const stringPropConv: PropConverter<string> = {
-  fromPropToAttr: (it: string) => it,
-  fromAttrToProp: (it: string) => it
+  mapPropToAttr: (it: string) => it,
+  mapAttrToProp: (it: string) => it
 }
 
 const numberPropConv: PropConverter<number> = {
-  fromPropToAttr: (it: number) => String(it),
-  fromAttrToProp: (it: string) => Number.parseFloat(it)
+  mapPropToAttr: (it: number) => String(it),
+  mapAttrToProp: (it: string) => Number.parseFloat(it)
 }
 
 const booleanPropConv: PropConverter<boolean> = {
-  fromPropToAttr: (it: boolean) => (it ? 'true' : 'false'),
-  fromAttrToProp: (it: string) => (it === 'true' ? true : false)
+  mapPropToAttr: (it: boolean) => (it ? 'true' : 'false'),
+  mapAttrToProp: (it: string) => (it === 'true' ? true : false)
 }
 
 // === h ==============================================================
@@ -485,13 +533,16 @@ function h(type: string | Component<any>, props?: Props | null): VElement {
 export function render(content: VElement, container: Element | string) {
   if (process.env.NODE_ENV === ('development' as string)) {
     if (content !== null && (!content || content.isVElement !== true)) {
-      throw new TypeError()
-      ;('First argument "content" of function "render" must be a virtual element or null')
+      throw new TypeError(
+        'First argument "content" of function "render" must be a' +
+          ' virtual element or null'
+      )
     }
 
     if (!container || (typeof container !== 'string' && !container.tagName)) {
       throw new TypeError(
-        'Second argument "container" of function "render" must either be a DOM element or selector string for the DOM element'
+        'Second argument "container" of function "render" must either be a DOM' +
+          ' element or selector string for the DOM element'
       )
     }
   }
