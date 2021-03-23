@@ -79,7 +79,7 @@ type PropConverter<T = any> = {
 
 // === public decorators =============================================
 
-function attr(kind: AttrKind, reflect?: boolean) {
+function attr(kind: AttrKind, reflect: boolean = false) {
   return (proto: any, propName: string) => {
     const propsClass = proto.constructor
     let attrInfoMap = attrInfoMapByPropsClass.get(propsClass)
@@ -96,7 +96,7 @@ function attr(kind: AttrKind, reflect?: boolean) {
       propName,
       hasAttr: true,
       attrName,
-      reflect: !!reflect,
+      reflect,
       mapPropToAttr,
       mapAttrToProp
     })
@@ -169,13 +169,13 @@ function define(tagName: string, arg2: any, arg3?: any): any {
     const argc = arguments.length
 
     if (typeof tagName !== 'string') {
-      throw new TypeError('[component] First argument must be a string')
+      throw new TypeError('[define] First argument must be a string')
     } else if (typeof arg2 !== 'function') {
-      throw new TypeError('[component] Expected function as second argument')
+      throw new TypeError('[define] Expected function as second argument')
     } else if (argc > 2 && typeof arg3 !== 'function') {
-      throw new TypeError('[component] Expected function as third argument')
+      throw new TypeError('[define] Expected function as third argument')
     } else if (argc > 3) {
-      throw new TypeError('[component] Unexpected fourth argument')
+      throw new TypeError('[define] Unexpected fourth argument')
     }
   }
 
@@ -195,9 +195,7 @@ function define(tagName: string, arg2: any, arg3?: any): any {
 
   const ret = h.bind(tagName)
 
-  Object.defineProperty(ret, 'tagName', {
-    value: tagName
-  })
+  Object.defineProperty(ret, 'tagName', { value: tagName })
 
   if (customElements.get(tagName)) {
     console.clear()
@@ -218,12 +216,7 @@ function buildCustomElementClass<T extends object>(
   attrInfoMap: AttrInfoMap | null,
   main: (props: T) => () => VNode
 ): CustomElementConstructor {
-  const propNames = propInfoMap ? Array.from(propInfoMap.keys()) : []
-  const attrNames = attrInfoMap ? Array.from(attrInfoMap.keys()) : []
-
   const customElementClass = class extends HTMLElement {
-    static observedAttributes = attrNames
-
     connectedCallback() {
       // TODO - this is extremely odd
       this.connectedCallback()
@@ -252,6 +245,8 @@ function buildCustomElementClass<T extends object>(
       const beforeUnmountNotifier = createNotifier()
       const onceBeforeUpdateActions: Task[] = []
       const ctrl = createCtrl()
+      self.__ctrl = ctrl
+      self.__data = data
 
       let isInitialized = false
       let isMounted = false
@@ -261,50 +256,23 @@ function buildCustomElementClass<T extends object>(
       let contentElement: HTMLElement | undefined
       let render: (() => VNode) | undefined
 
-      for (const key of propNames) {
-        const propInfo = propInfoMap!.get(key)!
+      if (propInfoMap && propInfoMap.has('ref')) {
+        let componentMethods: any = null
+        data.ref = {}
 
-        if (key !== 'ref') {
-          Object.defineProperty(self, key, {
-            get: () => data[key],
+        Object.defineProperty(data.ref, 'current', {
+          enumerable: true,
+          get: () => componentMethods,
 
-            set: (value: any) => {
-              data[key] = value
-
-              if (propInfo.hasAttr && propInfo.reflect) {
-                try {
-                  ignoreAttributeChange = true
-
-                  this.setAttribute(
-                    propInfo.attrName,
-                    propInfo.mapPropToAttr(value)
-                  )
-                } finally {
-                  ignoreAttributeChange = false
-                }
-              }
-
-              ctrl.refresh()
+          set(methods: any) {
+            if (componentMethods) {
+              throw new Error('Methods can only be set once')
+            } else if (methods) {
+              componentMethods = methods
+              Object.assign(self, componentMethods)
             }
-          })
-        } else {
-          let componentMethods: any = null
-          data.ref = {}
-
-          Object.defineProperty(data.ref, 'current', {
-            enumerable: true,
-            get: () => componentMethods,
-
-            set(methods: any) {
-              if (componentMethods) {
-                throw new Error('Methods can only be set once')
-              } else if (methods) {
-                componentMethods = methods
-                Object.assign(self, componentMethods)
-              }
-            }
-          })
-        }
+          }
+        })
       }
 
       self.connectedCallback = () => {
@@ -320,28 +288,6 @@ function buildCustomElementClass<T extends object>(
       self.disconnectedCallback = () => {
         beforeUnmountNotifier.notify()
         contentElement!.innerHTML = ''
-      }
-
-      self.getAttribute = (attrName: string): string | null => {
-        const attrInfo = attrInfoMap && attrInfoMap.get(attrName)
-
-        return attrInfo
-          ? attrInfo.mapPropToAttr(self[attrInfo.propName])
-          : super.getAttribute(attrName)
-      }
-
-      self.attributeChangedCallback = (
-        attrName: string,
-        oldValue: string | null,
-        value: string | null
-      ) => {
-        if (!ignoreAttributeChange) {
-          const attrInfo = attrInfoMap!.get(attrName)!
-
-          if (typeof value === 'string') {
-            self[attrInfo.propName] = attrInfo.mapAttrToProp(value)
-          }
-        }
       }
 
       function refresh() {
@@ -416,6 +362,8 @@ function buildCustomElementClass<T extends object>(
     }
   }
 
+  propInfoMap && addProps(customElementClass, propInfoMap, attrInfoMap)
+
   return customElementClass
 }
 
@@ -453,6 +401,67 @@ function getPropInfoMap(
   })
 
   return ret
+}
+
+function addProps(
+  clazz: any,
+  propInfoMap: PropInfoMap,
+  attrInfoMap: AttrInfoMap | null
+) {
+  const proto = clazz.prototype
+
+  clazz.observedAttributes = attrInfoMap ? Array.from(attrInfoMap.keys()) : []
+
+  proto.getAttribute = function (attrName: string): string | null {
+    const attrInfo = attrInfoMap && attrInfoMap.get(attrName)
+
+    return attrInfo
+      ? attrInfo.mapPropToAttr(this[attrInfo.propName])
+      : HTMLElement.prototype.getAttribute.call(this, attrName)
+  }
+
+  proto.attributeChangedCallback = function (
+    this: any,
+    attrName: string,
+    oldValue: string | null,
+    value: string | null
+  ) {
+    if (!ignoreAttributeChange) {
+      const attrInfo = attrInfoMap!.get(attrName)!
+
+      if (typeof value === 'string') {
+        this[attrInfo.propName] = attrInfo.mapAttrToProp(value)
+      }
+    }
+  }
+
+  for (const propInfo of propInfoMap.values()) {
+    const { propName } = propInfo
+
+    if (propName === 'ref') {
+      continue
+    }
+
+    Object.defineProperty(proto, propName, {
+      get: () => proto.__data[propName],
+
+      set(this: any, value: any) {
+        this.__data[propName] = value
+
+        if (propInfo.hasAttr && propInfo.reflect) {
+          try {
+            ignoreAttributeChange = true
+
+            this.setAttribute(propInfo.attrName, propInfo.mapPropToAttr(value))
+          } finally {
+            ignoreAttributeChange = false
+          }
+        }
+
+        this.__ctrl.refresh()
+      }
+    })
+  }
 }
 
 // === createNotifier ================================================
