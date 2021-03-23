@@ -17,6 +17,7 @@ let ignoreAttributeChange = false
 
 // === types ==========================================================
 
+type Class<T extends Object = any> = { new (...args: any[]): T }
 type Props = Record<string, any> // TODO
 type VElement<T extends Props = Props> = Record<any, any> // TODO
 type Ref<T> = { current: T | null }
@@ -80,8 +81,8 @@ type PropConverter<T = any> = {
 // === public decorators =============================================
 
 function attr(kind: AttrKind, reflect: boolean = false) {
-  return (proto: any, propName: string) => {
-    const propsClass = proto.constructor
+  return (proto: object, propName: string) => {
+    const propsClass = proto.constructor as Class
     let attrInfoMap = attrInfoMapByPropsClass.get(propsClass)
 
     if (!attrInfoMap) {
@@ -160,7 +161,7 @@ function define(tagName: string, main: () => () => VNode): Component<{}>
 
 function define<P extends Props>(
   tagName: string,
-  propsClass: { new (): P },
+  propsClass: Class<P>,
   main: (props: P) => () => VNode
 ): Component<Partial<P>>
 
@@ -216,37 +217,18 @@ function buildCustomElementClass<T extends object>(
   attrInfoMap: AttrInfoMap | null,
   main: (props: T) => () => VNode
 ): CustomElementConstructor {
-  const customElementClass = class extends HTMLElement {
-    connectedCallback() {
-      // TODO - this is extremely odd
-      this.connectedCallback()
-    }
-
-    disconnectedCallback() {
-      // TODO - this is extremely odd
-      this.disconnectedCallback()
-    }
-
-    getAttribute(attrName: string): string | null {
-      return this.getAttribute(attrName)
-    }
-
-    attributeChangedCallback() {
-      this.attributeChangedCallback.apply(this, arguments as any)
-    }
-
+  const customElementClass = class extends BaseElement {
     constructor() {
       super()
-      const self: any = this
       const data: any = propsClass ? new propsClass() : {}
       const afterMountNotifier = createNotifier()
       const beforeUpdateNotifier = createNotifier()
       const afterUpdateNotifier = createNotifier()
       const beforeUnmountNotifier = createNotifier()
       const onceBeforeUpdateActions: Task[] = []
-      const ctrl = createCtrl()
-      self.__ctrl = ctrl
-      self.__data = data
+      const ctrl = createCtrl(this)
+      ;(this as any).__ctrl = ctrl
+      ;(this as any).__data = data
 
       let isInitialized = false
       let isMounted = false
@@ -269,14 +251,14 @@ function buildCustomElementClass<T extends object>(
               throw new Error('Methods can only be set once')
             } else if (methods) {
               componentMethods = methods
-              Object.assign(self, componentMethods)
+              Object.assign(this, componentMethods)
             }
           }
         })
       }
 
-      self.connectedCallback = () => {
-        const root = self.attachShadow({ mode: 'open' })
+      this.connectedCallback = () => {
+        const root = this.attachShadow({ mode: 'open' })
         stylesElement = document.createElement('span')
         contentElement = document.createElement('span')
         stylesElement.setAttribute('data-role', 'styles')
@@ -285,7 +267,7 @@ function buildCustomElementClass<T extends object>(
         refresh()
       }
 
-      self.disconnectedCallback = () => {
+      this.disconnectedCallback = () => {
         beforeUnmountNotifier.notify()
         contentElement!.innerHTML = ''
       }
@@ -333,10 +315,10 @@ function buildCustomElementClass<T extends object>(
         }
       }
 
-      function createCtrl(): Ctrl {
+      function createCtrl(host: HTMLElement): Ctrl {
         return {
           getName: () => name,
-          getHost: () => self,
+          getHost: () => host,
           isInitialized: () => isInitialized,
           isMounted: () => isMounted,
           hasUpdated: () => hasUpdated,
@@ -362,9 +344,33 @@ function buildCustomElementClass<T extends object>(
     }
   }
 
-  propInfoMap && addProps(customElementClass, propInfoMap, attrInfoMap)
+  propInfoMap && addPropsHandling(customElementClass, propInfoMap, attrInfoMap)
 
   return customElementClass
+}
+
+// === BaseElement ===================================================
+
+class BaseElement extends HTMLElement {
+  connectedCallback() {
+    this.connectedCallback()
+  }
+
+  disconnectedCallback() {
+    this.disconnectedCallback()
+  }
+
+  getAttribute(attrName: string): string | null {
+    return this.getAttribute(attrName)
+  }
+
+  attributeChangedCallback(
+    name: string,
+    oldValue: string | null,
+    newValue: string | null
+  ) {
+    this.attributeChangedCallback.call(this, name, oldValue, newValue)
+  }
 }
 
 // === tools ========================================================
@@ -403,14 +409,16 @@ function getPropInfoMap(
   return ret
 }
 
-function addProps(
-  clazz: any,
+function addPropsHandling(
+  customElementClass: { new (): BaseElement },
   propInfoMap: PropInfoMap,
   attrInfoMap: AttrInfoMap | null
 ) {
-  const proto = clazz.prototype
+  const proto = customElementClass.prototype
 
-  clazz.observedAttributes = attrInfoMap ? Array.from(attrInfoMap.keys()) : []
+  ;(customElementClass as any).observedAttributes = attrInfoMap
+    ? Array.from(attrInfoMap.keys())
+    : []
 
   proto.getAttribute = function (attrName: string): string | null {
     const attrInfo = attrInfoMap && attrInfoMap.get(attrName)
