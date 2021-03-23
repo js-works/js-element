@@ -4,6 +4,7 @@ import commonjs from '@rollup/plugin-commonjs'
 import typescript from 'rollup-plugin-typescript2'
 import { terser } from 'rollup-plugin-terser'
 import gzip from 'rollup-plugin-gzip'
+import brotli from 'rollup-plugin-brotli'
 
 const configs = []
 
@@ -61,7 +62,8 @@ function createConfig(pkg, moduleFormat, productive) {
         tsconfig: './tsconfig.dist.json'
       }),
       productive && terser(),
-      productive && gzip()
+      productive && gzip(),
+      productive && brotli()
     ]
   }
 }
