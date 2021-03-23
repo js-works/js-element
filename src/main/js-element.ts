@@ -128,7 +128,7 @@ function hook(arg1: any, arg2?: any): Function {
   const { name, fn } = arg1
 
   const ret = (...args: any[]) => {
-    if (!currentCtrl) {
+    if (process.env.NODE_ENV === ('development' as string) && !currentCtrl) {
       throw new Error(
         `Hook function "${name}" has been called outside of component initialization phase`
       )
@@ -358,18 +358,6 @@ class BaseElement extends HTMLElement {
 
   disconnectedCallback() {
     this.disconnectedCallback()
-  }
-
-  getAttribute(attrName: string): string | null {
-    return this.getAttribute(attrName)
-  }
-
-  attributeChangedCallback(
-    name: string,
-    oldValue: string | null,
-    newValue: string | null
-  ) {
-    this.attributeChangedCallback.call(this, name, oldValue, newValue)
   }
 }
 

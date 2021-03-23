@@ -61,6 +61,7 @@ function createConfig(pkg, moduleFormat, productive) {
       typescript({
         tsconfig: './tsconfig.dist.json'
       }),
+
       productive && terser(),
       productive && gzip(),
       productive && brotli()
