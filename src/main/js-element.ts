@@ -3,7 +3,7 @@ import { h as createElement, text, patch } from './lib/patched-superfine'
 // === exports =======================================================
 
 // public API
-export { attr, define, event, h, hook, ref } // methods
+export { attr, define, event, h, hook, ref, Attr } // functions and enums
 export { Ctrl, Component, EventHandler, MethodsOf } // types
 export { Ref, UIEvent, VElement, VNode } // types
 
@@ -72,12 +72,17 @@ type AttrType<T = any> = {
   mapAttrToProp(value: string): T
 }
 
+// === enums =========================================================
+
+enum Attr {
+  String = 'string',
+  Number = 'number',
+  Boolean = 'boolean'
+}
+
 // === public decorators =============================================
 
-function attr(
-  type: 'string' | 'number' | 'boolean' | AttrType,
-  reflect: boolean = false
-) {
+function attr(type: Attr | AttrType, reflect: boolean = false) {
   return (proto: object, propName: string) => {
     const propsClass = proto.constructor as Class
     const attrName = propNameToAttrName(propName)
@@ -89,7 +94,7 @@ function attr(
     }
 
     const { mapPropToAttr, mapAttrToProp } =
-      typeof type === 'string' ? attrTypes[type] : type
+      typeof type === 'string' ? AttrTypes[type] : (type as AttrType)
 
     attrInfoMap.set(attrName, {
       propName,
@@ -461,7 +466,7 @@ function createNotifier() {
 
 // === attr types  ===============================================
 
-const attrTypes = {
+const AttrTypes = {
   string: {
     mapPropToAttr: (it: string) => it,
     mapAttrToProp: (it: string) => it

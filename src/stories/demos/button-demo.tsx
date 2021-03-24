@@ -1,4 +1,4 @@
-import { attr, define, event, h, EventHandler, UIEvent } from 'js-element'
+import { attr, define, event, h, EventHandler, UIEvent, Attr } from 'js-element'
 import { useEmitter, useStyles } from 'js-element/hooks'
 
 const buttonDemoStyles = ` 
@@ -20,7 +20,7 @@ const buttonDemoStyles = `
 type ButtonClickEvent = UIEvent<'button-click'>
 
 class ButtonProps {
-  @attr('string')
+  @attr(Attr.String)
   text?: string
 
   onButtonClick?: EventHandler<ButtonClickEvent>
