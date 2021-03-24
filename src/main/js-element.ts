@@ -68,10 +68,7 @@ type Ctrl = {
 // === public decorators =============================================
 
 function attr<T>(
-  type: {
-    mapPropToAttr(value: T): string
-    mapAttrToProp(value: string): T
-  },
+  type: { mapPropToAttr(value: T): string; mapAttrToProp(value: string): T },
   reflect: boolean = false
 ) {
   return (proto: object, propName: string) => {
@@ -237,7 +234,7 @@ function buildCustomElementClass<T extends object>(
           enumerable: true,
           get: () => componentMethods,
 
-          set(methods: any) {
+          set: (methods: any) => {
             if (componentMethods) {
               throw new Error('Methods can only be set once')
             } else if (methods) {
