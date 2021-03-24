@@ -67,20 +67,17 @@ type Ctrl = {
   beforeUnmount(task: Task): void
 }
 
-type AttrKind =
-  | StringConstructor
-  | NumberConstructor
-  | BooleanConstructor
-  | PropConverter
-
-type PropConverter<T = any> = {
+type AttrType<T = any> = {
   mapPropToAttr(value: T): string
   mapAttrToProp(value: string): T
 }
 
 // === public decorators =============================================
 
-function attr(kind: AttrKind, reflect: boolean = false) {
+function attr(
+  type: StringConstructor | NumberConstructor | BooleanConstructor | AttrType,
+  reflect: boolean = false
+) {
   return (proto: object, propName: string) => {
     const propsClass = proto.constructor as Class
     let attrInfoMap = attrInfoMapByPropsClass.get(propsClass)
@@ -91,7 +88,15 @@ function attr(kind: AttrKind, reflect: boolean = false) {
     }
 
     const attrName = propNameToAttrName(propName)
-    const { mapPropToAttr, mapAttrToProp } = getPropConv(kind)
+
+    const { mapPropToAttr, mapAttrToProp } =
+      type === String
+        ? stringPropConv
+        : type === Boolean
+        ? booleanPropConv
+        : type === Number
+        ? numberPropConv
+        : (type as AttrType)
 
     attrInfoMap.set(attrName, {
       propName,
@@ -367,16 +372,6 @@ function propNameToAttrName(propName: string) {
   return propName.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase()
 }
 
-function getPropConv(kind: AttrKind): PropConverter {
-  return kind === String
-    ? stringPropConv
-    : kind === Boolean
-    ? booleanPropConv
-    : kind === Number
-    ? numberPropConv
-    : (kind as PropConverter)
-}
-
 function getPropInfoMap(
   propsClass: PropsClass,
   attrInfoMap: AttrInfoMap | null
@@ -473,17 +468,17 @@ function createNotifier() {
 
 // === prop converters ===============================================
 
-const stringPropConv: PropConverter<string> = {
+const stringPropConv: AttrType<string> = {
   mapPropToAttr: (it: string) => it,
   mapAttrToProp: (it: string) => it
 }
 
-const numberPropConv: PropConverter<number> = {
+const numberPropConv: AttrType<number> = {
   mapPropToAttr: (it: number) => String(it),
   mapAttrToProp: (it: string) => Number.parseFloat(it)
 }
 
-const booleanPropConv: PropConverter<boolean> = {
+const booleanPropConv: AttrType<boolean> = {
   mapPropToAttr: (it: boolean) => (it ? 'true' : 'false'),
   mapAttrToProp: (it: string) => (it === 'true' ? true : false)
 }
