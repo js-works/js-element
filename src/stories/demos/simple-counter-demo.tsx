@@ -2,10 +2,10 @@ import { attr, define, h, Attr } from 'js-element'
 import { useState } from 'js-element/hooks'
 
 class CounterProps {
-  @attr(Attr.Number, true)
+  @attr(Attr.number, true)
   initialCount = 0
 
-  @attr(Attr.String, true)
+  @attr(Attr.string, true)
   label = 'Counter'
 }
 

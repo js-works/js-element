@@ -11,39 +11,37 @@ export { Ref, UIEvent, VElement, VNode } // types
 
 const EMPTY_ARR: any[] = []
 const EMPTY_OBJ = {}
-const attrInfoMapByPropsClass = new Map<PropsClass, AttrInfoMap>()
+const attrInfoMapByPropsClass = new Map<PropsClass<any>, AttrInfoMap>()
 let currentCtrl: Ctrl | null = null
 let ignoreAttributeChange = false
 
 // === types ==========================================================
 
-type Class<T extends Object = any> = { new (...args: any[]): T }
 type Props = Record<string, any> // TODO
+type PropsClass<P extends Props> = { new (): P }
 type VElement<T extends Props = Props> = Record<any, any> // TODO
 type Ref<T> = { current: T | null }
 type EventHandler<T> = (ev: T) => void
 type UIEvent<T extends string, D = null> = CustomEvent<D> & { type: T }
 type VNode = null | boolean | number | string | VElement | Iterable<VNode>
-type Task = () => void
-type PropsClass = { new (): object }
 
 type Component<P> = {
   (props?: P, ...children: VNode[]): VElement<P>
   tagName: string
 }
 
-type AttrInfo = {
+type AttrInfo<T> = {
   propName: string
   hasAttr: true
   attrName: string
   reflect: boolean
-  mapPropToAttr: (value: unknown) => string
-  mapAttrToProp: (value: string) => unknown
+  mapPropToAttr: (value: T) => string
+  mapAttrToProp: (value: string) => T
 }
 
-type PropInfo = { propName: string; hasAttr: false } | AttrInfo
-type AttrInfoMap = Map<string, AttrInfo>
-type PropInfoMap = Map<string, PropInfo>
+type PropInfo<T> = { propName: string; hasAttr: false } | AttrInfo<T>
+type AttrInfoMap = Map<string, AttrInfo<any>>
+type PropInfoMap = Map<string, PropInfo<any>>
 
 type MethodsOf<C> = C extends Component<infer P>
   ? P extends { ref?: Ref<infer M> }
@@ -60,31 +58,24 @@ type Ctrl = {
   isMounted(): boolean
   hasUpdated(): boolean
   refresh(): void
-  afterMount(task: Task): void
-  onceBeforeUpdate(task: Task): void
-  beforeUpdate(task: Task): void
-  afterUpdate(task: Task): void
-  beforeUnmount(task: Task): void
-}
-
-type AttrType<T = any> = {
-  mapPropToAttr(value: T): string
-  mapAttrToProp(value: string): T
-}
-
-// === enums =========================================================
-
-enum Attr {
-  String = 'string',
-  Number = 'number',
-  Boolean = 'boolean'
+  afterMount(task: () => void): void
+  onceBeforeUpdate(task: () => void): void
+  beforeUpdate(task: () => void): void
+  afterUpdate(task: () => void): void
+  beforeUnmount(task: () => void): void
 }
 
 // === public decorators =============================================
 
-function attr(type: Attr | AttrType, reflect: boolean = false) {
+function attr<T>(
+  type: {
+    mapPropToAttr(value: T): string
+    mapAttrToProp(value: string): T
+  },
+  reflect: boolean = false
+) {
   return (proto: object, propName: string) => {
-    const propsClass = proto.constructor as Class
+    const propsClass = proto.constructor as PropsClass<any>
     const attrName = propNameToAttrName(propName)
     let attrInfoMap = attrInfoMapByPropsClass.get(propsClass)
 
@@ -93,16 +84,13 @@ function attr(type: Attr | AttrType, reflect: boolean = false) {
       attrInfoMapByPropsClass.set(propsClass, attrInfoMap)
     }
 
-    const { mapPropToAttr, mapAttrToProp } =
-      typeof type === 'string' ? AttrTypes[type] : (type as AttrType)
-
     attrInfoMap.set(attrName, {
       propName,
       hasAttr: true,
       attrName,
       reflect,
-      mapPropToAttr,
-      mapAttrToProp
+      mapPropToAttr: type.mapPropToAttr,
+      mapAttrToProp: type.mapAttrToProp
     })
   }
 }
@@ -164,7 +152,7 @@ function define(tagName: string, main: () => () => VNode): Component<{}>
 
 function define<P extends Props>(
   tagName: string,
-  propsClass: Class<P>,
+  propsClass: PropsClass<P>,
   main: (props: P) => () => VNode
 ): Component<Partial<P>>
 
@@ -228,7 +216,7 @@ function buildCustomElementClass<T extends object>(
       const beforeUpdateNotifier = createNotifier()
       const afterUpdateNotifier = createNotifier()
       const beforeUnmountNotifier = createNotifier()
-      const onceBeforeUpdateActions: Task[] = []
+      const onceBeforeUpdateActions: (() => void)[] = []
       const ctrl = createCtrl(this)
       ;(this as any).__ctrl = ctrl
       ;(this as any).__data = data
@@ -371,7 +359,7 @@ function propNameToAttrName(propName: string) {
 }
 
 function getPropInfoMap(
-  propsClass: PropsClass,
+  propsClass: PropsClass<any>,
   attrInfoMap: AttrInfoMap | null
 ): PropInfoMap {
   const ret: PropInfoMap = new Map()
@@ -464,9 +452,9 @@ function createNotifier() {
   }
 }
 
-// === attr types  ===============================================
+// === built-in attr types  ==========================================
 
-const AttrTypes = {
+const Attr = {
   string: {
     mapPropToAttr: (it: string) => it,
     mapAttrToProp: (it: string) => it
