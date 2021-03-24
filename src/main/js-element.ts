@@ -75,7 +75,7 @@ type AttrType<T = any> = {
 // === public decorators =============================================
 
 function attr(
-  type: StringConstructor | NumberConstructor | BooleanConstructor | AttrType,
+  type: 'string' | 'number' | 'boolean' | AttrType,
   reflect: boolean = false
 ) {
   return (proto: object, propName: string) => {
@@ -89,13 +89,7 @@ function attr(
     }
 
     const { mapPropToAttr, mapAttrToProp } =
-      type === String
-        ? stringPropConv
-        : type === Boolean
-        ? booleanPropConv
-        : type === Number
-        ? numberPropConv
-        : (type as AttrType)
+      typeof type === 'string' ? attrTypes[type] : type
 
     attrInfoMap.set(attrName, {
       propName,
@@ -465,21 +459,23 @@ function createNotifier() {
   }
 }
 
-// === prop converters ===============================================
+// === attr types  ===============================================
 
-const stringPropConv: AttrType<string> = {
-  mapPropToAttr: (it: string) => it,
-  mapAttrToProp: (it: string) => it
-}
+const attrTypes = {
+  string: {
+    mapPropToAttr: (it: string) => it,
+    mapAttrToProp: (it: string) => it
+  },
 
-const numberPropConv: AttrType<number> = {
-  mapPropToAttr: (it: number) => String(it),
-  mapAttrToProp: (it: string) => Number.parseFloat(it)
-}
+  number: {
+    mapPropToAttr: (it: number) => String(it),
+    mapAttrToProp: (it: string) => Number.parseFloat(it)
+  },
 
-const booleanPropConv: AttrType<boolean> = {
-  mapPropToAttr: (it: boolean) => (it ? 'true' : 'false'),
-  mapAttrToProp: (it: string) => (it === 'true' ? true : false)
+  boolean: {
+    mapPropToAttr: (it: boolean) => (it ? 'true' : 'false'),
+    mapAttrToProp: (it: string) => (it === 'true' ? true : false)
+  }
 }
 
 // === h ==============================================================

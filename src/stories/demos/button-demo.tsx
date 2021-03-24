@@ -20,7 +20,7 @@ const buttonDemoStyles = `
 type ButtonClickEvent = UIEvent<'button-click'>
 
 class ButtonProps {
-  @attr(String)
+  @attr('string')
   text?: string
 
   onButtonClick?: EventHandler<ButtonClickEvent>
