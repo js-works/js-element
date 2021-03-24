@@ -80,14 +80,13 @@ function attr(
 ) {
   return (proto: object, propName: string) => {
     const propsClass = proto.constructor as Class
+    const attrName = propNameToAttrName(propName)
     let attrInfoMap = attrInfoMapByPropsClass.get(propsClass)
 
     if (!attrInfoMap) {
       attrInfoMap = new Map()
       attrInfoMapByPropsClass.set(propsClass, attrInfoMap)
     }
-
-    const attrName = propNameToAttrName(propName)
 
     const { mapPropToAttr, mapAttrToProp } =
       type === String
@@ -155,7 +154,7 @@ function event<T extends string, D = null>(
   const params = {
     detail: detail || null,
     bubbles: !options || !!options.bubbles,
-    cancabble: !options || !!options.cancelable,
+    cancelable: !options || !!options.cancelable,
     composed: true
   }
 
