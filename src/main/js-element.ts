@@ -82,7 +82,7 @@ enum Attr {
 
 // === public decorators =============================================
 
-function attr(type: Attr | AttrType, options?: { reflect: boolean }) {
+function attr(type: Attr | AttrType, reflect: boolean = false) {
   return (proto: object, propName: string) => {
     const propsClass = proto.constructor as Class
     const attrName = propNameToAttrName(propName)
@@ -100,7 +100,7 @@ function attr(type: Attr | AttrType, options?: { reflect: boolean }) {
       propName,
       hasAttr: true,
       attrName,
-      reflect: !!(options && options.reflect),
+      reflect,
       mapPropToAttr,
       mapAttrToProp
     })

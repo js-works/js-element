@@ -38,10 +38,10 @@ import { useEffect, useOnMount, useState, useStyles } from 'js-element/hooks'
 import counterStyles from './counter.css'
 
 class CounterProps {
-  @attr(Attr.Number, { reflect: true })
+  @attr(Attr.Number, true) // true as 2nd arguement means: reflect attribute
   initialCount = 0
 
-  @attr(Attr.String, { reflect: true })
+  @attr(Attr.String, true)
   label = 'Counter'
 }
 
