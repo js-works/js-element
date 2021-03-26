@@ -1,4 +1,4 @@
-import { createDefiner, createRenderer } from 'js-element'
+import { createDefiner, createRenderer } from 'js-element/core'
 import { render as uhtmlRender, Hole } from 'uhtml'
 
 export {
@@ -11,7 +11,7 @@ export {
   MethodsOf,
   Ref,
   UIEvent
-} from 'js-element'
+} from 'src/main/js-element-core'
 
 export { html, svg, Hole } from 'uhtml'
 

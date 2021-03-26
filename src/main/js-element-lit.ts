@@ -1,4 +1,4 @@
-import { createDefiner, createRenderer } from 'js-element'
+import { createDefiner, createRenderer } from 'js-element/core'
 import { render as litRender, TemplateResult } from 'lit-html'
 
 export { html, svg, TemplateResult } from 'lit-html'
@@ -13,7 +13,7 @@ export {
   MethodsOf,
   Ref,
   UIEvent
-} from 'js-element'
+} from 'src/main/js-element-core'
 
 export const define = createDefiner<TemplateResult>('define', litRender)
 

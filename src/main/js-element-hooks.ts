@@ -1,4 +1,4 @@
-import { hook, Ctrl, Ref } from 'js-element'
+import { hook, Ctrl, Ref } from 'js-element/core'
 
 // === constants =====================================================
 

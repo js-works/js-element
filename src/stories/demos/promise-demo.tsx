@@ -1,4 +1,4 @@
-import { define, h } from 'js-element/web'
+import { define, h } from 'js-element'
 import { usePromise, useRefresher, useState } from 'js-element/hooks'
 
 class DataLoaderProps {

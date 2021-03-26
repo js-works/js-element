@@ -1,4 +1,4 @@
-import { define, h, VNode } from 'js-element/web'
+import { define, h, VNode } from 'js-element'
 import { useOnMount, useRefresher } from 'js-element/hooks'
 
 const prefs = {

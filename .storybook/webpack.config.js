@@ -15,9 +15,9 @@ module.exports = ({ config }) => {
 
   alias['js-element$'] = path.resolve(__dirname, '../src/main/js-element.ts')
 
-  alias['js-element/web$'] = path.resolve(
+  alias['js-element/core$'] = path.resolve(
     __dirname,
-    '../src/main/js-element-web.ts'
+    '../src/main/js-element-core.ts'
   )
 
   alias['js-element/hooks$'] = path.resolve(

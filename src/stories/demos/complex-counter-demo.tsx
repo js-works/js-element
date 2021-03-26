@@ -7,7 +7,7 @@ import {
   EventHandler,
   Ref,
   UIEvent
-} from 'js-element/web'
+} from 'js-element'
 
 import {
   useEffect,

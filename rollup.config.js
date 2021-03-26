@@ -8,7 +8,7 @@ import brotli from 'rollup-plugin-brotli'
 
 const configs = []
 
-for (const pkg of ['root', 'web', 'hooks', 'utils', 'lit', 'uhtml']) {
+for (const pkg of ['root', 'core', 'hooks', 'utils', 'lit', 'uhtml']) {
   for (const format of ['esm', 'umd', 'cjs']) {
     for (const productive of [false, true]) {
       configs.push(createConfig(pkg, format, productive))
@@ -41,6 +41,7 @@ function createConfig(pkg, moduleFormat, productive) {
 
       globals: {
         'js-element': 'jsElement',
+        'js-element/core': 'jsElement.core',
         ...(pkg === 'lit' && { 'lit-html': 'litHtml' }), // TODO!!
         ...(pkg === 'uhtml' && { uhtml: 'uhtml' }) // TODO!!
       }
@@ -48,6 +49,7 @@ function createConfig(pkg, moduleFormat, productive) {
 
     external: [
       'js-element',
+      'js-element/core',
       ...(pkg === 'lit' ? ['lit-html'] : []),
       ...(pkg === 'uhtml' ? ['uhtml'] : [])
     ],

@@ -1,6 +1,8 @@
 # js-element
 
 A R&D project to evaluate an alternative approach to develop custom elements.
+The package `js-element` uses a patcnhed version of `superfine`, a very lightweight virtual DOM library.
+The subpackages `js-element/lit` and `js-element/uhtml` use [lit-html](https://lit-html.polymer-project.org/) respective [uhtml](https://github.com/WebReflection/uhtml) instead.
 
 #### Disclaimer:
 
@@ -33,7 +35,7 @@ render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
 ### Example 2
 
 ```jsx
-import { attr, define, h, render, Attr } from 'js-element/web'
+import { attr, define, h, render, Attr } from 'js-element'
 import { useEffect, useOnMount, useState, useStyles } from 'js-element/hooks'
 import counterStyles from './counter.css'
 
@@ -81,7 +83,7 @@ render(<Counter />, '#app')
 ### Example 3
 
 ```jsx
-import { define, h, render } from 'js-element/web'
+import { define, h, render } from 'js-element'
 import { useTimer } from 'js-element/hooks'
 
 const Clock = define('demo-clock', () => {
