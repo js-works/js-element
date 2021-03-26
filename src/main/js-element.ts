@@ -2,8 +2,10 @@ import { h as createElement, text, patch } from './lib/patched-superfine'
 
 // === exports =======================================================
 
+const define = createDefiner<VNode>('define', renderer)
+
 // public API
-export { attr, define, event, h, hook, ref, Attr } // functions and enums
+export { attr, createDefiner, define, event, h, hook, ref, Attr } // functions and enums
 export { Ctrl, Component, EventHandler, MethodsOf } // types
 export { Ref, UIEvent, VElement, VNode } // types
 
@@ -145,65 +147,75 @@ function event<T extends string, D = null>(
   return new CustomEvent(type, params) as UIEvent<T, D>
 }
 
-function define(tagName: string, main: () => () => VNode): Component<{}>
+function createDefiner<C>(
+  fnName: string,
+  patch: (content: C, target: Element) => void
+): {
+  (tagName: string, main: () => () => VNode): Component<{}>
 
-function define<P extends Props>(
-  tagName: string,
-  propsClass: PropsClass<P>,
-  main: (props: P) => () => VNode
-): Component<Partial<P>>
+  <P extends Props>(
+    tagName: string,
+    propsClass: PropsClass<P>,
+    main: (props: P) => () => C
+  ): Component<Partial<P>>
+} {
+  const ret = (tagName: string, arg2: any, arg3?: any): any => {
+    if (process.env.NODE_ENV === ('development' as string)) {
+      const argc = arguments.length
 
-function define(tagName: string, arg2: any, arg3?: any): any {
-  if (process.env.NODE_ENV === ('development' as string)) {
-    const argc = arguments.length
-
-    if (typeof tagName !== 'string') {
-      throw new TypeError('[define] First argument must be a string')
-    } else if (typeof arg2 !== 'function') {
-      throw new TypeError('[define] Expected function as second argument')
-    } else if (argc > 2 && typeof arg3 !== 'function') {
-      throw new TypeError('[define] Expected function as third argument')
-    } else if (argc > 3) {
-      throw new TypeError('[define] Unexpected fourth argument')
+      if (typeof tagName !== 'string') {
+        throw new TypeError(`[${fnName}] First argument must be a string`)
+      } else if (typeof arg2 !== 'function') {
+        throw new TypeError(`[${fnName}] Expected function as second argument`)
+      } else if (argc > 2 && typeof arg3 !== 'function') {
+        throw new TypeError(`[${fnName}] Expected function as third argument`)
+      } else if (argc > 3) {
+        throw new TypeError(`[${fnName}] Unexpected fourth argument`)
+      }
     }
+
+    const propsClass = typeof arg3 === 'function' ? arg2 : null
+    const main = propsClass ? arg3 : arg2
+
+    const attrInfoMap =
+      (propsClass && attrInfoMapByPropsClass.get(propsClass)) || null
+
+    const customElementClass = buildCustomElementClass(
+      tagName,
+      propsClass,
+      propsClass ? getPropInfoMap(propsClass, attrInfoMap) : null,
+      attrInfoMap,
+      main,
+      patch
+    )
+
+    const ret = h.bind(tagName)
+
+    Object.defineProperty(ret, 'tagName', { value: tagName })
+
+    if (customElements.get(tagName)) {
+      console.clear()
+      location.reload()
+    } else {
+      customElements.define(tagName, customElementClass)
+    }
+
+    return ret
   }
 
-  const propsClass = typeof arg3 === 'function' ? arg2 : null
-  const main = propsClass ? arg3 : arg2
-
-  const attrInfoMap =
-    (propsClass && attrInfoMapByPropsClass.get(propsClass)) || null
-
-  const customElementClass = buildCustomElementClass(
-    tagName,
-    propsClass,
-    propsClass ? getPropInfoMap(propsClass, attrInfoMap) : null,
-    attrInfoMap,
-    main
-  )
-
-  const ret = h.bind(tagName)
-
-  Object.defineProperty(ret, 'tagName', { value: tagName })
-
-  if (customElements.get(tagName)) {
-    console.clear()
-    location.reload()
-  } else {
-    customElements.define(tagName, customElementClass)
-  }
-
+  Object.defineProperty(ret, 'name', { value: fnName })
   return ret
 }
 
 // === locals ========================================================
 
-function buildCustomElementClass<T extends object>(
+function buildCustomElementClass<T extends object, C>(
   name: string,
   propsClass: { new (): T } | null,
   propInfoMap: PropInfoMap | null,
   attrInfoMap: AttrInfoMap | null,
-  main: (props: T) => () => VNode
+  main: (props: T) => () => VNode,
+  patch: (content: C, target: Element) => void
 ): CustomElementConstructor {
   const customElementClass = class extends BaseElement {
     constructor() {
@@ -276,7 +288,18 @@ function buildCustomElementClass<T extends object>(
         if (!render) {
           try {
             currentCtrl = ctrl
-            render = main(data)
+            const result = main(data)
+
+            if (typeof result === 'function') {
+              render = result
+            } else if (result && typeof render === 'object') {
+              const { patch: patchContent, render: getContent } = result
+              // TODO!!!!!!!!!!!!!!!!
+            } else {
+              throw new Error(
+                `[${name}] Illegal return value of component function`
+              )
+            }
           } finally {
             currentCtrl = ctrl
           }
@@ -550,7 +573,7 @@ export function render(content: VElement, container: Element | string) {
 
 // === helpers =======================================================
 
-export const renderer = (content: VNode, target: Element) => {
+function renderer(content: VNode, target: Element) {
   if (target.hasChildNodes()) {
     patch(target.firstChild, content)
   } else {

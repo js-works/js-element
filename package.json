@@ -1,6 +1,6 @@
 {
   "name": "js-element",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "description": "",
   "license": "LGPL-3.0",
   "main": "./index.js",
@@ -73,7 +73,8 @@
   "files": [
     "dist",
     "hooks",
-    "utils"
+    "utils",
+    "lit"
   ],
   "scripts": {
     "clean": "shx rm -rf ./build ./dist",
@@ -90,11 +91,11 @@
     "@rollup/plugin-node-resolve": "^11.2.0",
     "@rollup/plugin-replace": "^2.4.1",
     "@rollup/plugin-typescript": "^8.2.0",
-    "@storybook/addon-actions": "^6.1.20",
-    "@storybook/addon-essentials": "^6.1.20",
-    "@storybook/addon-links": "^6.1.20",
+    "@storybook/addon-actions": "^6.1.21",
+    "@storybook/addon-essentials": "^6.1.21",
+    "@storybook/addon-links": "^6.1.21",
     "@storybook/addons": "^6.1.20",
-    "@storybook/html": "^6.1.20",
+    "@storybook/html": "^6.1.21",
     "@storybook/web-components": "^6.1.20",
     "@types/chai": "^4.2.15",
     "@types/mocha": "^8.2.1",
@@ -124,5 +125,6 @@
     "ts-loader": "^8.0.17",
     "ts-node": "^9.1.1",
     "typescript": "^4.2.2"
-  }
+  },
+  "dependencies": {}
 }
