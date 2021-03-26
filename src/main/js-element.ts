@@ -151,7 +151,7 @@ function createDefiner<C>(
   fnName: string,
   patch: (content: C, target: Element) => void
 ): {
-  (tagName: string, main: () => () => VNode): Component<{}>
+  (tagName: string, main: () => () => C): Component<{}>
 
   <P extends Props>(
     tagName: string,
@@ -214,7 +214,7 @@ function buildCustomElementClass<T extends object, C>(
   propsClass: { new (): T } | null,
   propInfoMap: PropInfoMap | null,
   attrInfoMap: AttrInfoMap | null,
-  main: (props: T) => () => VNode,
+  main: (props: T) => () => C,
   patch: (content: C, target: Element) => void
 ): CustomElementConstructor {
   const customElementClass = class extends BaseElement {
@@ -236,7 +236,7 @@ function buildCustomElementClass<T extends object, C>(
       let hasRequestedRefresh = false
       let stylesElement: HTMLElement | undefined
       let contentElement: HTMLElement | undefined
-      let render: (() => VNode) | undefined
+      let render: (() => C) | undefined
 
       if (propInfoMap && propInfoMap.has('ref')) {
         let componentMethods: any = null
@@ -288,18 +288,7 @@ function buildCustomElementClass<T extends object, C>(
         if (!render) {
           try {
             currentCtrl = ctrl
-            const result = main(data)
-
-            if (typeof result === 'function') {
-              render = result
-            } else if (result && typeof render === 'object') {
-              const { patch: patchContent, render: getContent } = result
-              // TODO!!!!!!!!!!!!!!!!
-            } else {
-              throw new Error(
-                `[${name}] Illegal return value of component function`
-              )
-            }
+            render = main(data)
           } finally {
             currentCtrl = ctrl
           }
@@ -309,7 +298,7 @@ function buildCustomElementClass<T extends object, C>(
 
         // TODO
         try {
-          renderer(content, contentElement!)
+          patch(content, contentElement!)
         } catch (e) {
           console.error(`Render error in "${ctrl.getName()}"`)
           throw e

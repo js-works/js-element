@@ -1,10 +1,10 @@
 import { createDefiner } from 'js-element'
 import { render as litRender, TemplateResult } from 'lit-html'
 
-export { attr, event, ref, Attr } from 'js-element'
+export { attr, event, hook, ref, Attr } from 'js-element'
 export { html } from 'lit-html'
 
-export const define = createDefiner('define', litRender)
+export const define = createDefiner<TemplateResult>('define', litRender)
 
 export function render(content: TemplateResult, container: Element | string) {
   if (process.env.NODE_ENV === ('development' as string)) {
