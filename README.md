@@ -1,7 +1,7 @@
 # js-element
 
 A R&D project to evaluate an alternative approach to develop custom elements.
-The package `js-element` uses a patcnhed version of `superfine`, a very lightweight virtual DOM library.
+The package `js-element` uses a patched version of [superfine](https://github.com/jorgebucaran/superfine), a very lightweight virtual DOM library.
 The subpackages `js-element/lit` and `js-element/uhtml` use [lit-html](https://lit-html.polymer-project.org/) respective [uhtml](https://github.com/WebReflection/uhtml) instead.
 
 #### Disclaimer:
