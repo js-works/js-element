@@ -2,10 +2,17 @@ import { h as createElement, text, patch } from './lib/patched-superfine'
 
 // === exports =======================================================
 
-const define = createDefiner<VNode>('define', renderer)
+const define = createDefiner<VNode>('define', renderContent)
+
+const render = createRenderer<VElement>(
+  'render',
+  (it: any) => it && it.isVElement === true,
+  renderContent
+)
 
 // public API
-export { attr, createDefiner, define, event, h, hook, ref, Attr } // functions and enums
+export { attr, createDefiner, createRenderer, define, event } // functions
+export { h, hook, ref, render, Attr } // functions etc.
 export { Ctrl, Component, EventHandler, MethodsOf } // types
 export { Ref, UIEvent, VElement, VNode } // types
 
@@ -527,42 +534,48 @@ function h(type: string | Component<any>, props?: Props | null): VElement {
 
 // === render ========================================================
 
-export function render(content: VElement, container: Element | string) {
-  if (process.env.NODE_ENV === ('development' as string)) {
-    if (content !== null && (!content || content.isVElement !== true)) {
-      throw new TypeError(
-        'First argument "content" of function "render" must be a' +
-          ' virtual element or null'
-      )
+function createRenderer<C>(
+  fnName: string,
+  isValidContent: (content: C) => boolean,
+  patch: (content: C, target: Element) => void
+): (content: C | null, container: Element | string) => void {
+  const ret = (content: C | null, container: Element | string) => {
+    if (process.env.NODE_ENV === ('development' as string)) {
+      if (content !== null && (!content || !isValidContent(content))) {
+        throw new TypeError(
+          `First argument "content" of function "${fnName}" must be a` +
+            ' valid content to render or null to clear target container'
+        )
+      }
+
+      if (!container || (typeof container !== 'string' && !container.tagName)) {
+        throw new TypeError(
+          `Second argument "container" of function "${fnName}" must either ` +
+            ' be a DOM element or selector string for the DOM element'
+        )
+      }
     }
 
-    if (!container || (typeof container !== 'string' && !container.tagName)) {
-      throw new TypeError(
-        'Second argument "container" of function "render" must either be a DOM' +
-          ' element or selector string for the DOM element'
-      )
+    const target =
+      typeof container === 'string'
+        ? document.querySelector(container)
+        : container
+
+    if (!target) {
+      throw new TypeError(`Could not find container DOM element "${container}"`)
     }
+
+    target.innerHTML = ''
+    content !== null && patch(content, target)
   }
 
-  const target =
-    typeof container === 'string'
-      ? document.querySelector(container)
-      : container
-
-  if (!target) {
-    throw new TypeError(`Could not find container DOM element "${container}"`)
-  }
-
-  target.innerHTML = ''
-
-  if (content !== null) {
-    renderer(content, target)
-  }
+  Object.defineProperty(ret, 'name', { value: fnName })
+  return ret
 }
 
 // === helpers =======================================================
 
-function renderer(content: VNode, target: Element) {
+function renderContent(content: VNode, target: Element) {
   if (target.hasChildNodes()) {
     patch(target.firstChild, content)
   } else {
