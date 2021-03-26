@@ -3,7 +3,7 @@
 // public API
 export { attr, createDefiner, createRenderer, event } // functions
 export { hook, ref, Attr } // functions etc.
-export { Ctrl, Component, EventHandler, MethodsOf } // types
+export { Component, Ctrl, EventHandler, MethodsOf } // types
 export { Ref, UIEvent } // types
 
 // === local data =====================================================
@@ -14,15 +14,14 @@ let ignoreAttributeChange = false
 
 // === types ==========================================================
 
-type Props = Record<string, any> // TODO
+type Props = Record<string, any>
 type PropsClass<P extends Props> = { new (): P }
-type VElement<T extends Props = Props> = Record<any, any> // TODO!!!!!
 type Ref<T> = { current: T | null }
 type EventHandler<T> = (ev: T) => void
 type UIEvent<T extends string, D = null> = CustomEvent<D> & { type: T }
 
-type Component<P> = {
-  (props?: P, ...children: Element[]): VElement<P> // TODO!!!!!
+type Component<P = {}> = {
+  (props?: Partial<P>): HTMLElement
   tagName: string
 }
 
@@ -154,7 +153,7 @@ function createDefiner<C>(
     tagName: string,
     propsClass: PropsClass<P>,
     main: (props: P) => () => C
-  ): Component<Partial<P>>
+  ): Component<P>
 } {
   const ret = (tagName: string, arg2: any, arg3?: any): any => {
     if (process.env.NODE_ENV === ('development' as string)) {
@@ -186,16 +185,17 @@ function createDefiner<C>(
       patch
     )
 
-    const ret = () => null // TODO!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    Object.defineProperty(ret, 'tagName', { value: tagName })
-
     if (customElements.get(tagName)) {
       console.clear()
       location.reload()
     } else {
       customElements.define(tagName, customElementClass)
     }
+
+    const ret = (props?: Props) =>
+      Object.assign(document.createElement(tagName), props)
+
+    Object.defineProperty(ret, 'tagName', { value: tagName })
 
     return ret
   }

@@ -27,7 +27,7 @@ const CounterDemo = define('simple-counter-demo', () => {
   return () => (
     <div>
       <h3>Simple counter demo</h3>
-      <Counter label="My Counter" initialCount={100} />
+      <Counter label="Counter" initialCount={100} />
     </div>
   )
 })

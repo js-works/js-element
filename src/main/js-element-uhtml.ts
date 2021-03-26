@@ -7,6 +7,7 @@ export {
   hook,
   ref,
   Attr,
+  Component,
   EventHandler,
   MethodsOf,
   Ref,
