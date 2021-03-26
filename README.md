@@ -33,7 +33,7 @@ render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
 ### Example 2
 
 ```jsx
-import { attr, define, h, render, Attr } from 'js-element'
+import { attr, define, h, render, Attr } from 'js-element/web'
 import { useEffect, useOnMount, useState, useStyles } from 'js-element/hooks'
 import counterStyles from './counter.css'
 
@@ -81,7 +81,7 @@ render(<Counter />, '#app')
 ### Example 3
 
 ```jsx
-import { define, h, render } from 'js-element'
+import { define, h, render } from 'js-element/web'
 import { useTimer } from 'js-element/hooks'
 
 const Clock = define('demo-clock', () => {

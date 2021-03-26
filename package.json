@@ -1,6 +1,6 @@
 {
   "name": "js-element",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "description": "",
   "license": "LGPL-3.0",
   "main": "./index.js",
@@ -25,6 +25,26 @@
         "umd": "./dist/js-element.umd.production.js",
         "import": "./dist/js-element.esm.production.js",
         "require": "./dist/js-element.cjs.production.js"
+      }
+    },
+    "./web": {
+      "development": {
+        "browser": "./dist/js-element-web.umd.development.js",
+        "umd": "./dist/js-element-web.umd.development.js",
+        "import": "./dist/js-element-web.esm.development.js",
+        "require": "./dist/js-element-web.cjs.development.js"
+      },
+      "production": {
+        "browser": "./dist/js-element-web.umd.production.js",
+        "umd": "./dist/js-element-web.umd.production.js",
+        "import": "./dist/js-element-web.esm.production.js",
+        "require": "./dist/js-element-web.cjs.production.js"
+      },
+      "default": {
+        "browser": "./dist/js-element-web.umd.production.js",
+        "umd": "./dist/js-element-web.umd.production.js",
+        "import": "./dist/js-element-web.esm.production.js",
+        "require": "./dist/js-element-web.cjs.production.js"
       }
     },
     "./hooks": {
@@ -112,6 +132,7 @@
   },
   "files": [
     "dist",
+    "web",
     "hooks",
     "utils",
     "lit",

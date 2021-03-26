@@ -8,7 +8,7 @@ import brotli from 'rollup-plugin-brotli'
 
 const configs = []
 
-for (const pkg of ['root', 'hooks', 'utils', 'lit', 'uhtml']) {
+for (const pkg of ['root', 'web', 'hooks', 'utils', 'lit', 'uhtml']) {
   for (const format of ['esm', 'umd', 'cjs']) {
     for (const productive of [false, true]) {
       configs.push(createConfig(pkg, format, productive))

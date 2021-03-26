@@ -1,4 +1,4 @@
-import { define, h } from 'js-element'
+import { define, h } from 'js-element/web'
 import { useInterval, useState } from 'js-element/hooks'
 
 const IntervalDemo = define('interval-demo', () => {

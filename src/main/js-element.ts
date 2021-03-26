@@ -1,25 +1,13 @@
-import { h as createElement, text, patch } from './lib/patched-superfine'
-
 // === exports =======================================================
 
-const define = createDefiner<VNode>('define', renderContent)
-
-const render = createRenderer<VElement>(
-  'render',
-  (it: any) => it && it.isVElement === true,
-  renderContent
-)
-
 // public API
-export { attr, createDefiner, createRenderer, define, event } // functions
-export { h, hook, ref, render, Attr } // functions etc.
+export { attr, createDefiner, createRenderer, event } // functions
+export { hook, ref, Attr } // functions etc.
 export { Ctrl, Component, EventHandler, MethodsOf } // types
-export { Ref, UIEvent, VElement, VNode } // types
+export { Ref, UIEvent } // types
 
 // === local data =====================================================
 
-const EMPTY_ARR: any[] = []
-const EMPTY_OBJ = {}
 const attrInfoMapByPropsClass = new Map<PropsClass<any>, AttrInfoMap>()
 let currentCtrl: Ctrl | null = null
 let ignoreAttributeChange = false
@@ -28,14 +16,13 @@ let ignoreAttributeChange = false
 
 type Props = Record<string, any> // TODO
 type PropsClass<P extends Props> = { new (): P }
-type VElement<T extends Props = Props> = Record<any, any> // TODO
+type VElement<T extends Props = Props> = Record<any, any> // TODO!!!!!
 type Ref<T> = { current: T | null }
 type EventHandler<T> = (ev: T) => void
 type UIEvent<T extends string, D = null> = CustomEvent<D> & { type: T }
-type VNode = null | boolean | number | string | VElement | Iterable<VNode>
 
 type Component<P> = {
-  (props?: P, ...children: VNode[]): VElement<P>
+  (props?: P, ...children: Element[]): VElement<P> // TODO!!!!!
   tagName: string
 }
 
@@ -44,8 +31,8 @@ type AttrInfo<T> = {
   hasAttr: true
   attrName: string
   reflect: boolean
-  mapPropToAttr: (value: T) => string
-  mapAttrToProp: (value: string) => T
+  mapPropToAttr: (value: T) => string | null
+  mapAttrToProp: (value: string | null) => T
 }
 
 type PropInfo<T> = { propName: string; hasAttr: false } | AttrInfo<T>
@@ -77,7 +64,10 @@ type Ctrl = {
 // === public decorators =============================================
 
 function attr<T>(
-  type: { mapPropToAttr(value: T): string; mapAttrToProp(value: string): T },
+  type: {
+    mapPropToAttr(value: T): string | null
+    mapAttrToProp(value: string | null): T
+  },
   reflect: boolean = false
 ) {
   return (proto: object, propName: string) => {
@@ -196,7 +186,7 @@ function createDefiner<C>(
       patch
     )
 
-    const ret = h.bind(tagName)
+    const ret = () => null // TODO!!!!!!!!!!!!!!!!!!!!!!!!!
 
     Object.defineProperty(ret, 'tagName', { value: tagName })
 
@@ -472,64 +462,20 @@ function createNotifier() {
 
 const Attr = {
   string: {
-    mapPropToAttr: (it: string) => it,
-    mapAttrToProp: (it: string) => it
+    mapPropToAttr: (it: string | null) => it,
+    mapAttrToProp: (it: string | null) => it
   },
 
   number: {
-    mapPropToAttr: (it: number) => String(it),
-    mapAttrToProp: (it: string) => Number.parseFloat(it)
+    mapPropToAttr: (it: number | null) => (it === null ? null : String(it)),
+    mapAttrToProp: (it: string | null) =>
+      it === null ? null : Number.parseFloat(it)
   },
 
   boolean: {
-    mapPropToAttr: (it: boolean) => (it ? 'true' : 'false'),
-    mapAttrToProp: (it: string) => (it === 'true' ? true : false)
+    mapPropToAttr: (it: boolean | null) => (!it ? null : ''),
+    mapAttrToProp: (it: string | null) => (it === null ? false : true)
   }
-}
-
-// === h ==============================================================
-
-function h(
-  type: string,
-  props?: Props | null, // TODO!!!
-  ...children: VNode[]
-): VElement
-
-function h<P extends Props>(
-  type: Component<P>,
-  props?: Partial<P> | null,
-  ...children: VNode[]
-): VElement
-
-function h(type: string | Component<any>, props?: Props | null): VElement {
-  const argc = arguments.length
-  const tagName = typeof type === 'function' ? (type as any).tagName : type
-
-  if (process.env.NODE_ENV === ('development' as string)) {
-    if (typeof tagName !== 'string') {
-      throw new Error('[h] First argument must be a string or a component')
-    }
-  }
-
-  const children = argc > 2 ? [] : EMPTY_ARR
-
-  if (argc > 2) {
-    for (let i = 2; i < argc; ++i) {
-      const child = arguments[i]
-
-      if (!Array.isArray(child)) {
-        children.push(asVNode(child))
-      } else {
-        for (let j = 0; j < child.length; ++j) {
-          children.push(asVNode(child[j]))
-        }
-      }
-    }
-  }
-
-  const ret: any = createElement(tagName, props || EMPTY_OBJ, children)
-  ret.isVElement = true
-  return ret
 }
 
 // === render ========================================================
@@ -571,21 +517,4 @@ function createRenderer<C>(
 
   Object.defineProperty(ret, 'name', { value: fnName })
   return ret
-}
-
-// === helpers =======================================================
-
-function renderContent(content: VNode, target: Element) {
-  if (target.hasChildNodes()) {
-    patch(target.firstChild, content)
-  } else {
-    const newTarget = document.createElement('span')
-
-    target.append(newTarget)
-    patch(newTarget, content)
-  }
-}
-
-function asVNode(x: any): any {
-  return typeof x === 'number' || typeof x === 'string' ? text(x, null) : x
 }

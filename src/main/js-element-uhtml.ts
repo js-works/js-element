@@ -1,7 +1,18 @@
 import { createDefiner, createRenderer } from 'js-element'
 import { render as uhtmlRender, Hole } from 'uhtml'
 
-export { attr, event, hook, ref, Attr } from 'js-element'
+export {
+  attr,
+  event,
+  hook,
+  ref,
+  Attr,
+  EventHandler,
+  MethodsOf,
+  Ref,
+  UIEvent
+} from 'js-element'
+
 export { html, svg, Hole } from 'uhtml'
 
 export const define = createDefiner<Hole>('define', renderContent)

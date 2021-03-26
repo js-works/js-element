@@ -1,8 +1,19 @@
 import { createDefiner, createRenderer } from 'js-element'
 import { render as litRender, TemplateResult } from 'lit-html'
 
-export { attr, event, hook, ref, Attr } from 'js-element'
 export { html, svg, TemplateResult } from 'lit-html'
+
+export {
+  attr,
+  event,
+  hook,
+  ref,
+  Attr,
+  EventHandler,
+  MethodsOf,
+  Ref,
+  UIEvent
+} from 'js-element'
 
 export const define = createDefiner<TemplateResult>('define', litRender)
 

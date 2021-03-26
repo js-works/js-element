@@ -1,4 +1,11 @@
-import { define, h, MethodsOf, EventHandler, Ref, UIEvent } from 'js-element'
+import {
+  define,
+  h,
+  MethodsOf,
+  EventHandler,
+  Ref,
+  UIEvent
+} from 'js-element/web'
 
 import { initStore } from 'js-element/utils'
 import { createStoreHook } from 'js-element/hooks'

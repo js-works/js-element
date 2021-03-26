@@ -1,4 +1,4 @@
-import { define, h } from 'js-element'
+import { define, h } from 'js-element/web'
 import { useMousePosition } from 'js-element/hooks'
 
 const MouseDemo = define('mouse-demo', () => {

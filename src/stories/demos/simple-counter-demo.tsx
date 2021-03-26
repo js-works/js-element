@@ -1,4 +1,4 @@
-import { attr, define, h, Attr } from 'js-element'
+import { attr, define, h, Attr } from 'js-element/web'
 import { useState } from 'js-element/hooks'
 
 class CounterProps {

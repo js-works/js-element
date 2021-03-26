@@ -1,11 +1,4 @@
-import { h } from 'js-element'
-import htm from 'htm'
-
-export { html, initStore }
-
-// === html ==========================================================
-
-const html = htm.bind(h)
+export { initStore }
 
 // === store =========================================================
 

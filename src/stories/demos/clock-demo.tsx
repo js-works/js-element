@@ -1,4 +1,4 @@
-import { define, h } from 'js-element'
+import { define, h } from 'js-element/web'
 import { useTimer } from 'js-element/hooks'
 
 const ClockDemo = define('clock-demo', () => {
