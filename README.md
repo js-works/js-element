@@ -97,13 +97,39 @@ render(<DemoClock />, '#app')
 ### Example 4 (using `lit-html` and hook `useMutable`)
 
 ```jsx
-import { define, html } from 'js-element/lit'
+import { define, html, render } from 'js-element/lit'
 import { useMutable } from 'js-element/hooks'
 
-const Counter = define('demo-counter', () => {
+define('demo-counter', () => {
   const state = useMutable({ count: 0 })
   const onClick = () => state.count++
 
-  return () => <button onClick={onClick}>Count: {state.count}</button>
+  return () => html`
+    <button onClick=${onClick}>
+      Count: ${state.count}
+    </button>
+  `
 })
+
+render(html`<demo-counter></demo-counter>`, '#app')
+```
+
+### Example 5 (using `uhtml` and hook `useMutable`)
+
+```jsx
+import { define, html, render } from 'js-element/uhtml'
+import { useMutable } from 'js-element/hooks'
+
+define('demo-counter', () => {
+  const state = useMutable({ count: 0 })
+  const onClick = () => state.count++
+
+  return () => html`
+    <button onClick=${onClick}>
+      Count: ${state.count}
+    </button>
+  `
+})
+
+render(html`<demo-counter />`, '#app')
 ```
