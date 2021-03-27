@@ -93,3 +93,17 @@ const Clock = define('demo-clock', () => {
 
 render(<DemoClock />, '#app')
 ```
+
+### Example 4 (using `lit-html` and hook `useMutable`)
+
+```jsx
+import { define, html } from 'js-element/lit'
+import { useMutable } from 'js-element/hooks'
+
+const Counter = define('demo-counter', () => {
+  const state = useMutable({ count: 0 })
+  const onClick = () => state.count++
+
+  return () => <button onClick={onClick}>Count: {state.count}</button>
+})
+```

@@ -1,5 +1,5 @@
 import { attr, define, h, Attr } from 'js-element'
-import { useState } from 'js-element/hooks'
+import { useMutable } from 'js-element/hooks'
 
 class CounterProps {
   @attr(Attr.number, true)
@@ -10,11 +10,11 @@ class CounterProps {
 }
 
 const Counter = define('simple-counter', CounterProps, (p) => {
-  const [s, set] = useState({
+  const s = useMutable({
     count: p.initialCount
   })
 
-  const onClick = () => set('count', (it) => it + 1)
+  const onClick = () => s.count++
 
   return () => (
     <button onClick={onClick}>

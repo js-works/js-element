@@ -96,14 +96,12 @@ function ref<T>(value: T | null = null): Ref<T> {
   return { current: value }
 }
 
-function hook<A extends any[], R extends any>(
-  name: string,
-  fn: (...args: A) => R
-): (...args: A) => R
-function hook<A extends any[], R extends any>(config: {
+function hook<F extends { (...args: any[]): any }>(name: string, fn: F): F
+
+function hook<F extends { (...args: any[]): any }>(config: {
   name: string
-  fn: (c: Ctrl, ...args: A) => R
-}): (...args: A) => R
+  fn: (c: Ctrl) => F
+}): F
 
 function hook(arg1: any, arg2?: any): Function {
   // TODO: optimize whole function body
@@ -120,7 +118,7 @@ function hook(arg1: any, arg2?: any): Function {
       )
     }
 
-    return fn(currentCtrl, ...args)
+    return fn(currentCtrl)(...args)
   }
 
   Object.defineProperty(ret, 'name', { value: name })

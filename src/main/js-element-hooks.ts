@@ -44,7 +44,7 @@ function coreHook<A extends any[], R>(
   name: string,
   fn: (ctrl: Ctrl, ...args: A) => R
 ): (...args: A) => R {
-  return hook({ name, fn })
+  return hook({ name, fn: (ctrl: Ctrl) => (...args: A) => fn(ctrl, ...args) })
 }
 
 // === createContextHooks ============================================
@@ -217,6 +217,23 @@ export const useState = coreHook('useState', function <
   nextState = { ...state }
 
   return [state, setState as any] // TODO
+})
+
+// === useMutable ======================================================
+
+export const useMutable = coreHook('useMutable', function <
+  S extends State
+>(c: Ctrl, state: State): S {
+  const ret: any = {}
+
+  Object.keys(state || {}).forEach((key) => {
+    Object.defineProperty(ret, key, {
+      get: () => state[key],
+      set: (value: any) => void ((state[key] = value), c.refresh())
+    })
+  })
+
+  return ret
 })
 
 // === useEmitter ======================================================
