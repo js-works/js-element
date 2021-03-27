@@ -105,7 +105,7 @@ define('demo-counter', () => {
   const onClick = () => state.count++
 
   return () => html`
-    <button onClick=${onClick}>
+    <button @click=${onClick}>
       Count: ${state.count}
     </button>
   `
@@ -125,7 +125,7 @@ define('demo-counter', () => {
   const onClick = () => state.count++
 
   return () => html`
-    <button onClick=${onClick}>
+    <button @click=${onClick}>
       Count: ${state.count}
     </button>
   `
