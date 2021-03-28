@@ -11,7 +11,67 @@ and it is currently not meant to ever be used in production.
 
 ## Examples
 
-### Example 1
+### Example 1 (using JSX)
+
+```jsx
+import { define, h, render } from 'js-element'
+import { useMutable } from 'js-element/hooks'
+
+define('demo-counter', () => {
+  const state = useMutable({ count: 0 })
+  const onClick = () => state.count++
+
+  return () => ( 
+    <button click={onClick}>
+      Count: {state.count}
+    </button>
+  )
+})
+
+render(<Counter />, '#app')
+```
+
+### Example 2 (using lit-html)
+
+```js
+import { define, html, render } from 'js-element/lit'
+import { useMutable } from 'js-element/hooks'
+
+define('demo-counter', () => {
+  const state = useMutable({ count: 0 })
+  const onClick = () => state.count++
+
+  return () => html`
+    <button @click=${onClick}>
+      Count: ${state.count}
+    </button>
+  `
+})
+
+render(html`<demo-counter></demo-counter>`, '#app')
+```
+
+### Example 3 (using uhtml)
+
+```js
+import { define, html, render } from 'js-element/uhtml'
+import { useMutable } from 'js-element/hooks'
+
+define('demo-counter', () => {
+  const state = useMutable({ count: 0 })
+  const onClick = () => state.count++
+
+  return () => html`
+    <button @click=${onClick}>
+      Count: ${state.count}
+    </button>
+  `
+})
+
+render(html`<demo-counter />`, '#app')
+```
+
+### Example 4
 
 ```jsx
 import { define, h, render } from 'js-element'
@@ -32,7 +92,7 @@ const SayHello = define('say-hello', SayHelloProps, (props) => {
 render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
 ```
 
-### Example 2
+### Example 5
 
 ```jsx
 import { attr, define, h, render, Attr } from 'js-element'
@@ -80,7 +140,7 @@ const Counter = define('demo-counter', CounterProps, (props) => {
 render(<Counter />, '#app')
 ```
 
-### Example 3
+### Example 6
 
 ```jsx
 import { define, h, render } from 'js-element'
@@ -92,44 +152,4 @@ const Clock = define('demo-clock', () => {
 })
 
 render(<DemoClock />, '#app')
-```
-
-### Example 4 (using `lit-html` and hook `useMutable`)
-
-```jsx
-import { define, html, render } from 'js-element/lit'
-import { useMutable } from 'js-element/hooks'
-
-define('demo-counter', () => {
-  const state = useMutable({ count: 0 })
-  const onClick = () => state.count++
-
-  return () => html`
-    <button @click=${onClick}>
-      Count: ${state.count}
-    </button>
-  `
-})
-
-render(html`<demo-counter></demo-counter>`, '#app')
-```
-
-### Example 5 (using `uhtml` and hook `useMutable`)
-
-```jsx
-import { define, html, render } from 'js-element/uhtml'
-import { useMutable } from 'js-element/hooks'
-
-define('demo-counter', () => {
-  const state = useMutable({ count: 0 })
-  const onClick = () => state.count++
-
-  return () => html`
-    <button @click=${onClick}>
-      Count: ${state.count}
-    </button>
-  `
-})
-
-render(html`<demo-counter />`, '#app')
 ```
