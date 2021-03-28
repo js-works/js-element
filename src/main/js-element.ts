@@ -1,5 +1,5 @@
 import htm from 'htm'
-import { createDefiner, createRenderer, Component } from 'js-element/core'
+import { adapt, Component } from 'js-element/core'
 import { h as createElement, text, patch } from './lib/patched-superfine'
 
 export {
@@ -13,15 +13,12 @@ export {
   MethodsOf,
   Ref,
   UIEvent
-} from './js-element-core'
+} from 'js-element/core'
 
-export const define = createDefiner<VNode>('define', renderContent)
-
-export const render = createRenderer<VNode>(
-  'render',
-  (it: any) => !!it && it.isVElement === true,
-  renderContent
-)
+export const { define, render } = adapt<VElement, VNode>({
+  isMountable: (it) => !!it && it.isVElement === true,
+  patchContent: renderContent
+})
 
 export { h, VNode, VElement }
 export const html = htm.bind(h)
@@ -29,7 +26,7 @@ export const html = htm.bind(h)
 // === types =========================================================
 
 type Props = Record<string, any> // TODO
-type VElement<T extends Props = Props> = Record<any, any> // TODO!!!!!
+type VElement<T extends Props = any> = Record<any, any> // TODO!!!!!
 type VNode = null | boolean | number | string | VElement | Iterable<VNode>
 
 // === helpers =======================================================

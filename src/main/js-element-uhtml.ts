@@ -1,4 +1,4 @@
-import { createDefiner, createRenderer } from 'js-element/core'
+import { adapt } from 'js-element/core'
 import { render as uhtmlRender, Hole } from 'uhtml'
 
 export {
@@ -12,18 +12,11 @@ export {
   MethodsOf,
   Ref,
   UIEvent
-} from 'src/main/js-element-core'
+} from 'js-element/core'
 
 export { html, svg, Hole } from 'uhtml'
 
-export const define = createDefiner<Hole>('define', renderContent)
-
-export const render = createRenderer<Hole>(
-  'render',
-  (it: any) => it instanceof Hole,
-  renderContent
-)
-
-function renderContent(content: Hole, target: Element) {
-  uhtmlRender(target, content)
-}
+export const { define, render } = adapt<Hole, Hole>({
+  isMountable: (it) => it instanceof Hole,
+  patchContent: (content, target) => uhtmlRender(target, content!) // TODO!!!!
+})

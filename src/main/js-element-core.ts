@@ -1,7 +1,7 @@
 // === exports =======================================================
 
 // public API
-export { attr, createDefiner, createRenderer, event } // functions
+export { adapt, attr, event } // functions
 export { hook, ref, Attr } // functions etc.
 export { Component, Ctrl, EventHandler, MethodsOf } // types
 export { Ref, UIEvent } // types
@@ -106,14 +106,14 @@ function hook<F extends { (...args: any[]): any }>(config: {
 function hook(arg1: any, arg2?: any): Function {
   // TODO: optimize whole function body
   if (typeof arg1 === 'string') {
-    return hook({ name: arg1, fn: (c, ...args: any[]) => arg2(...args) })
+    return hook({ name: arg1, fn: (c) => (...args: any[]) => arg2(...args) })
   }
 
   const { name, fn } = arg1
 
   const ret = (...args: any[]) => {
     if (process.env.NODE_ENV === ('development' as string) && !currentCtrl) {
-      throw new Error(
+      throw Error(
         `Hook function "${name}" has been called outside of component initialization phase`
       )
     }
@@ -141,8 +141,17 @@ function event<T extends string, D = null>(
   return new CustomEvent(type, params) as UIEvent<T, D>
 }
 
+function adapt<M, N>(config: {
+  isMountable(what: any): boolean
+  patchContent(node: M | N | null, container: Element): void
+}) {
+  return {
+    define: createDefiner<N>(config.patchContent),
+    render: createRenderer<M>(config.isMountable, config.patchContent)
+  }
+}
+
 function createDefiner<C>(
-  fnName: string,
   patch: (content: C, target: Element) => void
 ): {
   (tagName: string, main: () => () => C): Component<{}>
@@ -153,18 +162,18 @@ function createDefiner<C>(
     main: (props: P) => () => C
   ): Component<P>
 } {
-  const ret = (tagName: string, arg2: any, arg3?: any): any => {
+  return (tagName: string, arg2: any, arg3?: any): any => {
     if (process.env.NODE_ENV === ('development' as string)) {
       const argc = arguments.length
 
       if (typeof tagName !== 'string') {
-        throw new TypeError(`[${fnName}] First argument must be a string`)
+        throw new TypeError(`[define] First argument must be a string`)
       } else if (typeof arg2 !== 'function') {
-        throw new TypeError(`[${fnName}] Expected function as second argument`)
+        throw new TypeError(`[define] Expected function as second argument`)
       } else if (argc > 2 && typeof arg3 !== 'function') {
-        throw new TypeError(`[${fnName}] Expected function as third argument`)
+        throw new TypeError(`[define] Expected function as third argument`)
       } else if (argc > 3) {
-        throw new TypeError(`[${fnName}] Unexpected fourth argument`)
+        throw new TypeError(`[define] Unexpected fourth argument`)
       }
     }
 
@@ -197,9 +206,6 @@ function createDefiner<C>(
 
     return ret
   }
-
-  Object.defineProperty(ret, 'name', { value: fnName })
-  return ret
 }
 
 // === locals ========================================================
@@ -479,22 +485,21 @@ const Attr = {
 // === render ========================================================
 
 function createRenderer<C>(
-  fnName: string,
   isValidContent: (content: C) => boolean,
   patch: (content: C, target: Element) => void
 ): (content: C | null, container: Element | string) => void {
-  const ret = (content: C | null, container: Element | string) => {
+  return (content: C | null, container: Element | string) => {
     if (process.env.NODE_ENV === ('development' as string)) {
       if (content !== null && (!content || !isValidContent(content))) {
         throw new TypeError(
-          `First argument "content" of function "${fnName}" must be a` +
+          `First argument "content" of function "render" must be a` +
             ' valid content to render or null to clear target container'
         )
       }
 
       if (!container || (typeof container !== 'string' && !container.tagName)) {
         throw new TypeError(
-          `Second argument "container" of function "${fnName}" must either ` +
+          `Second argument "container" of function "render" must either ` +
             ' be a DOM element or selector string for the DOM element'
         )
       }
@@ -512,7 +517,4 @@ function createRenderer<C>(
     target.innerHTML = ''
     content !== null && patch(content, target)
   }
-
-  Object.defineProperty(ret, 'name', { value: fnName })
-  return ret
 }

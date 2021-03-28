@@ -1,6 +1,6 @@
 {
   "name": "js-element",
-  "version": "0.0.30",
+  "version": "0.0.31",
   "description": "",
   "license": "LGPL-3.0",
   "main": "./index.js",
@@ -131,6 +131,7 @@
     "./": "./"
   },
   "files": [
+    "index.js",
     "dist",
     "core",
     "hooks",
