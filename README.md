@@ -17,7 +17,7 @@ and it is currently not meant to ever be used in production.
 import { define, h, render } from 'js-element'
 import { useMutable } from 'js-element/hooks'
 
-define('demo-counter', () => {
+const Counter = define('demo-counter', () => {
   const state = useMutable({ count: 0 })
   const onClick = () => state.count++
 
