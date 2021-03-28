@@ -52,10 +52,10 @@ const PromiseDemo = define('promise-demo', () => {
         />
       </section>
       <br />
-      <button onClick={onRefresh}>Refresh</button>
-      <button onClick={onRestart}>Restart</button>
-      <button onClick={onToggleLoadingText}>Toggle loading text</button>
-      <button onClick={onToggleFinishText}>Toggle finish text</button>
+      <button onclick={onRefresh}>Refresh</button>
+      <button onclick={onRestart}>Restart</button>
+      <button onclick={onToggleLoadingText}>Toggle loading text</button>
+      <button onclick={onToggleFinishText}>Toggle finish text</button>
     </div>
   )
 })

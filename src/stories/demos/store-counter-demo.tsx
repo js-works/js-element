@@ -18,9 +18,9 @@ const useCounterStore = createStoreHook(createCounterStore())
 const Counter = define('store-counter', () => {
   const counter = useCounterStore()
 
-  const onClick = () => counter.increment()
+  const onclick = () => counter.increment()
 
-  return () => <button onClick={onClick}>Counter: {counter.count}</button>
+  return () => <button onclick={onclick}>Counter: {counter.count}</button>
 })
 
 const CounterDemo = define('store-counter-demo', () => {
@@ -30,9 +30,9 @@ const CounterDemo = define('store-counter-demo', () => {
 
   return () => (
     <div>
-      <button onClick={onDecrement}>-</button>
+      <button onclick={onDecrement}>-</button>
       <Counter />
-      <button onClick={onIncrement}>+</button>
+      <button onclick={onIncrement}>+</button>
     </div>
   )
 })

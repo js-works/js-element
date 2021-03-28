@@ -36,8 +36,8 @@ const Dot = define('x-dot', DotProps, (p) => {
     return (
       <div
         style={style}
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
+        onmouseenter={onMouseEnter}
+        onmouseleave={onMouseLeave}
       >
         {s.hover ? `*${p.text}*` : p.text}
       </div>

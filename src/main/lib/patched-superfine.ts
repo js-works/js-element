@@ -35,7 +35,7 @@ var patchProp = (dom, key, oldVal, newVal, isSvg) => {
       }
     }
   } else if (key[0] === 'o' && key[1] === 'n') {
-    const k = key.slice(2).toLowerCase() // TODO: PATCHED!!!
+    const k = key.slice(2)
 
     if (!((dom.tag || (dom.tag = {}))[(key = k)] = newVal)) {
       dom.removeEventListener(k, listener)

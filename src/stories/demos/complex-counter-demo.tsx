@@ -62,7 +62,7 @@ const Counter = define('complex-counter', CounterProps, (p) => {
   )
 
   return () => (
-    <button onClick={onClick}>
+    <button onclick={onClick}>
       {p.label}: {s.count}
     </button>
   )
@@ -83,9 +83,9 @@ const CounterDemo = define('complex-counter-demo', () => {
       <h3>Complex counter demo</h3>
       <Counter ref={counterRef} onCountChange={onCountChange} />
       <div>
-        <button onClick={reset}>Set to 0</button>
-        <button onClick={decrement}>-1</button>
-        <button onClick={increment}>+1</button>
+        <button onclick={reset}>Set to 0</button>
+        <button onclick={decrement}>-1</button>
+        <button onclick={increment}>+1</button>
       </div>
     </div>
   )

@@ -35,7 +35,7 @@ const DemoButton = define('demo-button', ButtonProps, (props) => {
   }
 
   return () => (
-    <button class="demo-button" onClick={onClick}>
+    <button class="demo-button" onclick={onClick}>
       {props.text}
     </button>
   )

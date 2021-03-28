@@ -17,7 +17,7 @@ const Counter = define('simple-counter', CounterProps, (p) => {
   const onClick = () => s.count++
 
   return () => (
-    <button onClick={onClick}>
+    <button onclick={onClick}>
       {p.label}: {s.count}
     </button>
   )
