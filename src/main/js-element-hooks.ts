@@ -223,13 +223,13 @@ export const useState = coreHook('useState', function <
 
 export const useMutable = coreHook('useMutable', function <
   S extends State
->(c: Ctrl, state: State): S {
+>(c: Ctrl, state: S): S {
   const ret: any = {}
 
   Object.keys(state || {}).forEach((key) => {
     Object.defineProperty(ret, key, {
       get: () => state[key],
-      set: (value: any) => void ((state[key] = value), c.refresh())
+      set: (value: any) => void (((state as any)[key] = value), c.refresh())
     })
   })
 

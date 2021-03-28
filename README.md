@@ -22,7 +22,7 @@ define('demo-counter', () => {
   const onClick = () => state.count++
 
   return () => ( 
-    <button click={onClick}>
+    <button onclick={onClick}>
       Count: {state.count}
     </button>
   )
@@ -130,7 +130,7 @@ const Counter = define('demo-counter', CounterProps, (props) => {
   return () => (
     <div class="counter">
       <label class="label">{props.label}: </label>
-      <button class="button" onClick={onClick}>
+      <button class="button" onclick={onClick}>
         {state.count}
       </button>
     </div>
