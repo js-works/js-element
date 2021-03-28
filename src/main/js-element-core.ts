@@ -53,6 +53,7 @@ type Ctrl = {
   isMounted(): boolean
   hasUpdated(): boolean
   refresh(): void
+  beforeMount(taks: () => void): void
   afterMount(task: () => void): void
   onceBeforeUpdate(task: () => void): void
   beforeUpdate(task: () => void): void
@@ -222,6 +223,7 @@ function buildCustomElementClass<T extends object, C>(
     constructor() {
       super()
       const data: any = propsClass ? new propsClass() : {}
+      const beforeMountNotifier = createNotifier()
       const afterMountNotifier = createNotifier()
       const beforeUpdateNotifier = createNotifier()
       const afterUpdateNotifier = createNotifier()
@@ -258,13 +260,22 @@ function buildCustomElementClass<T extends object, C>(
         })
       }
 
+      const root = this.attachShadow({ mode: 'open' })
+      stylesElement = document.createElement('span')
+      contentElement = document.createElement('span')
+      stylesElement.setAttribute('data-role', 'styles')
+      contentElement.setAttribute('data-role', 'content')
+      root.append(stylesElement, contentElement)
+
+      try {
+        currentCtrl = ctrl
+        render = main(data)
+      } finally {
+        currentCtrl = ctrl
+      }
+
       this.connectedCallback = () => {
-        const root = this.attachShadow({ mode: 'open' })
-        stylesElement = document.createElement('span')
-        contentElement = document.createElement('span')
-        stylesElement.setAttribute('data-role', 'styles')
-        contentElement.setAttribute('data-role', 'content')
-        root.append(stylesElement, contentElement)
+        beforeMountNotifier.notify()
         refresh()
       }
 
@@ -286,16 +297,7 @@ function buildCustomElementClass<T extends object, C>(
           beforeUpdateNotifier.notify()
         }
 
-        if (!render) {
-          try {
-            currentCtrl = ctrl
-            render = main(data)
-          } finally {
-            currentCtrl = ctrl
-          }
-        }
-
-        const content = render()
+        const content = render!()
 
         // TODO
         try {
@@ -335,6 +337,7 @@ function buildCustomElementClass<T extends object, C>(
             }
           },
 
+          beforeMount: beforeMountNotifier.subscribe,
           afterMount: afterMountNotifier.subscribe,
           onceBeforeUpdate: (task) => void onceBeforeUpdateActions.push(task),
           beforeUpdate: beforeUpdateNotifier.subscribe,

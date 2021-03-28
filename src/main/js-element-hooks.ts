@@ -68,26 +68,35 @@ export function createCtxHooks<T>(
   const subscribeEventType = getNewEventType()
 
   const useCtxProvider = coreHook(`${hookName}Provider`, (c: Ctrl) => {
-    const root = c.getHost()
+    const host = c.getHost()
     const subscribers: ((value: T) => void)[] = []
 
     const setCtxValue = (value: T) => {
       subscribers.forEach((subscriber) => subscriber(value))
     }
 
-    root.addEventListener(subscribeEventType, (ev: any) => {
+    const eventListener = (ev: any) => {
       subscribers.push(ev.detail.notify)
 
       ev.detail.cancelled.then(() => {
         subscribers.splice(subscribers.indexOf(ev.detail.notify), 1)
       })
+    }
+
+    c.beforeMount(() => {
+      host.addEventListener(subscribeEventType, eventListener)
+    })
+
+    c.beforeUnmount(() => {
+      host.removeEventListener(subscribeEventType, eventListener)
+      subscribers.length = 0
     })
 
     return setCtxValue
   })
 
   const useCtx = coreHook(hookName, (c: Ctrl) => {
-    const root = c.getHost()
+    const host = c.getHost()
     let cancel: null | (() => void) = null
 
     const cancelled = new Promise<null>((resolve) => {
@@ -96,23 +105,25 @@ export function createCtxHooks<T>(
 
     let value = defaultValue
 
-    root.dispatchEvent(
-      new CustomEvent(subscribeEventType, {
-        detail: {
-          notify: (newValue: T) => {
-            value = newValue
-            c.refresh()
+    c.beforeMount(() => {
+      host.dispatchEvent(
+        new CustomEvent(subscribeEventType, {
+          detail: {
+            notify: (newValue: T) => {
+              value = newValue
+              c.refresh()
+            },
+
+            cancelled
           },
 
-          cancelled
-        },
+          bubbles: true,
+          composed: true
+        })
+      )
+    })
 
-        bubbles: true,
-        composed: true
-      })
-    )
-
-    useOnUnmount(() => cancel!())
+    c.beforeUnmount(() => cancel!())
 
     return () => value! // TODO
   })
@@ -582,19 +593,21 @@ export const useActions = coreHook('useActions', function <
 
   const ret: any = {}
 
-  send(c, {
-    type: STORE_KEY,
+  c.beforeMount(() => {
+    send(c, {
+      type: STORE_KEY,
 
-    payload: {
-      setStore(st: Store<any>) {
-        store = st
+      payload: {
+        setStore(st: Store<any>) {
+          store = st
+        }
       }
+    })
+
+    if (!store) {
+      throw new Error(`Store for actions not available (-> ${c.getName()})`)
     }
   })
-
-  if (!store) {
-    throw new Error(`Store for actions not available (-> ${c.getName()})`)
-  }
 
   for (const key of Object.keys(msgCreators)) {
     ret[key] = (...args: any[]) => {
@@ -642,12 +655,14 @@ export function createStoreHooks<S extends State>(): [
   const STORE_KEY2 = STORE_KEY + ++eventKeyCounter
 
   const useStore = coreHook('useStore', (c, store: Store<S>): void => {
-    receive(c, STORE_KEY, (msg: Message) => {
-      msg.payload.setStore(store)
-    })
+    c.beforeMount(() => {
+      receive(c, STORE_KEY, (msg: Message) => {
+        msg.payload.setStore(store)
+      })
 
-    receive(c, STORE_KEY2, (msg: Message) => {
-      msg.payload.setStore(store)
+      receive(c, STORE_KEY2, (msg: Message) => {
+        msg.payload.setStore(store)
+      })
     })
   })
 
@@ -658,25 +673,27 @@ export function createStoreHooks<S extends State>(): [
 
     const ret: any = {}
 
-    send(c, {
-      type: STORE_KEY2,
+    c.beforeMount(() => {
+      send(c, {
+        type: STORE_KEY2,
 
-      payload: {
-        setStore(st: Store<any>) {
-          store = st
+        payload: {
+          setStore(st: Store<any>) {
+            store = st
+          }
         }
+      })
+
+      if (!store) {
+        throw new Error(`Store for selectors not available (-> ${c.getName()})`)
       }
+
+      const unsubscribe = store!.subscribe(() => {
+        c.refresh()
+      })
+
+      c.beforeUnmount(unsubscribe)
     })
-
-    if (!store) {
-      throw new Error(`Store for selectors not available (-> ${c.getName()})`)
-    }
-
-    const unsubscribe = store!.subscribe(() => {
-      c.refresh()
-    })
-
-    c.beforeUnmount(unsubscribe)
 
     for (const key of Object.keys(selectors)) {
       Object.defineProperty(ret, key, {
