@@ -142,7 +142,7 @@ var patchNode = (parent, node, oldVNode, newVNode, isSvg) => {
       }
     } else if (newHead > newTail) {
       while (oldHead <= oldTail) {
-        dismissVNode(oldVKiss[oldHead])
+        dismissVNode(oldVKids[oldHead])
         node.removeChild(oldVKids[oldHead++].node)
       }
     } else {
