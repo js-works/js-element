@@ -27,7 +27,7 @@ function demo(demoClass: any) {
 export const Button = demo(ButtonDemo)
 export const SimpleCounter = demo(SimpleCounterDemo)
 export const LitCounter = demo(LitCounterDemo)
-export const HmtlCounter = demo(UhtmlCounterDemo)
+export const UhmtlCounter = demo(UhtmlCounterDemo)
 export const ComplexCounter = demo(ComplexCounterDemo)
 export const StoreCounter = demo(StoreCounterDemo)
 export const Clock = demo(ClockDemo)

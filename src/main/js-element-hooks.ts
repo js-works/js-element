@@ -560,6 +560,7 @@ export const useMousePosition = hook('useMousePosition', () => {
 
   useOnMount(() => {
     const listener = (ev: any) => {
+      console.log(ev.pageX)
       // TODO
       setMousePos({ x: ev.pageX, y: ev.pageY })
     }
