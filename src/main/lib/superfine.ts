@@ -260,8 +260,12 @@ var createVNode = (tag, props, children, type, node) => ({
 export var text = (value, node) =>
   createVNode(value, EMPTY_OBJ, EMPTY_ARR, TEXT_NODE, node)
 
-export var h = (tag, props, children = EMPTY_ARR) =>
-  createVNode(tag, props, Array.isArray(children) ? children : [children])
+export var h = (tag, props?, children = EMPTY_ARR) =>
+  createVNode(
+    tag,
+    props || EMPTY_OBJ,
+    Array.isArray(children) ? children : [children]
+  )
 
 export var patch = (node, vdom) => (
   ((node = patchNode(
