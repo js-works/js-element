@@ -1,9 +1,6 @@
 // @ts-nocheck
 /* eslint-disable */
 
-// @ts-nocheck
-/* eslint-disable */
-
 var SSR_NODE = 1,
   TEXT_NODE = 3,
   EMPTY_OBJ = {},
