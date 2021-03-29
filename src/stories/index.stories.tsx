@@ -12,6 +12,7 @@ import ContextDemo from './demos/context-demo'
 import PerformanceDemo from './demos/performance-demo'
 import GameDemo from './demos/game-demo'
 import SierpinskiDemo from './demos/sierpinski-demo'
+import TempDemo from './demos/temp-demo'
 
 export default {
   title: 'Demos'
@@ -19,7 +20,8 @@ export default {
 
 function demo(demoClass: any) {
   const tagName = demoClass.tagName
-  return () => `<${tagName}></${tagName}`
+  return () =>
+    `<div><${tagName}></${tagName}></div><br><div id="message"></div>`
 }
 
 export const Button = demo(ButtonDemo)
@@ -36,3 +38,4 @@ export const Context = demo(ContextDemo)
 export const Performance = demo(PerformanceDemo)
 export const Game = demo(GameDemo)
 export const SierpinskiTriangle = demo(SierpinskiDemo)
+export const Temp = demo(TempDemo)

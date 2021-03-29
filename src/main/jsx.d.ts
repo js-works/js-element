@@ -3,6 +3,15 @@ export type VElement<T extends Props = Props> = Record<any, any> // TODO
 
 export = JSX
 
+// TODO ref attribute:
+declare global {
+  namespace JSX {
+    interface HTMLAttributes<T> {
+      ref?: { current: T | null } | ((elem: T) => void // TODO
+    }
+  }
+}
+
 declare global {
   namespace JSX {
     interface IntrinsicAttributes {

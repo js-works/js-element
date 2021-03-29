@@ -1,6 +1,6 @@
 import htm from 'htm'
 import { adapt, Component } from 'js-element/core'
-import { h as createElement, text, patch } from './lib/patched-superfine'
+import { h as createElement, text, patch } from './lib/superfine'
 
 export {
   attr,
