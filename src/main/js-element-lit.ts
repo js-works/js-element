@@ -5,15 +5,16 @@ export { html, svg, TemplateResult } from 'lit-html'
 
 export {
   attr,
-  event,
+  createEvent,
+  createRef,
   intercept,
-  ref,
   Attr,
   Component,
+  Context,
   EventHandler,
   MethodsOf,
   Ref,
-  UIEvent
+  UiEvent
 } from 'js-element/core'
 
 export const { define, render } = adapt<TemplateResult, TemplateResult>({

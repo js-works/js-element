@@ -4,15 +4,17 @@ import { h as createElement, text, patch } from './lib/superfine-patched'
 
 export {
   attr,
-  event,
+  createContext,
+  createEvent,
+  createRef,
   intercept,
-  ref,
   Attr,
   Component,
+  Context,
   EventHandler,
   MethodsOf,
   Ref,
-  UIEvent
+  UiEvent
 } from 'js-element/core'
 
 export const { define, render } = adapt<VElement, VNode>({

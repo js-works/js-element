@@ -3,15 +3,16 @@ import { render as uhtmlRender, Hole } from 'uhtml'
 
 export {
   attr,
-  event,
+  createEvent,
+  createRef,
   intercept,
-  ref,
   Attr,
   Component,
+  Context,
   EventHandler,
   MethodsOf,
   Ref,
-  UIEvent
+  UiEvent
 } from 'js-element/core'
 
 export { html, svg, Hole } from 'uhtml'

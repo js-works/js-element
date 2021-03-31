@@ -1,4 +1,12 @@
-import { attr, define, event, h, EventHandler, UIEvent, Attr } from 'js-element'
+import {
+  attr,
+  define,
+  createEvent,
+  h,
+  EventHandler,
+  UiEvent,
+  Attr
+} from 'js-element'
 import { useEmitter, useStyles } from 'js-element/hooks'
 
 const buttonDemoStyles = ` 
@@ -17,7 +25,7 @@ const buttonDemoStyles = `
   }
 `
 
-type ButtonClickEvent = UIEvent<'button-click'>
+type ButtonClickEvent = UiEvent<'button-click'>
 
 class ButtonProps {
   @attr(Attr.string)
@@ -31,7 +39,7 @@ const DemoButton = define('demo-button', ButtonProps, (props) => {
   useStyles(buttonDemoStyles)
 
   const onClick = () => {
-    emit(event('button-click'), props.onButtonClick)
+    emit(createEvent('button-click'), props.onButtonClick)
   }
 
   return () => (

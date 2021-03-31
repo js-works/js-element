@@ -1,15 +1,19 @@
 // === exports =======================================================
 
 // public API
-export { adapt, attr, event } // functions
-export { intercept, ref, Attr } // functions etc.
-export { Component, Ctrl, EventHandler, MethodsOf } // types
-export { Ref, UIEvent } // types
+export { adapt, attr, createContext, createEvent, createRef, intercept, Attr }
+export { Component, Context, Ctrl, EventHandler }
+export { MethodsOf, Ref, UiEvent }
 
 // === local data =====================================================
 
 const attrInfoMapByPropsClass = new Map<PropsClass<any>, AttrInfoMap>()
 let ignoreAttributeChange = false
+
+const interceptions = {
+  init: [] as InterceptFn[],
+  render: [] as InterceptFn[]
+}
 
 // === types ==========================================================
 
@@ -17,7 +21,14 @@ type Props = Record<string, any>
 type PropsClass<P extends Props> = { new (): P }
 type Ref<T> = { current: T | null }
 type EventHandler<T> = (ev: T) => void
-type UIEvent<T extends string, D = null> = CustomEvent<D> & { type: T }
+type UiEvent<T extends string, D = null> = CustomEvent<D> & { type: T }
+
+type Context<T> = {
+  kind: 'context'
+  uuid: string
+  name?: string
+  preset: T
+}
 
 type Component<P = {}> = {
   (props?: Partial<P>): HTMLElement
@@ -94,24 +105,35 @@ function attr<T>(
 
 // === public functions ==============================================
 
-function ref<T>(value: T | null = null): Ref<T> {
-  return { current: value }
+function createContext<T>(name: string, preset: T): Context<T> {
+  return Object.freeze({
+    kind: 'context',
+    name,
+
+    uuid: 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      const r = (Math.random() * 16) | 0
+      const v = c == 'x' ? r : (r & 0x3) | 0x8
+
+      return v.toString(16)
+    }),
+
+    preset
+  })
 }
 
-const interceptions = {
-  init: [] as InterceptFn[],
-  render: [] as InterceptFn[]
+function createRef<T>(value: T | null = null): Ref<T> {
+  return { current: value }
 }
 
 function intercept(point: 'init' | 'render', fn: InterceptFn) {
   interceptions[point].push(fn)
 }
 
-function event<T extends string, D = null>(
+function createEvent<T extends string, D = null>(
   type: T,
   detail?: D,
   options?: { bubbles: boolean; cancelable?: boolean }
-): UIEvent<T, D> {
+): UiEvent<T, D> {
   const params = {
     detail: detail || null,
     bubbles: !options || !!options.bubbles,
@@ -119,7 +141,7 @@ function event<T extends string, D = null>(
     composed: true
   }
 
-  return new CustomEvent(type, params) as UIEvent<T, D>
+  return new CustomEvent(type, params) as UiEvent<T, D>
 }
 
 function adapt<M, N>(config: {

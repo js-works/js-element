@@ -1,4 +1,4 @@
-import { intercept, Ctrl, Ref } from 'js-element/core'
+import { intercept, Context, Ctrl, Ref } from 'js-element/core'
 
 // === constants =====================================================
 
@@ -90,25 +90,13 @@ export function hook<A extends any[], R>(
 
 // === createContextHooks ============================================
 
-type ContextSubscriber<T> = {
-  notifyChange(newValue: any): void
-  cancelled: Promise<null>
+function getContextEventType(ctx: Context<any>) {
+  return `context::${ctx.uuid}`
 }
 
-let eventTypeCounter = 0
-
-function getNewEventType(): string {
-  return `$$provision$$_${++eventTypeCounter}`
-}
-
-export function createCtxHooks<T>(
-  contextName: string,
-  defaultValue?: T
-): [() => (value: T) => void, () => () => T] {
-  const hookName = 'use' + contextName[0].toUpperCase() + contextName.substr(1)
-  const subscribeEventType = getNewEventType()
-
-  const useCtxProvider = coreHook(`${hookName}Provider`, (c: Ctrl) => {
+export const useProvider = coreHook(
+  'useProvider',
+  <T>(c: Ctrl, ctx: Context<T>): ((value: T) => void) => {
     const host = c.getHost()
     const subscribers: ((value: T) => void)[] = []
 
@@ -125,18 +113,21 @@ export function createCtxHooks<T>(
     }
 
     c.beforeMount(() => {
-      host.addEventListener(subscribeEventType, eventListener)
+      host.addEventListener(getContextEventType(ctx), eventListener)
     })
 
     c.beforeUnmount(() => {
-      host.removeEventListener(subscribeEventType, eventListener)
+      host.removeEventListener(getContextEventType(ctx), eventListener)
       subscribers.length = 0
     })
 
     return setCtxValue
-  })
+  }
+)
 
-  const useCtx = coreHook(hookName, (c: Ctrl) => {
+export const useConsumer = coreHook(
+  'useConsumer',
+  <T>(c: Ctrl, ctx: Context<T>): (() => T) => {
     const host = c.getHost()
     let cancel: null | (() => void) = null
 
@@ -144,11 +135,11 @@ export function createCtxHooks<T>(
       cancel = () => resolve(null)
     })
 
-    let value = defaultValue
+    let value = ctx.preset
 
     c.beforeMount(() => {
       host.dispatchEvent(
-        new CustomEvent(subscribeEventType, {
+        new CustomEvent(getContextEventType(ctx), {
           detail: {
             notify: (newValue: T) => {
               value = newValue
@@ -167,10 +158,8 @@ export function createCtxHooks<T>(
     c.beforeUnmount(() => cancel!())
 
     return () => value! // TODO
-  })
-
-  return [useCtxProvider, useCtx]
-}
+  }
+)
 
 // === useHost =======================================================
 

@@ -1,12 +1,12 @@
 import {
   define,
+  createEvent,
+  createRef,
   h,
-  event,
-  ref,
   MethodsOf,
   EventHandler,
   Ref,
-  UIEvent
+  UiEvent
 } from 'js-element'
 
 import {
@@ -17,7 +17,7 @@ import {
   useStatus
 } from 'js-element/hooks'
 
-type CountChangeEvent = UIEvent<
+type CountChangeEvent = UiEvent<
   'count-change',
   {
     count: number
@@ -55,7 +55,7 @@ const Counter = define('complex-counter', CounterProps, (p) => {
   useEffect(
     () => {
       if (status.hasUpdated()) {
-        emit(event('count-change', { count: s.count }), p.onCountChange)
+        emit(createEvent('count-change', { count: s.count }), p.onCountChange)
       }
     },
     () => [s.count]
@@ -69,7 +69,7 @@ const Counter = define('complex-counter', CounterProps, (p) => {
 })
 
 const CounterDemo = define('complex-counter-demo', () => {
-  const counterRef = ref<MethodsOf<typeof Counter>>()
+  const counterRef = createRef<MethodsOf<typeof Counter>>()
   const decrement = () => counterRef.current!.decrement()
   const increment = () => counterRef.current!.increment()
   const reset = () => counterRef.current!.reset()
