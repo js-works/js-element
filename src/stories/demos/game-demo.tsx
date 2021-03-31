@@ -8,7 +8,7 @@ import {
   createStoreHooks,
   useActions,
   useOnMount,
-  useState,
+  useData,
   useStyles,
   useTimer
 } from 'js-element/hooks'
@@ -256,7 +256,7 @@ const Scoreboard = define('x-scoreboard', () => {
 })
 
 const CountdownPane = define('x-countdown-pane', () => {
-  const [state, setState] = useState({
+  const [state, setState] = useData({
     text: '',
     fontSize: 20
   })

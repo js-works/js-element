@@ -15,10 +15,10 @@ and it is currently not meant to ever be used in production.
 
 ```jsx
 import { define, h, render } from 'js-element'
-import { useMutable } from 'js-element/hooks'
+import { useState } from 'js-element/hooks'
 
 const Counter = define('demo-counter', () => {
-  const state = useMutable({ count: 0 })
+  const state = useState({ count: 0 })
   const onClick = () => state.count++
 
   return () => ( 
@@ -35,10 +35,10 @@ render(<Counter />, '#app')
 
 ```js
 import { define, html, render } from 'js-element/lit'
-import { useMutable } from 'js-element/hooks'
+import { useState } from 'js-element/hooks'
 
 define('demo-counter', () => {
-  const state = useMutable({ count: 0 })
+  const state = useState({ count: 0 })
   const onClick = () => state.count++
 
   return () => html`
@@ -55,10 +55,10 @@ render(html`<demo-counter></demo-counter>`, '#app')
 
 ```js
 import { define, html, render } from 'js-element/uhtml'
-import { useMutable } from 'js-element/hooks'
+import { useState } from 'js-element/hooks'
 
 define('demo-counter', () => {
-  const state = useMutable({ count: 0 })
+  const state = useState({ count: 0 })
   const onClick = () => state.count++
 
   return () => html`
@@ -108,11 +108,11 @@ class CounterProps {
 }
 
 const Counter = define('demo-counter', CounterProps, (props) => {
-  const [state, setState] = useState({
+  const state = useState({
     count: props.initialCount
   })
 
-  const onClick = () => setState('count', (it) => it + 1)
+  const onClick = () => state.count++
 
   useStyles(counterStyles)
 
@@ -147,7 +147,7 @@ import { define, h, render } from 'js-element'
 import { useTimer } from 'js-element/hooks'
 
 const Clock = define('demo-clock', () => {
-  const getTime = useTimer(1000, () => new Date().toLocaleTimeString())
+const getTime = useTimer(1000, () => new Date().toLocaleTimeString())
   return () => <div>Current time: {getTime()}</div>
 })
 

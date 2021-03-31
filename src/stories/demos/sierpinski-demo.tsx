@@ -1,5 +1,5 @@
 import { define, h } from 'js-element'
-import { useOnMount, useRefresher, useState } from 'js-element/hooks'
+import { useOnMount, useRefresher, useData } from 'js-element/hooks'
 
 const targetSize = 25
 
@@ -11,7 +11,7 @@ class DotProps {
 }
 
 const Dot = define('x-dot', DotProps, (p) => {
-  const [s, set] = useState({ hover: false })
+  const [s, set] = useData({ hover: false })
   const onMouseEnter = () => set('hover', true)
   const onMouseLeave = () => set('hover', false)
 

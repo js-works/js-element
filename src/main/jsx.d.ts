@@ -7,7 +7,7 @@ export = JSX
 declare global {
   namespace JSX {
     interface HTMLAttributes<T> {
-      ref?: { current: T | null } | ((elem: T) => void // TODO
+      ref?: { current: T | null } | ((elem: T) => void) // TODO
     }
   }
 }

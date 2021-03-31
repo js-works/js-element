@@ -194,9 +194,9 @@ export const useValue = coreHook('useValue', function <
   return [() => value, setValue as any] // TODO
 })
 
-// === useState ======================================================--
+// === useData =======================================================
 
-export const useState = coreHook('useState', function <
+export const useData = coreHook('useData', function <
   T extends Record<string, any>
 >(c: Ctrl, initialState: T): [T, StateUpdater<T>] {
   let nextState: any, // TODO
@@ -230,9 +230,9 @@ export const useState = coreHook('useState', function <
   return [state, setState as any] // TODO
 })
 
-// === useMutable ======================================================
+// === useState ======================================================
 
-export const useMutable = coreHook('useMutable', function <
+export const useState = coreHook('useState', function <
   S extends State
 >(c: Ctrl, state: S): S {
   const ret: any = {}
@@ -511,7 +511,7 @@ const initialState: PromiseRes<any> = {
 export const usePromise = coreHook('usePromise', function <
   T
 >(c: Ctrl, getPromise: () => Promise<T>, getDeps?: () => any[]) {
-  const [state, setState] = useState<PromiseRes<T>>(initialState)
+  const [state, setState] = useData<PromiseRes<T>>(initialState)
 
   let promiseIdx = -1
 
@@ -556,7 +556,7 @@ export const usePromise = coreHook('usePromise', function <
 // === useMousePosition ================================================
 
 export const useMousePosition = hook('useMousePosition', () => {
-  const [mousePos, setMousePos] = useState({ x: -1, y: -1 })
+  const [mousePos, setMousePos] = useData({ x: -1, y: -1 })
 
   useOnMount(() => {
     const listener = (ev: any) => {

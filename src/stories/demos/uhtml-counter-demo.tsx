@@ -1,8 +1,8 @@
 import { define, html } from 'js-element/uhtml'
-import { useMutable } from 'js-element/hooks'
+import { useState } from 'js-element/hooks'
 
 const UhtmlCounter = define('uhtml-counter', () => {
-  const s = useMutable({ count: 0 })
+  const s = useState({ count: 0 })
   const onClick = () => s.count++
 
   return () => html`<button @click=${onClick}>Count: ${s.count}</button>`

@@ -1,8 +1,8 @@
 import { define, h } from 'js-element'
-import { useInterval, useState } from 'js-element/hooks'
+import { useInterval, useData } from 'js-element/hooks'
 
 const IntervalDemo = define('interval-demo', () => {
-  const [s, set] = useState({
+  const [s, set] = useData({
     count: 0,
     delay: 1000
   })
