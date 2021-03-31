@@ -4,7 +4,7 @@ import { render as uhtmlRender, Hole } from 'uhtml'
 export {
   attr,
   event,
-  hook,
+  intercept,
   ref,
   Attr,
   Component,

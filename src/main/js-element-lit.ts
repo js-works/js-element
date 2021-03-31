@@ -6,7 +6,7 @@ export { html, svg, TemplateResult } from 'lit-html'
 export {
   attr,
   event,
-  hook,
+  intercept,
   ref,
   Attr,
   Component,

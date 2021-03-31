@@ -2,14 +2,13 @@
 
 // public API
 export { adapt, attr, event } // functions
-export { hook, ref, Attr } // functions etc.
+export { intercept, ref, Attr } // functions etc.
 export { Component, Ctrl, EventHandler, MethodsOf } // types
 export { Ref, UIEvent } // types
 
 // === local data =====================================================
 
 const attrInfoMapByPropsClass = new Map<PropsClass<any>, AttrInfoMap>()
-let currentCtrl: Ctrl | null = null
 let ignoreAttributeChange = false
 
 // === types ==========================================================
@@ -61,6 +60,8 @@ type Ctrl = {
   beforeUnmount(task: () => void): void
 }
 
+type InterceptFn = (ctrl: Ctrl, next: () => void) => void
+
 // === public decorators =============================================
 
 function attr<T>(
@@ -97,34 +98,13 @@ function ref<T>(value: T | null = null): Ref<T> {
   return { current: value }
 }
 
-function hook<F extends { (...args: any[]): any }>(name: string, fn: F): F
+const interceptions = {
+  init: [] as InterceptFn[],
+  render: [] as InterceptFn[]
+}
 
-function hook<F extends { (...args: any[]): any }>(config: {
-  name: string
-  fn: (c: Ctrl) => F
-}): F
-
-function hook(arg1: any, arg2?: any): Function {
-  // TODO: optimize whole function body
-  if (typeof arg1 === 'string') {
-    return hook({ name: arg1, fn: (c) => (...args: any[]) => arg2(...args) })
-  }
-
-  const { name, fn } = arg1
-
-  const ret = (...args: any[]) => {
-    if (process.env.NODE_ENV === ('development' as string) && !currentCtrl) {
-      throw Error(
-        `Hook function "${name}" has been called outside of component initialization phase`
-      )
-    }
-
-    return fn(currentCtrl)(...args)
-  }
-
-  Object.defineProperty(ret, 'name', { value: name })
-
-  return ret
+function intercept(point: 'init' | 'render', fn: InterceptFn) {
+  interceptions[point].push(fn)
 }
 
 function event<T extends string, D = null>(
@@ -267,11 +247,19 @@ function buildCustomElementClass<T extends object, C>(
       contentElement.setAttribute('data-role', 'content')
       root.append(stylesElement, contentElement)
 
-      try {
-        currentCtrl = ctrl
+      const fns = interceptions.init
+
+      if (!fns.length) {
         render = main(data)
-      } finally {
-        currentCtrl = ctrl
+      } else {
+        let next = () => void (render = main(data))
+
+        for (let i = fns.length - 1; i >= 0; --i) {
+          const nextFn = next
+          next = () => void fns[i](ctrl, nextFn)
+        }
+
+        next()
       }
 
       this.connectedCallback = () => {
@@ -297,11 +285,25 @@ function buildCustomElementClass<T extends object, C>(
           beforeUpdateNotifier.notify()
         }
 
-        const content = render!()
+        let content: C
+        const fns = interceptions.render
+
+        if (!fns.length) {
+          content = render!()
+        } else {
+          let next = () => void (content = render!())
+
+          for (let i = fns.length - 1; i >= 0; --i) {
+            const nextFn = next
+            next = () => void fns[i](ctrl, nextFn)
+          }
+
+          next()
+        }
 
         // TODO
         try {
-          patch(content, contentElement!)
+          patch(content!, contentElement!)
         } catch (e) {
           console.error(`Render error in "${ctrl.getName()}"`)
           throw e

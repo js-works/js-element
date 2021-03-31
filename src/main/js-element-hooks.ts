@@ -1,8 +1,13 @@
-import { hook, Ctrl, Ref } from 'js-element/core'
+import { intercept, Ctrl, Ref } from 'js-element/core'
 
 // === constants =====================================================
 
 const STORE_KEY = 'js-element::ext::store'
+
+// === data ==========================================================
+
+let interceptored = false
+let currentCtrl: Ctrl | null = null
 
 // === types =========================================================
 
@@ -44,7 +49,43 @@ function coreHook<A extends any[], R>(
   name: string,
   fn: (ctrl: Ctrl, ...args: A) => R
 ): (...args: A) => R {
-  return hook({ name, fn: (ctrl: Ctrl) => (...args: A) => fn(ctrl, ...args) })
+  if (!interceptored) {
+    intercept(
+      'init',
+      (() => {
+        return (ctrl: Ctrl, next: () => void) => {
+          currentCtrl = ctrl
+
+          try {
+            next()
+          } finally {
+            currentCtrl = null
+          }
+        }
+      })()
+    )
+
+    interceptored = true
+  }
+
+  return (...args: A): R => {
+    if (!currentCtrl) {
+      throw new Error(
+        `Hook function "${name}" has been invoked outside of component initialization phase`
+      )
+    }
+
+    return fn(currentCtrl, ...args)
+  }
+}
+
+// === hook ==========================================================
+
+export function hook<A extends any[], R>(
+  name: string,
+  fn: (...args: A) => R
+): (...args: A) => R {
+  return coreHook(name, (_: Ctrl, ...args: A): R => fn(...args))
 }
 
 // === createContextHooks ============================================
@@ -560,8 +601,6 @@ export const useMousePosition = hook('useMousePosition', () => {
 
   useOnMount(() => {
     const listener = (ev: any) => {
-      console.log(ev.pageX)
-      // TODO
       setMousePos({ x: ev.pageX, y: ev.pageY })
     }
 

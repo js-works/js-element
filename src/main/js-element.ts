@@ -5,7 +5,7 @@ import { h as createElement, text, patch } from './lib/superfine-patched'
 export {
   attr,
   event,
-  hook,
+  intercept,
   ref,
   Attr,
   Component,
