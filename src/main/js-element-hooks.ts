@@ -88,7 +88,7 @@ export function hook<A extends any[], R>(
   return coreHook(name, (_: Ctrl, ...args: A): R => fn(...args))
 }
 
-// === createContextHooks ============================================
+// === useProvider ===================================================
 
 function getContextEventType(ctx: Context<any>) {
   return `context::${ctx.uuid}`
@@ -125,6 +125,8 @@ export const useProvider = coreHook(
   }
 )
 
+// === useConsumer ===================================================
+
 export const useConsumer = coreHook(
   'useConsumer',
   <T>(c: Ctrl, ctx: Context<T>): (() => T) => {
@@ -158,6 +160,36 @@ export const useConsumer = coreHook(
     c.beforeUnmount(() => cancel!())
 
     return () => value! // TODO
+  }
+)
+
+// === useCtx ========================================================
+
+type CtxConfig = Record<string, Context<any> | (() => any)>
+
+type ResultOfCtxConfig<C extends CtxConfig> = {
+  [K in keyof C]: C[K] extends Context<infer R>
+    ? R
+    : C[K] extends () => infer R
+    ? R
+    : never
+}
+
+export const useCtx = hook(
+  'useCtx',
+  <C extends CtxConfig>(config: C): ResultOfCtxConfig<C> => {
+    const ret: any = {}
+
+    Object.entries(config).forEach(([k, v]) => {
+      Object.defineProperty(ret, k, {
+        get:
+          (v as any).kind === 'context'
+            ? useConsumer(v as any)
+            : (config[k] as () => any)
+      })
+    })
+
+    return ret
   }
 )
 
@@ -440,31 +472,6 @@ export const useEffect = coreHook(
     c.beforeUnmount(() => cleanup && cleanup())
   }
 )
-
-// === useCtx ========================================================
-
-type CtxConfig<C extends Ctrl> = Record<string, (c: C) => any> // TODO
-
-type CtxOf<CC extends CtxConfig<any>> = {
-  [K in keyof CC]: ReturnType<CC[K]>
-}
-
-export const useCtx = coreHook('useCtx', function <
-  CC extends CtxConfig<any>
->(c: Ctrl, config: CC): CtxOf<CC> {
-  const ctx: any = {}
-  const ctxKeys = Object.keys(config)
-
-  const updateCtx = () => {
-    for (let key of ctxKeys!) {
-      ctx[key] = config[key](c)
-    }
-  }
-
-  updateCtx()
-  c.beforeUpdate(updateCtx)
-  return ctx
-})
 
 // === useInterval ======================================================
 

@@ -25,6 +25,7 @@ const ContextDemo = define('context-demo', () => {
 
 const ThemeInfo = define('theme-info', () => {
   const getTheme = useConsumer(ThemeCtx)
+
   return () => <div>Current theme: {getTheme()}</div>
 })
 
