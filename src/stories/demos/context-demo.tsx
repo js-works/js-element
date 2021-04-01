@@ -1,7 +1,7 @@
 import { createCtx, defineCtxProvider, define, h } from 'js-element'
 import { useCtx, useInterval, useState } from 'js-element/hooks'
 
-const ThemeCtx = createCtx('theme', 'light')
+const ThemeCtx = createCtx('light')
 const ThemeProvider = defineCtxProvider('theme-provider', ThemeCtx)
 
 const ContextDemo = define('context-demo', () => {

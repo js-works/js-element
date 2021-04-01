@@ -26,8 +26,7 @@ type UiEvent<T extends string, D = null> = CustomEvent<D> & { type: T }
 
 type Context<T> = {
   kind: 'context'
-  name?: string
-  preset: T
+  defaultValue?: T
 }
 
 type Component<P = {}> = {
@@ -105,11 +104,10 @@ function attr<T>(
 
 // === public functions ==============================================
 
-function createCtx<T>(name: string, preset: T): Context<T> {
+function createCtx<T>(defaultValue?: T): Context<T> {
   return Object.freeze({
     kind: 'context',
-    name,
-    preset
+    ...(arguments.length > 0 && { defaultValue })
   })
 }
 
@@ -149,11 +147,11 @@ function defineCtxProvider<T>(
         }
 
         ev.stopPropagation()
-        this.__subscribers.push(ev.detail.notify)
+        this.__subscribers.push(ev.detail.callback)
 
         ev.detail.cancelled.then(() => {
           this.__subscribers.splice(
-            this.__subscribers.indexOf(ev.detail.notify),
+            this.__subscribers.indexOf(ev.detail.callback),
             1
           )
         })

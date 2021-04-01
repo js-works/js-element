@@ -15,6 +15,12 @@ type State = Record<string, any>
 type Task = () => void
 type Methods = Record<string, (...args: any[]) => any>
 
+type ContextDetail<T> = {
+  context: Context<T>
+  callback: (newValue: T) => void
+  cancelled: Promise<null>
+}
+
 type Store<S extends State> = {
   getState(): S
   subscribe(subscriber: () => void): () => void
@@ -53,8 +59,8 @@ function hook<A extends any[], R, F extends { (...args: A): R }>(
     intercept(
       'init',
       (() => {
-        return (ctrl: Ctrl, next: () => void) => {
-          currentCtrl = ctrl
+        return (c: Ctrl, next: () => void) => {
+          currentCtrl = c
 
           try {
             next()
@@ -82,7 +88,7 @@ function hook<A extends any[], R, F extends { (...args: A): R }>(
 // === useCtx ========================================================
 
 function withConsumer<T>(ctx: Context<T>): () => T {
-  const c = getCtrl()
+  const c = currentCtrl!
   const host = c.getHost()
   let cancel: null | (() => void) = null
 
@@ -90,22 +96,23 @@ function withConsumer<T>(ctx: Context<T>): () => T {
     cancel = () => resolve(null)
   })
 
-  let value = ctx.preset
+  let value = ctx.defaultValue
 
   c.beforeMount(() => {
+    const detail: ContextDetail<T> = {
+      context: ctx,
+
+      callback: (newValue: T) => {
+        value = newValue
+        c.refresh()
+      },
+
+      cancelled
+    }
+
     host.dispatchEvent(
-      new CustomEvent(`$$context$$`, {
-        detail: {
-          context: ctx,
-
-          notify: (newValue: T) => {
-            value = newValue
-            c.refresh()
-          },
-
-          cancelled
-        },
-
+      new CustomEvent('$$context$$', {
+        detail,
         bubbles: true,
         composed: true
       })
@@ -155,7 +162,7 @@ function useCtxFn(arg: any): any {
 // === useHost =======================================================
 
 export const useHost = hook('useHost', () => {
-  return getCtrl().getHost()
+  return currentCtrl!.getHost()
 })
 
 // === useMethods ====================================================
@@ -175,7 +182,7 @@ export const useMethods = hook(
 // === useRefresher ==================================================
 
 export const useRefresher = hook('useRefresher', function (): Task {
-  return getCtrl().refresh
+  return currentCtrl!.refresh
 })
 
 // === useStatus =====================================================
@@ -184,7 +191,7 @@ export const useStatus = hook('useStatus', function (): {
   isMounted: () => boolean
   hasUpdated: () => boolean
 } {
-  const c = getCtrl()
+  const c = currentCtrl!
 
   return {
     isMounted: c.isMounted,
@@ -201,7 +208,7 @@ export const useValue = hook('useValue', function <T>(initialValue: T): [
   let nextValue = initialValue
   let value = initialValue
 
-  const c = getCtrl()
+  const c = currentCtrl!
   const setValue = (updater: any) => {
     // TODO
     nextValue = typeof updater === 'function' ? updater(nextValue) : updater
@@ -224,7 +231,7 @@ export const useData = hook('useData', function <
   let nextState: any, // TODO
     mergeNecessary = false
 
-  const c = getCtrl()
+  const c = currentCtrl!
 
   const state = { ...initialState },
     setState = (arg1: any, arg2: any) => {
@@ -260,7 +267,7 @@ export const useState = hook('useState', function <
   S extends State
 >(state: S): S {
   const ret: any = {}
-  const c = getCtrl()
+  const c = currentCtrl!
 
   Object.keys(state || {}).forEach((key) => {
     Object.defineProperty(ret, key, {
@@ -280,7 +287,7 @@ export const useEmitter = hook('useEmitter', function (): <
   ev: E,
   handler?: (ev: E) => void
 ) => void {
-  const host = getCtrl().getHost()
+  const host = currentCtrl!.getHost()
 
   return (ev, handler?) => {
     host.dispatchEvent(ev)
@@ -310,7 +317,7 @@ function addStyles(
 
 export const useStyles = hook('useStyles', (...styles: string[]) => {
   const ret = (...styles: string[]) => {
-    addStyles(getCtrl().getHost().shadowRoot!.firstChild as Element, styles)
+    addStyles(currentCtrl!.getHost().shadowRoot!.firstChild as Element, styles)
   }
 
   ret.apply(null, styles)
@@ -351,7 +358,7 @@ export const useOnMount = hook(
   'useOnMount',
   function (action: () => void | undefined | null | (() => void)) {
     let cleanup: Task | null | undefined | void
-    const c = getCtrl()
+    const c = currentCtrl!
 
     c.afterMount(() => {
       cleanup = action()
@@ -373,7 +380,7 @@ export const useOnUpdate = hook(
   'useOnUpdate',
   function (action: () => void | undefined | null | (() => void)) {
     let cleanup: Task | null | undefined | void
-    const c = getCtrl()
+    const c = currentCtrl!
 
     c.afterUpdate(() => {
       if (typeof cleanup === 'function') {
@@ -396,7 +403,7 @@ export const useOnUpdate = hook(
 // === useOnUnmount ==================================================
 
 export const useOnUnmount = hook('useOnUnmount', function (action: () => void) {
-  getCtrl().beforeUnmount(action)
+  currentCtrl!.beforeUnmount(action)
 })
 
 // === useEffect =====================================================
@@ -409,7 +416,7 @@ export const useEffect = hook(
   ): void {
     let oldDeps: any[] | null = null
     let cleanup: Task | null | undefined | void
-    const c = getCtrl()
+    const c = currentCtrl!
 
     const callback = () => {
       let needsAction = getDeps === undefined
@@ -590,7 +597,7 @@ export const useActions = hook('useActions', function <
   C extends MessageCreators
 >(msgCreators: C): ActionsOf<C> {
   let store: Store<any> | null = null
-  const c = getCtrl()
+  const c = currentCtrl!
 
   const ret: any = {}
 
@@ -656,7 +663,7 @@ export function createStoreHooks<S extends State>(): [
   const STORE_KEY2 = STORE_KEY + ++eventKeyCounter
 
   const useStore = hook('useStore', (store: Store<S>): void => {
-    const c = getCtrl()
+    const c = currentCtrl!
 
     c.beforeMount(() => {
       receive(c, STORE_KEY, (msg: Message) => {
@@ -673,7 +680,7 @@ export function createStoreHooks<S extends State>(): [
     U extends Selectors<S>
   >(selectors: U): SelectorsOf<S, U> {
     let store: Store<S> | null = null
-    const c = getCtrl()
+    const c = currentCtrl!
 
     const ret: any = {}
 
@@ -765,10 +772,4 @@ function receive(
   c.beforeUnmount(unsubscribe)
 
   return unsubscribe
-}
-
-// === tools =========================================================
-
-function getCtrl(): Ctrl {
-  return currentCtrl!
 }
