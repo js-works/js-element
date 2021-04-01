@@ -88,43 +88,6 @@ export function hook<A extends any[], R>(
   return coreHook(name, (_: Ctrl, ...args: A): R => fn(...args))
 }
 
-// === useProvider ===================================================
-
-function getContextEventType(ctx: Context<any>) {
-  return `context::${ctx.uuid}`
-}
-
-export const useProvider = coreHook(
-  'useProvider',
-  <T>(c: Ctrl, ctx: Context<T>): ((value: T) => void) => {
-    const host = c.getHost()
-    const subscribers: ((value: T) => void)[] = []
-
-    const setCtxValue = (value: T) => {
-      subscribers.forEach((subscriber) => subscriber(value))
-    }
-
-    const eventListener = (ev: any) => {
-      subscribers.push(ev.detail.notify)
-
-      ev.detail.cancelled.then(() => {
-        subscribers.splice(subscribers.indexOf(ev.detail.notify), 1)
-      })
-    }
-
-    c.beforeMount(() => {
-      host.addEventListener(getContextEventType(ctx), eventListener)
-    })
-
-    c.beforeUnmount(() => {
-      host.removeEventListener(getContextEventType(ctx), eventListener)
-      subscribers.length = 0
-    })
-
-    return setCtxValue
-  }
-)
-
 // === useConsumer ===================================================
 
 export const useConsumer = coreHook(
@@ -141,7 +104,7 @@ export const useConsumer = coreHook(
 
     c.beforeMount(() => {
       host.dispatchEvent(
-        new CustomEvent(getContextEventType(ctx), {
+        new CustomEvent(`context::${ctx.uuid}`, {
           detail: {
             notify: (newValue: T) => {
               value = newValue

@@ -1,7 +1,8 @@
 // === exports =======================================================
 
 // public API
-export { adapt, attr, createContext, createEvent, createRef, intercept, Attr }
+export { adapt, attr, createCtx, createEvent, createRef }
+export { defineCtxProvider, intercept, Attr }
 export { Component, Context, Ctrl, EventHandler }
 export { MethodsOf, Ref, UiEvent }
 
@@ -105,7 +106,7 @@ function attr<T>(
 
 // === public functions ==============================================
 
-function createContext<T>(name: string, preset: T): Context<T> {
+function createCtx<T>(name: string, preset: T): Context<T> {
   return Object.freeze({
     kind: 'context',
     name,
@@ -119,6 +120,63 @@ function createContext<T>(name: string, preset: T): Context<T> {
 
     preset
   })
+}
+
+function defineCtxProvider<T>(
+  tagName: string,
+  ctx: Context<T>
+): Component<{ value: T }> {
+  const eventName = `context::${ctx.uuid}`
+
+  class CtxProviderElement extends HTMLElement {
+    private __value?: T = undefined
+    private __subscribers: ((value: T) => void)[] = []
+    private __cleanup: (() => void) | null = null
+
+    constructor() {
+      super()
+      this.attachShadow({ mode: 'open' })
+    }
+
+    get value(): T | undefined {
+      return this.__value
+    }
+
+    set value(val: T | undefined) {
+      if (val !== this.__value) {
+        this.__value = val
+        this.__subscribers.forEach((subscriber) => subscriber(val!))
+      }
+    }
+
+    connectedCallback() {
+      this.shadowRoot!.innerHTML = '<slot></slot>'
+
+      const eventListener = (ev: any) => {
+        this.__subscribers.push(ev.detail.notify)
+
+        ev.detail.cancelled.then(() => {
+          this.__subscribers.splice(
+            this.__subscribers.indexOf(ev.detail.notify),
+            1
+          )
+        })
+      }
+
+      this.addEventListener(eventName, eventListener)
+      this.__cleanup = () => this.removeEventListener(eventName, eventListener)
+    }
+
+    disconnectCallback() {
+      this.__subscribers.length === 0
+      this.__cleanup!()
+      this.__cleanup = null
+    }
+  }
+
+  registerElement(tagName, CtxProviderElement)
+
+  return createComponentType(tagName)
 }
 
 function createRef<T>(value: T | null = null): Ref<T> {
@@ -195,19 +253,9 @@ function createDefiner<C>(
       patch
     )
 
-    if (customElements.get(tagName)) {
-      console.clear()
-      location.reload()
-    } else {
-      customElements.define(tagName, customElementClass)
-    }
+    registerElement(tagName, customElementClass)
 
-    const ret = (props?: Props) =>
-      Object.assign(document.createElement(tagName), props)
-
-    Object.defineProperty(ret, 'tagName', { value: tagName })
-
-    return ret
+    return createComponentType<any>(tagName)
   }
 }
 
@@ -544,4 +592,26 @@ function createRenderer<C>(
     target.innerHTML = ''
     content !== null && patch(content, target)
   }
+}
+
+// === misc ==========================================================
+
+function registerElement(
+  tagName: string,
+  elementClass: CustomElementConstructor
+): void {
+  if (customElements.get(tagName)) {
+    console.clear()
+    location.reload()
+  } else {
+    customElements.define(tagName, elementClass)
+  }
+}
+
+function createComponentType<P extends Props>(tagName: string): Component<P> {
+  // TODO!!!!
+  const ret = (props?: Props) =>
+    Object.assign(document.createElement(tagName), props)
+
+  return Object.defineProperty(ret, 'tagName', { value: tagName })
 }

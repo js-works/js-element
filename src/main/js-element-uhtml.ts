@@ -5,6 +5,7 @@ export {
   attr,
   createEvent,
   createRef,
+  defineCtxProvider,
   intercept,
   Attr,
   Component,

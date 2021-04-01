@@ -4,9 +4,10 @@ import { h as createElement, text, patch } from './lib/superfine-patched'
 
 export {
   attr,
-  createContext,
+  createCtx,
   createEvent,
   createRef,
+  defineCtxProvider,
   intercept,
   Attr,
   Component,

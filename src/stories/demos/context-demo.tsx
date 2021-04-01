@@ -1,24 +1,23 @@
-import { createContext, define, h } from 'js-element'
-import { useConsumer, useInterval, useProvider } from 'js-element/hooks'
+import { createCtx, defineCtxProvider, define, h } from 'js-element'
+import { useConsumer, useInterval, useState } from 'js-element/hooks'
 
-const ThemeCtx = createContext('theme', 'light')
+const ThemeCtx = createCtx('theme', 'light')
+const ThemeProvider = defineCtxProvider('theme-provider', ThemeCtx)
 
 const ContextDemo = define('context-demo', () => {
-  let theme = 'light'
-  const setTheme = useProvider(ThemeCtx)
-
-  setTheme('light')
+  const state = useState({ theme: 'light' })
 
   useInterval(() => {
-    theme = theme === 'light' ? 'dark' : 'light'
-    setTheme(theme)
+    state.theme = state.theme === 'light' ? 'dark' : 'light'
   }, 1000)
 
   return () => (
     <div>
       <b>Value for theme will change every second:</b>
       <br />
-      <ThemeInfo />
+      <ThemeProvider value={state.theme}>
+        <ThemeInfo />
+      </ThemeProvider>
     </div>
   )
 })
