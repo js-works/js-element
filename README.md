@@ -183,7 +183,6 @@ const ContextDemo = define('context-demo', () => {
 
 const ThemeInfo = define('theme-info', () => {
   const ctx = useCtx({ theme: ThemeCtx })
-
   return () => <div>Current theme: {ctx.theme}</div>
 })
 
