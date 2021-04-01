@@ -2,7 +2,7 @@
 
 // public API
 export { adapt, attr, createCtx, createEvent, createRef }
-export { defineCtxProvider, intercept, Attr }
+export { defineProvider, intercept, Attr }
 export { Component, Context, Ctrl, EventHandler }
 export { MethodsOf, Ref, UiEvent }
 
@@ -26,7 +26,7 @@ type UiEvent<T extends string, D = null> = CustomEvent<D> & { type: T }
 
 type Context<T> = {
   kind: 'context'
-  defaultValue?: T
+  defaultValue: T
 }
 
 type Component<P = {}> = {
@@ -107,11 +107,11 @@ function attr<T>(
 function createCtx<T>(defaultValue?: T): Context<T> {
   return Object.freeze({
     kind: 'context',
-    ...(arguments.length > 0 && { defaultValue })
+    defaultValue: defaultValue!
   })
 }
 
-function defineCtxProvider<T>(
+function defineProvider<T>(
   tagName: string,
   ctx: Context<T>
 ): Component<{ value: T }> {

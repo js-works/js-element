@@ -157,11 +157,11 @@ render(<Clock />, '#app')
 ### Example 7 (using context)
 
 ```jsx
-import { createCtx, define, defineCtxProvider, h, render } from 'js-element'
+import { createCtx, define, defineProvider, h, render } from 'js-element'
 import { useCtx, useInterval, useState } from 'js-element/hooks'
 
 const ThemeCtx = createCtx('light')
-const ThemeProvider = defineCtxProvider('theme-provider', ThemeCtx)
+const ThemeProvider = defineProvider('theme-provider', ThemeCtx)
 
 const ContextDemo = define('context-demo', () => {
   const state = useState({ theme: 'light' })
