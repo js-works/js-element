@@ -45,10 +45,10 @@ type SelectorsOf<S extends State, U extends Selectors<S>> = {
 
 // === coreHook ================================================
 
-function coreHook<A extends any[], R>(
+function hook<A extends any[], R, F extends { (...args: A): R }>(
   name: string,
-  fn: (ctrl: Ctrl, ...args: A) => R
-): (...args: A) => R {
+  fn: F
+): F {
   if (!interceptored) {
     intercept(
       'init',
@@ -68,65 +68,54 @@ function coreHook<A extends any[], R>(
     interceptored = true
   }
 
-  return (...args: A): R => {
+  return ((...args: any): any => {
     if (!currentCtrl) {
       throw new Error(
         `Hook function "${name}" has been invoked outside of component initialization phase`
       )
     }
 
-    return fn(currentCtrl, ...args)
-  }
+    return fn(...args)
+  }) as any
 }
-
-// === hook ==========================================================
-
-export function hook<A extends any[], R>(
-  name: string,
-  fn: (...args: A) => R
-): (...args: A) => R {
-  return coreHook(name, (_: Ctrl, ...args: A): R => fn(...args))
-}
-
-// === useConsumer ===================================================
-
-export const useConsumer = coreHook(
-  'useConsumer',
-  <T>(c: Ctrl, ctx: Context<T>): (() => T) => {
-    const host = c.getHost()
-    let cancel: null | (() => void) = null
-
-    const cancelled = new Promise<null>((resolve) => {
-      cancel = () => resolve(null)
-    })
-
-    let value = ctx.preset
-
-    c.beforeMount(() => {
-      host.dispatchEvent(
-        new CustomEvent(`context::${ctx.uuid}`, {
-          detail: {
-            notify: (newValue: T) => {
-              value = newValue
-              c.refresh()
-            },
-
-            cancelled
-          },
-
-          bubbles: true,
-          composed: true
-        })
-      )
-    })
-
-    c.beforeUnmount(() => cancel!())
-
-    return () => value! // TODO
-  }
-)
 
 // === useCtx ========================================================
+
+function withConsumer<T>(ctx: Context<T>): () => T {
+  const c = getCtrl()
+  const host = c.getHost()
+  let cancel: null | (() => void) = null
+
+  const cancelled = new Promise<null>((resolve) => {
+    cancel = () => resolve(null)
+  })
+
+  let value = ctx.preset
+
+  c.beforeMount(() => {
+    host.dispatchEvent(
+      new CustomEvent(`$$context$$`, {
+        detail: {
+          context: ctx,
+
+          notify: (newValue: T) => {
+            value = newValue
+            c.refresh()
+          },
+
+          cancelled
+        },
+
+        bubbles: true,
+        composed: true
+      })
+    )
+  })
+
+  c.beforeUnmount(() => cancel!())
+
+  return () => value! // TODO
+}
 
 type CtxConfig = Record<string, Context<any> | (() => any)>
 
@@ -138,28 +127,35 @@ type ResultOfCtxConfig<C extends CtxConfig> = {
     : never
 }
 
-export const useCtx = hook(
-  'useCtx',
-  <C extends CtxConfig>(config: C): ResultOfCtxConfig<C> => {
-    const ret: any = {}
+export const useCtx = hook('useCtx', useCtxFn)
 
-    Object.entries(config).forEach(([k, v]) => {
-      Object.defineProperty(ret, k, {
-        get:
-          (v as any).kind === 'context'
-            ? useConsumer(v as any)
-            : (config[k] as () => any)
-      })
-    })
+function useCtxFn<C extends CtxConfig>(config: C): ResultOfCtxConfig<C>
 
-    return ret
+function useCtxFn<T>(ctx: Context<T>): () => T
+
+function useCtxFn(arg: any): any {
+  if (arg && arg.kind === 'context') {
+    return withConsumer(arg)
   }
-)
+
+  const ret: any = {}
+
+  Object.entries(arg).forEach(([k, v]) => {
+    Object.defineProperty(ret, k, {
+      get:
+        (v as any).kind === 'context'
+          ? withConsumer(v as any)
+          : (arg[k] as () => any)
+    })
+  })
+
+  return ret
+}
 
 // === useHost =======================================================
 
-export const useHost = coreHook('useHost', (c) => {
-  return c.getHost()
+export const useHost = hook('useHost', () => {
+  return getCtrl().getHost()
 })
 
 // === useMethods ====================================================
@@ -178,16 +174,18 @@ export const useMethods = hook(
 
 // === useRefresher ==================================================
 
-export const useRefresher = coreHook('useRefresher', function (c: Ctrl): Task {
-  return c.refresh
+export const useRefresher = hook('useRefresher', function (): Task {
+  return getCtrl().refresh
 })
 
 // === useStatus =====================================================
 
-export const useStatus = coreHook('useStatus', function (c: Ctrl): {
+export const useStatus = hook('useStatus', function (): {
   isMounted: () => boolean
   hasUpdated: () => boolean
 } {
+  const c = getCtrl()
+
   return {
     isMounted: c.isMounted,
     hasUpdated: c.hasUpdated
@@ -196,15 +194,14 @@ export const useStatus = coreHook('useStatus', function (c: Ctrl): {
 
 // === useValue ======================================================
 
-export const useValue = coreHook('useValue', function <
-  T
->(c: Ctrl, initialValue: T): [
+export const useValue = hook('useValue', function <T>(initialValue: T): [
   () => T,
   (updater: T | ((value: T) => T)) => void
 ] {
   let nextValue = initialValue
-
   let value = initialValue
+
+  const c = getCtrl()
   const setValue = (updater: any) => {
     // TODO
     nextValue = typeof updater === 'function' ? updater(nextValue) : updater
@@ -221,11 +218,13 @@ export const useValue = coreHook('useValue', function <
 
 // === useData =======================================================
 
-export const useData = coreHook('useData', function <
+export const useData = hook('useData', function <
   T extends Record<string, any>
->(c: Ctrl, initialState: T): [T, StateUpdater<T>] {
+>(initialState: T): [T, StateUpdater<T>] {
   let nextState: any, // TODO
     mergeNecessary = false
+
+  const c = getCtrl()
 
   const state = { ...initialState },
     setState = (arg1: any, arg2: any) => {
@@ -257,10 +256,11 @@ export const useData = coreHook('useData', function <
 
 // === useState ======================================================
 
-export const useState = coreHook('useState', function <
+export const useState = hook('useState', function <
   S extends State
->(c: Ctrl, state: S): S {
+>(state: S): S {
   const ret: any = {}
+  const c = getCtrl()
 
   Object.keys(state || {}).forEach((key) => {
     Object.defineProperty(ret, key, {
@@ -274,14 +274,16 @@ export const useState = coreHook('useState', function <
 
 // === useEmitter ======================================================
 
-export const useEmitter = coreHook('useEmitter', function (c: Ctrl): <
+export const useEmitter = hook('useEmitter', function (): <
   E extends CustomEvent<any>
 >(
   ev: E,
   handler?: (ev: E) => void
 ) => void {
+  const host = getCtrl().getHost()
+
   return (ev, handler?) => {
-    c.getHost().dispatchEvent(ev)
+    host.dispatchEvent(ev)
 
     if (handler) {
       handler(ev)
@@ -306,9 +308,9 @@ function addStyles(
   }
 }
 
-export const useStyles = coreHook('useStyles', (c, ...styles: string[]) => {
+export const useStyles = hook('useStyles', (...styles: string[]) => {
   const ret = (...styles: string[]) => {
-    addStyles(c.getHost().shadowRoot!.firstChild as Element, styles)
+    addStyles(getCtrl().getHost().shadowRoot!.firstChild as Element, styles)
   }
 
   ret.apply(null, styles)
@@ -320,11 +322,11 @@ export const useStyles = coreHook('useStyles', (c, ...styles: string[]) => {
 
 // TODO - this is not really optimized, is it?
 
-export const useMemo = coreHook('useMemo', function <
+export const useMemo = hook('useMemo', function <
   T,
   A extends any[],
   G extends () => A
->(c: Ctrl, getValue: (...args: ReturnType<G>) => T, getDeps: G) {
+>(getValue: (...args: ReturnType<G>) => T, getDeps: G) {
   let oldDeps: any[], value: T
 
   const memo = {
@@ -345,10 +347,11 @@ export const useMemo = coreHook('useMemo', function <
 
 // === useOnMount ====================================================
 
-export const useOnMount = coreHook(
+export const useOnMount = hook(
   'useOnMount',
-  function (c, action: () => void | undefined | null | (() => void)) {
+  function (action: () => void | undefined | null | (() => void)) {
     let cleanup: Task | null | undefined | void
+    const c = getCtrl()
 
     c.afterMount(() => {
       cleanup = action()
@@ -366,10 +369,11 @@ export const useOnMount = coreHook(
 
 // === useOnUpdate ===================================================
 
-export const useOnUpdate = coreHook(
+export const useOnUpdate = hook(
   'useOnUpdate',
-  function (c, action: () => void | undefined | null | (() => void)) {
+  function (action: () => void | undefined | null | (() => void)) {
     let cleanup: Task | null | undefined | void
+    const c = getCtrl()
 
     c.afterUpdate(() => {
       if (typeof cleanup === 'function') {
@@ -391,24 +395,21 @@ export const useOnUpdate = coreHook(
 
 // === useOnUnmount ==================================================
 
-export const useOnUnmount = coreHook(
-  'useOnUnmount',
-  function (c, action: () => void) {
-    c.beforeUnmount(action)
-  }
-)
+export const useOnUnmount = hook('useOnUnmount', function (action: () => void) {
+  getCtrl().beforeUnmount(action)
+})
 
 // === useEffect =====================================================
 
-export const useEffect = coreHook(
+export const useEffect = hook(
   'useEffect',
   function (
-    c,
     action: () => void | undefined | null | (() => void),
     getDeps?: () => any[]
   ): void {
     let oldDeps: any[] | null = null
     let cleanup: Task | null | undefined | void
+    const c = getCtrl()
 
     const callback = () => {
       let needsAction = getDeps === undefined
@@ -438,9 +439,9 @@ export const useEffect = coreHook(
 
 // === useInterval ======================================================
 
-export const useInterval = coreHook(
+export const useInterval = hook(
   'useInterval',
-  (c, task: Task, delay: number | (() => number)) => {
+  (task: Task, delay: number | (() => number)) => {
     const getDelay = typeof delay === 'function' ? delay : () => delay
 
     useEffect(
@@ -508,9 +509,9 @@ const initialState: PromiseRes<any> = {
   state: 'pending'
 }
 
-export const usePromise = coreHook('usePromise', function <
+export const usePromise = hook('usePromise', function <
   T
->(c: Ctrl, getPromise: () => Promise<T>, getDeps?: () => any[]) {
+>(getPromise: () => Promise<T>, getDeps?: () => any[]) {
   const [state, setState] = useData<PromiseRes<T>>(initialState)
 
   let promiseIdx = -1
@@ -585,10 +586,11 @@ type ActionsOf<C extends MessageCreators> = {
     : never
 }
 
-export const useActions = coreHook('useActions', function <
+export const useActions = hook('useActions', function <
   C extends MessageCreators
->(c: Ctrl, msgCreators: C): ActionsOf<C> {
+>(msgCreators: C): ActionsOf<C> {
   let store: Store<any> | null = null
+  const c = getCtrl()
 
   const ret: any = {}
 
@@ -653,7 +655,9 @@ export function createStoreHooks<S extends State>(): [
 ] {
   const STORE_KEY2 = STORE_KEY + ++eventKeyCounter
 
-  const useStore = coreHook('useStore', (c, store: Store<S>): void => {
+  const useStore = hook('useStore', (store: Store<S>): void => {
+    const c = getCtrl()
+
     c.beforeMount(() => {
       receive(c, STORE_KEY, (msg: Message) => {
         msg.payload.setStore(store)
@@ -665,10 +669,11 @@ export function createStoreHooks<S extends State>(): [
     })
   })
 
-  const useSelectors = coreHook('useSelectors', function <
+  const useSelectors = hook('useSelectors', function <
     U extends Selectors<S>
-  >(c: Ctrl, selectors: U): SelectorsOf<S, U> {
+  >(selectors: U): SelectorsOf<S, U> {
     let store: Store<S> | null = null
+    const c = getCtrl()
 
     const ret: any = {}
 
@@ -760,4 +765,10 @@ function receive(
   c.beforeUnmount(unsubscribe)
 
   return unsubscribe
+}
+
+// === tools =========================================================
+
+function getCtrl(): Ctrl {
+  return currentCtrl!
 }

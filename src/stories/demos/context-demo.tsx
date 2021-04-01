@@ -1,5 +1,5 @@
 import { createCtx, defineCtxProvider, define, h } from 'js-element'
-import { useConsumer, useInterval, useState } from 'js-element/hooks'
+import { useCtx, useInterval, useState } from 'js-element/hooks'
 
 const ThemeCtx = createCtx('theme', 'light')
 const ThemeProvider = defineCtxProvider('theme-provider', ThemeCtx)
@@ -23,9 +23,9 @@ const ContextDemo = define('context-demo', () => {
 })
 
 const ThemeInfo = define('theme-info', () => {
-  const getTheme = useConsumer(ThemeCtx)
+  const ctx = useCtx({ theme: ThemeCtx })
 
-  return () => <div>Current theme: {getTheme()}</div>
+  return () => <div>Current theme: {ctx.theme}</div>
 })
 
 export default ContextDemo

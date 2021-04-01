@@ -26,7 +26,6 @@ type UiEvent<T extends string, D = null> = CustomEvent<D> & { type: T }
 
 type Context<T> = {
   kind: 'context'
-  uuid: string
   name?: string
   preset: T
 }
@@ -110,14 +109,6 @@ function createCtx<T>(name: string, preset: T): Context<T> {
   return Object.freeze({
     kind: 'context',
     name,
-
-    uuid: 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-      const r = (Math.random() * 16) | 0
-      const v = c == 'x' ? r : (r & 0x3) | 0x8
-
-      return v.toString(16)
-    }),
-
     preset
   })
 }
@@ -126,7 +117,7 @@ function defineCtxProvider<T>(
   tagName: string,
   ctx: Context<T>
 ): Component<{ value: T }> {
-  const eventName = `context::${ctx.uuid}`
+  const eventName = `$$context$$`
 
   class CtxProviderElement extends HTMLElement {
     private __value?: T = undefined
@@ -153,6 +144,11 @@ function defineCtxProvider<T>(
       this.shadowRoot!.innerHTML = '<slot></slot>'
 
       const eventListener = (ev: any) => {
+        if (ev.detail.context !== ctx) {
+          return
+        }
+
+        ev.stopPropagation()
         this.__subscribers.push(ev.detail.notify)
 
         ev.detail.cancelled.then(() => {
