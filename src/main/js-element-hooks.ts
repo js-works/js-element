@@ -568,7 +568,7 @@ export const usePromise = hook('usePromise', function <
 // components dependencies
 export const useElements = hook(
   'useElements',
-  (...elementTypes: (CustomElementConstructor | Component<any>)[]) => {
+  (...elementTypes: (CustomElementConstructor | { tagName: string })[]) => {
     // nothing to do here
   }
 )
