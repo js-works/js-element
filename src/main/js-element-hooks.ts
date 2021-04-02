@@ -1,4 +1,4 @@
-import { intercept, Context, Ctrl, Ref } from 'js-element/core'
+import { intercept, Component, Context, Ctrl, Ref } from 'js-element/core'
 
 // === constants =====================================================
 
@@ -49,9 +49,9 @@ type SelectorsOf<S extends State, U extends Selectors<S>> = {
   [K in keyof U]: U[K] extends (state: S) => infer R ? R : never
 }
 
-// === coreHook ================================================
+// === hook ====================================================
 
-function hook<A extends any[], R, F extends { (...args: A): R }>(
+export function hook<A extends any[], R, F extends { (...args: A): R }>(
   name: string,
   fn: F
 ): F {
@@ -560,6 +560,18 @@ export const usePromise = hook('usePromise', function <
     getError: () => state.error
   }
 })
+
+// === useComponents ===================================================
+
+// the purpos of this hook function is just to make
+// sure that tree-shaking will not cut away the
+// components dependencies
+export const useElements = hook(
+  'useElements',
+  (...elementTypes: (CustomElementConstructor | Component<any>)[]) => {
+    // nothing to do here
+  }
+)
 
 // === useMousePosition ================================================
 
