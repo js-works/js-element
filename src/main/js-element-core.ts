@@ -230,7 +230,7 @@ function createDefiner<C>(
     props?: P
     slots?: string[]
     uses?: (object | Function)[]
-  }): (init: () => () => C) => Component<P>
+  }): (init: (props: P) => () => C) => Component<P>
 } {
   return function define(arg1: any, arg2?: any, arg3?: any): any {
     if (typeof arg1 === 'string') {
