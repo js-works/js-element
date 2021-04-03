@@ -209,31 +209,40 @@ function adapt<M, N>(config: {
 function createDefiner<C>(
   patch: (content: C, target: Element) => void
 ): {
-  (tagName: string, main: () => () => C): Component<{}>
+  <P extends Props = {}>(config: {
+    name: string
+    props?: P
+    slots?: string[]
+    uses?: string[]
+    init: () => () => C
+  }): Component<P>
+
+  (name: string, init: () => () => C): Component<{}>
 
   <P extends Props>(
-    tagName: string,
+    name: string,
     propsClass: PropsClass<P>,
-    main: (props: P) => () => C
+    init: (props: P) => () => C
   ): Component<P>
-} {
-  return (tagName: string, arg2: any, arg3?: any): any => {
-    if (process.env.NODE_ENV === ('development' as string)) {
-      const argc = arguments.length
 
-      if (typeof tagName !== 'string') {
-        throw new TypeError(`[define] First argument must be a string`)
-      } else if (typeof arg2 !== 'function') {
-        throw new TypeError(`[define] Expected function as second argument`)
-      } else if (argc > 2 && typeof arg3 !== 'function') {
-        throw new TypeError(`[define] Expected function as third argument`)
-      } else if (argc > 3) {
-        throw new TypeError(`[define] Unexpected fourth argument`)
-      }
+  <P extends Props = {}>(config: {
+    name: string
+    props?: P
+    slots?: string[]
+    uses?: (object | Function)[]
+  }): (init: () => () => C) => Component<P>
+} {
+  return function define(arg1: any, arg2?: any, arg3?: any): any {
+    if (typeof arg1 === 'string') {
+      return arg3
+        ? define({ name: arg1, props: arg2, init: arg3 })
+        : define({ name: arg1, init: arg2 })
+    } else if (!arg1.init) {
+      return (init: () => () => C) => define({ ...arg1, init })
     }
 
-    const propsClass = typeof arg3 === 'function' ? arg2 : null
-    const main = propsClass ? arg3 : arg2
+    const tagName = arg1.name
+    const propsClass = arg1.props || null
 
     const attrInfoMap =
       (propsClass && attrInfoMapByPropsClass.get(propsClass)) || null
@@ -243,7 +252,7 @@ function createDefiner<C>(
       propsClass,
       propsClass ? getPropInfoMap(propsClass, attrInfoMap) : null,
       attrInfoMap,
-      main,
+      arg1.init,
       patch
     )
 

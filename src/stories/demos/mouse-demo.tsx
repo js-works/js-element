@@ -1,20 +1,36 @@
 import { define, h } from 'js-element'
-import { useMousePosition } from 'js-element/hooks'
+import { hook, useData, useOnMount } from 'js-element/hooks'
 
-const MouseDemo = define('mouse-demo', () => {
+export default define('mouse-demo', () => {
   const mousePos = useMousePosition()
 
   return () => {
-    if (!mousePos.isValid()) {
+    if (mousePos.x < 0) {
       return <div>Please move mouse ...</div>
     }
 
     return (
       <div>
-        Current mouse position: {mousePos.getX()}x{mousePos.getY()}
+        Current mouse position: {mousePos.x}x{mousePos.y}
       </div>
     )
   }
 })
 
-export default MouseDemo
+const useMousePosition = hook('useMousePosition', () => {
+  const [mousePos, setMousePos] = useData({ x: -1, y: -1 })
+
+  useOnMount(() => {
+    const listener = (ev: any) => {
+      setMousePos({ x: ev.pageX, y: ev.pageY })
+    }
+
+    window.addEventListener('mousemove', listener)
+
+    return () => {
+      window.removeEventListener('mousemove', listener)
+    }
+  })
+
+  return mousePos
+})

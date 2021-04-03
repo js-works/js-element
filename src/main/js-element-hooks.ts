@@ -561,42 +561,6 @@ export const usePromise = hook('usePromise', function <
   }
 })
 
-// === useComponents ===================================================
-
-// the purpos of this hook function is just to make
-// sure that tree-shaking will not cut away the
-// components dependencies
-export const useElements = hook(
-  'useElements',
-  (...elementTypes: (CustomElementConstructor | { tagName: string })[]) => {
-    // nothing to do here
-  }
-)
-
-// === useMousePosition ================================================
-
-export const useMousePosition = hook('useMousePosition', () => {
-  const [mousePos, setMousePos] = useData({ x: -1, y: -1 })
-
-  useOnMount(() => {
-    const listener = (ev: any) => {
-      setMousePos({ x: ev.pageX, y: ev.pageY })
-    }
-
-    window.addEventListener('mousemove', listener)
-
-    return () => {
-      window.removeEventListener('mousemove', listener)
-    }
-  })
-
-  return {
-    isValid: () => mousePos.x >= 0,
-    getX: () => mousePos.x,
-    getY: () => mousePos.y
-  }
-})
-
 // === useActions ======================================================
 
 type ActionsOf<C extends MessageCreators> = {
