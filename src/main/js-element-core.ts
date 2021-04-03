@@ -211,7 +211,7 @@ function createDefiner<C>(
 ): {
   <P extends Props = {}>(config: {
     name: string
-    props?: P
+    props?: PropsClass<P>
     slots?: string[]
     uses?: string[]
     init: () => () => C
@@ -227,7 +227,7 @@ function createDefiner<C>(
 
   <P extends Props = {}>(config: {
     name: string
-    props?: P
+    props?: PropsClass<P>
     slots?: string[]
     uses?: (object | Function)[]
   }): (init: (props: P) => () => C) => Component<P>
