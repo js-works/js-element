@@ -12,10 +12,10 @@ export {
   Attr,
   Component,
   Context,
-  EventHandler,
+  Listener,
   MethodsOf,
   Ref,
-  UiEvent
+  TypedEvent
 } from 'js-element/core'
 
 export const { define, render } = adapt<TemplateResult, TemplateResult>({

@@ -3,8 +3,8 @@
 // public API
 export { adapt, attr, createCtx, createEvent, createRef }
 export { defineProvider, intercept, Attr }
-export { Component, Context, Ctrl, EventHandler }
-export { MethodsOf, Ref, UiEvent }
+export { Component, Context, Ctrl }
+export { MethodsOf, Ref, Listener, TypedEvent }
 
 // === local data =====================================================
 
@@ -21,8 +21,8 @@ const interceptions = {
 type Props = Record<string, any>
 type PropsClass<P extends Props> = { new (): P }
 type Ref<T> = { current: T | null }
-type EventHandler<T> = (ev: T) => void
-type UiEvent<T extends string, D = null> = CustomEvent<D> & { type: T }
+type Listener<T extends Event> = (ev: T) => void
+type TypedEvent<T extends string, D = null> = CustomEvent<D> & { type: T }
 
 type Context<T> = {
   kind: 'context'
@@ -30,7 +30,7 @@ type Context<T> = {
 }
 
 type Component<P = {}> = {
-  (props?: Partial<P>): HTMLElement
+  (props?: Partial<P> | JSX.HTMLAttributes<HTMLElement>): HTMLElement
   tagName: string
 }
 
@@ -185,7 +185,7 @@ function createEvent<T extends string, D = null>(
   type: T,
   detail?: D,
   options?: { bubbles: boolean; cancelable?: boolean }
-): UiEvent<T, D> {
+): TypedEvent<T, D> {
   const params = {
     detail: detail || null,
     bubbles: !options || !!options.bubbles,
@@ -193,7 +193,7 @@ function createEvent<T extends string, D = null>(
     composed: true
   }
 
-  return new CustomEvent(type, params) as UiEvent<T, D>
+  return new CustomEvent(type, params) as any
 }
 
 function adapt<M, N>(config: {

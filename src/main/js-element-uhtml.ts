@@ -10,10 +10,10 @@ export {
   Attr,
   Component,
   Context,
-  EventHandler,
+  Listener,
   MethodsOf,
   Ref,
-  UiEvent
+  TypedEvent
 } from 'js-element/core'
 
 export { html, svg, Hole } from 'uhtml'

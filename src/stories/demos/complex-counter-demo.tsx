@@ -3,10 +3,10 @@ import {
   createEvent,
   createRef,
   h,
+  Listener,
   MethodsOf,
-  EventHandler,
   Ref,
-  UiEvent
+  TypedEvent
 } from 'js-element'
 
 import {
@@ -17,7 +17,7 @@ import {
   useStatus
 } from 'js-element/hooks'
 
-type CountChangeEvent = UiEvent<
+type CountChangeEvent = TypedEvent<
   'count-change',
   {
     count: number
@@ -27,7 +27,7 @@ type CountChangeEvent = UiEvent<
 class CounterProps {
   initialCount = 0
   label = 'Counter'
-  onCountChange?: EventHandler<CountChangeEvent>
+  onCountChange?: Listener<CountChangeEvent>
 
   ref?: Ref<{
     reset(): void
