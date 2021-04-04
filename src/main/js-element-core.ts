@@ -508,7 +508,9 @@ function addPropsHandling(
     }
 
     Object.defineProperty(proto, propName, {
-      get: () => proto.__data[propName],
+      get() {
+        this.__data[propName]
+      },
 
       set(this: any, value: any) {
         this.__data[propName] = value
