@@ -1,4 +1,16 @@
-export { initStore }
+import {
+  hook,
+  useAfterMount,
+  useBeforeMount,
+  useHost,
+  useRefresher,
+  useState
+} from 'js-element/hooks'
+export { initStore, microstore }
+
+// === types =========================================================
+
+type Message = Record<string, any> & { type: string }
 
 // === store =========================================================
 
@@ -100,4 +112,89 @@ function initStore<S extends State>(arg1: any, arg2?: any): InitStoreResult<S> {
   }
 
   return [store, setState, getState]
+}
+
+// === microstore ====================================================
+
+let nextStoreId = 1
+function microstore<S extends State>(fn: () => S): [() => S, () => S] {
+  type MicrostoreEvent = CustomEvent<{
+    callback: (state: S) => void
+  }>
+
+  const eventName = 'js-element/utils::microstore::' + nextStoreId++
+
+  const useMicrostoreProvider = hook('useMicrostoreProvider', () => {
+    console.log('[parent] useMicrostoreProvider')
+
+    const state = useState(fn())
+    const host = useHost()
+
+    console.log('[parent] created state')
+
+    useBeforeMount(() => {
+      console.log('[parent] invoked useAfterMount')
+
+      const listener = (ev: MicrostoreEvent) => {
+        console.log('[parent] received event')
+        ev.stopPropagation()
+        ev.detail.callback(state)
+      }
+
+      host.addEventListener(eventName as any, listener)
+      console.log('[parent] added event listener')
+
+      return () => {
+        removeEventListener(eventName as any, listener)
+      }
+    })
+
+    return state
+  })
+
+  const useMicrostore = () => {
+    console.log('[child] useMicrostore')
+    let state: S | null = null
+
+    const host = useHost()
+
+    useBeforeMount(() => {
+      host.dispatchEvent(
+        new CustomEvent(eventName, {
+          detail: {
+            callback: (s: S) => {
+              state = s
+            }
+          },
+
+          bubbles: true,
+          composed: true
+        })
+      )
+    })
+
+    return (new Proxy(
+      {},
+      {
+        get(target, key) {
+          if (!state) {
+            throw new Error('Microstore not available')
+          }
+
+          return state[key as any]
+        },
+
+        set(target: object, key: string | symbol, value: any) {
+          if (!state) {
+            throw new Error('Microstore not available')
+          }
+
+          ;(state as any)[key] = value
+          return true
+        }
+      }
+    ) as any) as S
+  }
+
+  return [useMicrostoreProvider, useMicrostore]
 }

@@ -1,5 +1,5 @@
 import { define, h, VNode } from 'js-element'
-import { useOnMount, useRefresher } from 'js-element/hooks'
+import { useAfterMount, useRefresher } from 'js-element/hooks'
 
 const prefs = {
   framesPerSecond: 240,
@@ -70,7 +70,7 @@ const SpeedTest = define('x-speed-test', SpeedTestProps, (p) => {
   const refresh = useRefresher()
   const style = 'margin-top: 40px; margin-left: 40px'
 
-  useOnMount(() => {
+  useAfterMount(() => {
     intervalId = setInterval(() => {
       ++frameCount
 

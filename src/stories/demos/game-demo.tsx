@@ -7,7 +7,7 @@ import { delay, map, mergeMap, tap } from 'rxjs/operators'
 import {
   createStoreHooks,
   useActions,
-  useOnMount,
+  useAfterMount,
   useData,
   useStyles,
   useTimer
@@ -265,7 +265,7 @@ const CountdownPane = define('x-countdown-pane', () => {
 
   useStyles(styles.countdownPane)
 
-  useOnMount(() => {
+  useAfterMount(() => {
     setTimeout(() => setState('text', 'Ready...'), ms)
     setTimeout(() => setState({ text: 'Steady...', fontSize: 21 }), 2 * ms)
     setTimeout(() => setState({ text: 'GOOOOOO!', fontSize: 26 }), 3 * ms)
@@ -294,7 +294,7 @@ const Game = define('x-game', () => {
   const actions = useActions(ActionMsg)
   const stateSel = useSelectors(StateSel)
 
-  useOnMount(() => {
+  useAfterMount(() => {
     const keyDownListener = (ev: any) => {
       if (ev.keyCode === 37) {
         actions.moveRacketLeft()
@@ -327,7 +327,7 @@ const Game = define('x-game', () => {
 
 const App = define('x-app', () => {
   useStoreProvider(new GameLogic().getStore())
-  useOnMount(() => window.focus())
+  useAfterMount(() => window.focus())
 
   return () => <Game />
 })

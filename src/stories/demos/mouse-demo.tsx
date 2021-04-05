@@ -1,5 +1,5 @@
 import { define, h } from 'js-element'
-import { hook, useData, useOnMount } from 'js-element/hooks'
+import { hook, useData, useAfterMount } from 'js-element/hooks'
 
 export default define('mouse-demo', () => {
   const mousePos = useMousePosition()
@@ -20,7 +20,7 @@ export default define('mouse-demo', () => {
 const useMousePosition = hook('useMousePosition', () => {
   const [mousePos, setMousePos] = useData({ x: -1, y: -1 })
 
-  useOnMount(() => {
+  useAfterMount(() => {
     const listener = (ev: any) => {
       setMousePos({ x: ev.pageX, y: ev.pageY })
     }

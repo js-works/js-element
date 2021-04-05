@@ -1,5 +1,5 @@
 import { define, h } from 'js-element'
-import { useOnMount, useRefresher, useData } from 'js-element/hooks'
+import { useAfterMount, useRefresher, useData } from 'js-element/hooks'
 
 const targetSize = 25
 
@@ -82,7 +82,7 @@ const Main = define('x-main', () => {
   const start = Date.now()
   let seconds = 0
 
-  useOnMount(() => {
+  useAfterMount(() => {
     const intervalId = setInterval(() => {
       seconds = (seconds % 10) + 1
     }, 1000)
@@ -90,7 +90,7 @@ const Main = define('x-main', () => {
     return () => clearInterval(intervalId)
   })
 
-  useOnMount(() => {
+  useAfterMount(() => {
     requestAnimationFrame(function update() {
       refresh()
       requestAnimationFrame(update)

@@ -1,4 +1,12 @@
 import { intercept, Component, Context, Ctrl, Ref } from 'js-element/core'
+import { observable, observe } from '@nx-js/observer-util'
+
+/*
+const observe = (f: any) => {
+  f()
+}
+const observable = <T>(it: T) => it
+*/
 
 // === constants =====================================================
 
@@ -6,7 +14,8 @@ const STORE_KEY = 'js-element::ext::store'
 
 // === data ==========================================================
 
-let interceptored = false
+let baseInterceptorAdded = false
+let observerInterceptorAdded = false
 let currentCtrl: Ctrl | null = null
 
 // === types =========================================================
@@ -55,7 +64,7 @@ export function hook<A extends any[], R, F extends { (...args: A): R }>(
   name: string,
   fn: F
 ): F {
-  if (!interceptored) {
+  if (!baseInterceptorAdded) {
     intercept(
       'init',
       (() => {
@@ -71,7 +80,7 @@ export function hook<A extends any[], R, F extends { (...args: A): R }>(
       })()
     )
 
-    interceptored = true
+    baseInterceptorAdded = true
   }
 
   return ((...args: any): any => {
@@ -269,6 +278,12 @@ export const useState = hook('useState', function <
   const ret: any = {}
   const c = currentCtrl!
 
+  if (!observerInterceptorAdded) {
+    addObserverInterceptor()
+    observerInterceptorAdded = true
+  }
+
+  /*
   Object.keys(state || {}).forEach((key) => {
     Object.defineProperty(ret, key, {
       get: () => state[key],
@@ -277,6 +292,8 @@ export const useState = hook('useState', function <
   })
 
   return ret
+*/
+  return observable(state)
 })
 
 // === useEmitter ======================================================
@@ -352,10 +369,10 @@ export const useMemo = hook('useMemo', function <
   return memo
 })
 
-// === useOnMount ====================================================
+// === useAfterMount ====================================================
 
-export const useOnMount = hook(
-  'useOnMount',
+export const useAfterMount = hook(
+  'useAfterMount',
   function (action: () => void | undefined | null | (() => void)) {
     let cleanup: Task | null | undefined | void
     const c = currentCtrl!
@@ -374,10 +391,38 @@ export const useOnMount = hook(
   }
 )
 
-// === useOnUpdate ===================================================
+// === useBeforeUpdate ===================================================
 
-export const useOnUpdate = hook(
-  'useOnUpdate',
+export const useBeforeMount = hook(
+  'useBeforeUpdate',
+  function (action: () => void | undefined | null | (() => void)) {
+    let cleanup: Task | null | undefined | void
+    const c = currentCtrl!
+
+    c.beforeMount(() => {
+      cleanup = action()
+    })
+
+    c.afterUpdate(() => {
+      if (typeof cleanup === 'function') {
+        cleanup()
+      }
+    })
+
+    c.beforeUnmount(() => {
+      if (typeof cleanup === 'function') {
+        cleanup()
+      }
+
+      cleanup = null
+    })
+  }
+)
+
+// === useAfterUpdate ===================================================
+
+export const useAfterUpdate = hook(
+  'useAfterUpdate',
   function (action: () => void | undefined | null | (() => void)) {
     let cleanup: Task | null | undefined | void
     const c = currentCtrl!
@@ -400,11 +445,14 @@ export const useOnUpdate = hook(
   }
 )
 
-// === useOnUnmount ==================================================
+// === useBeforeUnmount ==================================================
 
-export const useOnUnmount = hook('useOnUnmount', function (action: () => void) {
-  currentCtrl!.beforeUnmount(action)
-})
+export const useBeforeUnmount = hook(
+  'useBeforeUnmount',
+  function (action: () => void) {
+    currentCtrl!.beforeUnmount(action)
+  }
+)
 
 // === useEffect =====================================================
 
@@ -615,9 +663,8 @@ export function createStoreHook<S extends State>(store: Store<S>): () => S {
       })
     }
 
-    useOnMount(() => {
+    useAfterMount(() => {
       const unsubscribe = store.subscribe(() => {
-        console.log('refresh')
         refresh()
       })
 
@@ -716,7 +763,7 @@ function isEqualArray(arr1: any[], arr2: any[]) {
 
 // === helpers =======================================================
 
-const SEND_RECEIVE_MESSAGE_TYPE_SUFFIX = '$$js-element$$::'
+const SEND_RECEIVE_MESSAGE_TYPE_SUFFIX = 'js-element/hooks::send+receive'
 
 function send(c: Ctrl, msg: Message): void {
   c.getHost().dispatchEvent(
@@ -748,4 +795,12 @@ function receive(
   c.beforeUnmount(unsubscribe)
 
   return unsubscribe
+}
+
+function addObserverInterceptor() {
+  intercept('render', (ctrl, next) => {
+    observe(() => {
+      next()
+    })
+  })
 }

@@ -360,11 +360,19 @@ function buildCustomElementClass<T extends object, C>(
 
         let content: C
         const fns = interceptions.render
-
         if (!fns.length) {
-          content = render!()
+          patch(render!(), contentElement!)
         } else {
-          let next = () => void (content = render!())
+          let next = () => {
+            content = render!()
+            // TODO
+            try {
+              patch(content!, contentElement!)
+            } catch (e) {
+              console.error(`Render error in "${ctrl.getName()}"`)
+              throw e
+            }
+          }
 
           for (let i = fns.length - 1; i >= 0; --i) {
             const nextFn = next
@@ -372,14 +380,6 @@ function buildCustomElementClass<T extends object, C>(
           }
 
           next()
-        }
-
-        // TODO
-        try {
-          patch(content!, contentElement!)
-        } catch (e) {
-          console.error(`Render error in "${ctrl.getName()}"`)
-          throw e
         }
 
         isInitialized = true
