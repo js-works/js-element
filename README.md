@@ -96,7 +96,7 @@ render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
 
 ```jsx
 import { attr, define, h, render, Attr } from 'js-element'
-import { useEffect, useOnMount, useState, useStyles } from 'js-element/hooks'
+import { useEffect, useOnMount, useState } from 'js-element/hooks'
 import counterStyles from './counter.css'
 
 class CounterProps {
@@ -107,7 +107,11 @@ class CounterProps {
   label = 'Counter'
 }
 
-const Counter = define('demo-counter', CounterProps, (props) => {
+const Counter = define({
+  name: 'demo-counter',
+  props: CounterProps,
+  styles: counterStyles
+})((props) => {
   const state = useState({
     count: props.initialCount
   })
