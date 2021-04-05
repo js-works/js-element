@@ -9,7 +9,6 @@ import {
   useActions,
   useAfterMount,
   useData,
-  useStyles,
   useTimer
 } from 'js-element/hooks'
 
@@ -191,9 +190,10 @@ const [useStoreProvider, useSelectors] = createStoreHooks<AppState>()
 
 // === components ====================================================
 
-const Field = define('x-field', () => {
-  useStyles(styles.field)
-
+const Field = define({
+  name: 'x-field',
+  styles: () => styles.field
+})(() => {
   const style = `
     width: ${FIELD_WIDTH}px;
     height: ${FIELD_HEIGHT}px;
@@ -206,10 +206,11 @@ const Field = define('x-field', () => {
   )
 })
 
-const Ball = define('x-ball', () => {
+const Ball = define({
+  name: 'x-ball',
+  styles: () => styles.ball
+})(() => {
   const stateSel = useSelectors(StateSel)
-
-  useStyles(styles.ball)
 
   return () => {
     const style = `
@@ -223,10 +224,11 @@ const Ball = define('x-ball', () => {
   }
 })
 
-const Racket = define('x-racket', () => {
+const Racket = define({
+  name: 'x-racket',
+  styles: () => styles.racket
+})(() => {
   const stateSel = useSelectors(StateSel)
-
-  useStyles(styles.racket)
 
   return () => {
     const style = `
@@ -239,10 +241,11 @@ const Racket = define('x-racket', () => {
   }
 })
 
-const Scoreboard = define('x-scoreboard', () => {
+const Scoreboard = define({
+  name: 'x-scoreboard',
+  styles: () => styles.scoreboard
+})(() => {
   const stateSel = useSelectors(StateSel)
-
-  useStyles(styles.scoreboard)
 
   return () => {
     const { score, highscore } = stateSel.scores
@@ -255,15 +258,16 @@ const Scoreboard = define('x-scoreboard', () => {
   }
 })
 
-const CountdownPane = define('x-countdown-pane', () => {
+const CountdownPane = define({
+  name: 'x-countdown-pane',
+  styles: () => styles.countdownPane
+})(() => {
   const [state, setState] = useData({
     text: '',
     fontSize: 20
   })
 
   const ms = COUNTDOWN_DURATION / 5
-
-  useStyles(styles.countdownPane)
 
   useAfterMount(() => {
     setTimeout(() => setState('text', 'Ready...'), ms)
@@ -279,18 +283,21 @@ const CountdownPane = define('x-countdown-pane', () => {
   )
 })
 
-const AlarmPane = define('x-alarm-pane', () => {
+const AlarmPane = define({
+  name: 'x-alarm-pane',
+  styles: () => styles.alarmPane
+})(() => {
   const getLightClass = useTimer(150, (idx) =>
     idx % 2 === 0 ? 'light' : 'dark'
   )
 
-  useStyles(styles.alertPane)
-
   return () => <div class={`root ${getLightClass()}`} />
 })
 
-const Game = define('x-game', () => {
-  useStyles(styles.game)
+const Game = define({
+  name: 'x-game',
+  styles: () => styles.game
+})(() => {
   const actions = useActions(ActionMsg)
   const stateSel = useSelectors(StateSel)
 
@@ -394,7 +401,7 @@ const styles = {
     }
   `,
 
-  alertPane: `
+  alarmPane: `
     .root {
       position: absolute;
       top: 0;

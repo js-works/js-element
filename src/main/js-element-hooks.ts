@@ -315,33 +315,6 @@ export const useEmitter = hook('useEmitter', function (): <
   }
 })
 
-// === useStyles =======================================================
-
-function addStyles(
-  stylesContainer: Element,
-  styles: string[] | HTMLStyleElement
-): void {
-  if (styles instanceof HTMLStyleElement) {
-    stylesContainer.appendChild(styles)
-  } else {
-    const css = styles.join('\n\n/* =============== */\n\n')
-    const styleElem = document.createElement('style')
-
-    styleElem.appendChild(document.createTextNode(css))
-    stylesContainer.appendChild(styleElem)
-  }
-}
-
-export const useStyles = hook('useStyles', (...styles: string[]) => {
-  const ret = (...styles: string[]) => {
-    addStyles(currentCtrl!.getHost().shadowRoot!.firstChild as Element, styles)
-  }
-
-  ret.apply(null, styles)
-
-  return ret
-})
-
 // === useMemo =========================================================
 
 // TODO - this is not really optimized, is it?

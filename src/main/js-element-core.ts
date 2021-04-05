@@ -214,6 +214,7 @@ function createDefiner<C>(
     props?: PropsClass<P>
     slots?: string[]
     uses?: string[]
+    styles?: string | string[] | (() => string | string[])
     init: () => () => C
   }): Component<P>
 
@@ -230,6 +231,7 @@ function createDefiner<C>(
     props?: PropsClass<P>
     slots?: string[]
     uses?: (object | Function)[]
+    styles?: string | string[] | (() => string | string[])
   }): (init: (props: P) => () => C) => Component<P>
 } {
   return function define(arg1: any, arg2?: any, arg3?: any): any {
@@ -252,6 +254,7 @@ function createDefiner<C>(
       propsClass,
       propsClass ? getPropInfoMap(propsClass, attrInfoMap) : null,
       attrInfoMap,
+      arg1.styles,
       arg1.init,
       patch
     )
@@ -269,9 +272,12 @@ function buildCustomElementClass<T extends object, C>(
   propsClass: { new (): T } | null,
   propInfoMap: PropInfoMap | null,
   attrInfoMap: AttrInfoMap | null,
+  styles: string | string[] | (() => string | string[]),
   main: (props: T) => () => C,
   patch: (content: C, target: Element) => void
 ): CustomElementConstructor {
+  let combinedStyles: string | null = null // will be set lazy
+
   const customElementClass = class extends BaseElement {
     constructor() {
       super()
@@ -318,6 +324,18 @@ function buildCustomElementClass<T extends object, C>(
       contentElement = document.createElement('span')
       stylesElement.setAttribute('data-role', 'styles')
       contentElement.setAttribute('data-role', 'content')
+
+      if (combinedStyles === null && styles) {
+        combinedStyles = combineStyles(styles)
+      }
+
+      if (combinedStyles) {
+        const styleElement = document.createElement('style')
+
+        styleElement.append(document.createTextNode(combinedStyles))
+        stylesElement.append(styleElement)
+      }
+
       root.append(stylesElement, contentElement)
 
       const fns = interceptions.init
@@ -619,4 +637,22 @@ function createComponentType<P extends Props>(tagName: string): Component<P> {
     Object.assign(document.createElement(tagName), props)
 
   return Object.defineProperty(ret, 'tagName', { value: tagName })
+}
+
+function combineStyles(
+  styles: string | string[] | (() => string | string[])
+): string {
+  if (typeof styles === 'function') {
+    styles = styles()
+  }
+
+  if (!styles) {
+    return ''
+  }
+
+  if (Array.isArray(styles)) {
+    styles = styles.join('\n\n/* =============== */\n\n')
+  }
+
+  return styles
 }

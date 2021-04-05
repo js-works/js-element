@@ -1,6 +1,6 @@
 import { attr, define, createEvent, h, Attr } from 'js-element'
 import { Listener, TypedEvent } from 'js-element'
-import { useEmitter, useStyles } from 'js-element/hooks'
+import { useEmitter } from 'js-element/hooks'
 
 const buttonDemoStyles = ` 
   .demo-button {
@@ -27,9 +27,12 @@ class ButtonProps {
   onButtonClick?: Listener<ButtonClickEvent>
 }
 
-const DemoButton = define('demo-button', ButtonProps, (props) => {
+const DemoButton = define({
+  name: 'demo-button',
+  props: ButtonProps,
+  styles: buttonDemoStyles
+})((props) => {
   const emit = useEmitter()
-  useStyles(buttonDemoStyles)
 
   const onClick = () => {
     emit(createEvent('button-click'), props.onButtonClick)
