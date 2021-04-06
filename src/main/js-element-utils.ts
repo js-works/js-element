@@ -6,7 +6,7 @@ import {
   useRefresher,
   useState
 } from 'js-element/hooks'
-export { initStore, microstore }
+export { initStore, createMobxHooks as microstore }
 
 // === types =========================================================
 
@@ -117,32 +117,25 @@ function initStore<S extends State>(arg1: any, arg2?: any): InitStoreResult<S> {
 // === microstore ====================================================
 
 let nextStoreId = 1
-function microstore<S extends State>(fn: () => S): [() => S, () => S] {
+
+function createMobxHooks<S extends State>(): [(s: S) => S, () => S] {
   type MicrostoreEvent = CustomEvent<{
     callback: (state: S) => void
   }>
 
   const eventName = 'js-element/utils::microstore::' + nextStoreId++
 
-  const useMicrostoreProvider = hook('useMicrostoreProvider', () => {
-    console.log('[parent] useMicrostoreProvider')
-
-    const state = useState(fn())
+  const useMicrostoreProvider = hook('useMicrostoreProvider', (s: S) => {
+    const state = useState(s)
     const host = useHost()
 
-    console.log('[parent] created state')
-
     useBeforeMount(() => {
-      console.log('[parent] invoked useAfterMount')
-
       const listener = (ev: MicrostoreEvent) => {
-        console.log('[parent] received event')
         ev.stopPropagation()
         ev.detail.callback(state)
       }
 
       host.addEventListener(eventName as any, listener)
-      console.log('[parent] added event listener')
 
       return () => {
         removeEventListener(eventName as any, listener)
@@ -153,7 +146,6 @@ function microstore<S extends State>(fn: () => S): [() => S, () => S] {
   })
 
   const useMicrostore = () => {
-    console.log('[child] useMicrostore')
     let state: S | null = null
 
     const host = useHost()

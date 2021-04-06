@@ -1,12 +1,6 @@
 import { intercept, Component, Context, Ctrl, Ref } from 'js-element/core'
-import { observable, observe } from '@nx-js/observer-util'
-
-/*
-const observe = (f: any) => {
-  f()
-}
-const observable = <T>(it: T) => it
-*/
+//import { observable, observe } from '@nx-js/observer-util'
+import { autorun, isObservable, observable } from 'mobx'
 
 // === constants =====================================================
 
@@ -279,7 +273,12 @@ export const useState = hook('useState', function <
   const c = currentCtrl!
 
   if (!observerInterceptorAdded) {
-    addObserverInterceptor()
+    intercept('render', (ctrl, next) => {
+      autorun(() => {
+        next()
+      })
+    })
+
     observerInterceptorAdded = true
   }
 
@@ -293,7 +292,7 @@ export const useState = hook('useState', function <
 
   return ret
 */
-  return observable(state)
+  return isObservable(state) ? state : observable(state)
 })
 
 // === useEmitter ======================================================
@@ -768,12 +767,4 @@ function receive(
   c.beforeUnmount(unsubscribe)
 
   return unsubscribe
-}
-
-function addObserverInterceptor() {
-  intercept('render', (ctrl, next) => {
-    observe(() => {
-      next()
-    })
-  })
 }

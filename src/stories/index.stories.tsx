@@ -3,7 +3,7 @@ import SimpleCounterDemo from './demos/simple-counter-demo'
 import LitCounterDemo from './demos/lit-counter-demo'
 import UhtmlCounterDemo from './demos/uhtml-counter-demo'
 import ComplexCounterDemo from './demos/complex-counter-demo'
-import MicrostoreDemo from './demos/microstore-demo'
+import MobxDemo from './demos/mobx-demo'
 import StoreCounterDemo from './demos/store-counter-demo'
 import ClockDemo from './demos/clock-demo'
 import IntervalDemo from './demos/interval-demo'
@@ -30,7 +30,7 @@ export const SimpleCounter = demo(SimpleCounterDemo)
 export const LitCounter = demo(LitCounterDemo)
 export const UhmtlCounter = demo(UhtmlCounterDemo)
 export const ComplexCounter = demo(ComplexCounterDemo)
-export const Microstore = demo(MicrostoreDemo)
+export const Mobx = demo(MobxDemo)
 export const StoreCounter = demo(StoreCounterDemo)
 export const Clock = demo(ClockDemo)
 export const Interval = demo(IntervalDemo)

@@ -42,6 +42,7 @@ function createConfig(pkg, moduleFormat, productive) {
       globals: pkg === 'standalone' ? {} : {
         'js-element': 'jsElement',
         'js-element/core': 'jsElement.core',
+        'mobx': 'mobx',
         ...(pkg === 'lit' && { 'lit-html': 'litHtml' }), // TODO!!
         ...(pkg === 'uhtml' && { uhtml: 'uhtml' }) // TODO!!
       }
@@ -51,7 +52,8 @@ function createConfig(pkg, moduleFormat, productive) {
       'js-element',
       'js-element/core',
       ...(pkg === 'lit' ? ['lit-html'] : []),
-      ...(pkg === 'uhtml' ? ['uhtml'] : [])
+      ...(pkg === 'uhtml' ? ['uhtml'] : []),
+      'mobx'
     ],
 
     plugins: [

@@ -1,7 +1,24 @@
 import { define, h } from 'js-element'
 import { microstore } from 'js-element/utils'
+import { makeAutoObservable } from 'mobx'
 
-const [useStoreProvider, useStore] = microstore(() => ({
+class CounterStore {
+  count = 0
+
+  constructor() {
+    makeAutoObservable(this)
+  }
+
+  increment() {
+    this.count++
+  }
+
+  decrement() {
+    this.count--
+  }
+}
+
+const fn = () => ({
   count: 0,
 
   increment() {
@@ -11,10 +28,12 @@ const [useStoreProvider, useStore] = microstore(() => ({
   decrement() {
     this.count--
   }
-}))
+})
 
-const MicrostoreDemo = define('microstore-demo--parent', () => {
-  const store = useStoreProvider()
+const [useStoreProvider, useStore] = microstore<CounterStore>()
+
+const MobxDemo = define('mobx-demo--parent', () => {
+  const store = useStoreProvider(new CounterStore())
 
   return () => (
     <div>
@@ -24,11 +43,10 @@ const MicrostoreDemo = define('microstore-demo--parent', () => {
   )
 })
 
-const CounterController = define('microstore-demo-controller', () => {
+const CounterController = define('mobx-demo-controller', () => {
   const store = useStore()
   const onIncClick = () => store.increment()
   const onDecClick = () => store.decrement()
-  console.log(222)
 
   return () => (
     <div>
@@ -39,4 +57,4 @@ const CounterController = define('microstore-demo-controller', () => {
   )
 })
 
-export default MicrostoreDemo
+export default MobxDemo
