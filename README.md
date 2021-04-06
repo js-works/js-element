@@ -96,10 +96,10 @@ render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
 
 ```jsx
 // the author's preferred syntax and naming convention -
-// may look a bit odd first, but you'll get used to it &#x1F609;
+// may look a bit odd first, but you'll get used to it ;-)
 
 import { attr, define, h, render, Attr } from 'js-element'
-import { useEffect, useOnMount, useState } from 'js-element/hooks'
+import { useEffect, useAfterMount, useState } from 'js-element/hooks'
 import counterStyles from './counter.scss'
 
 class CounterProps {
@@ -121,7 +121,7 @@ const Counter = define({
 
   const onClick = () => s.count++
 
-  useOnMount(() => {
+  useAfterMount(() => {
     console.log(`"${p.label}" has been mounted`)
 
     return () => console.log(`Unmounting "${p.label}"`)
