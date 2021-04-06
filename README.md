@@ -94,10 +94,10 @@ render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
 
 ### Example 5
 
+```jsx
 // the author's preferred syntax and naming convention -
 // may look a bit odd first, but you'll get used to it &#x1F609;
 
-```jsx
 import { attr, define, h, render, Attr } from 'js-element'
 import { useEffect, useOnMount, useState } from 'js-element/hooks'
 import counterStyles from './counter.scss'
