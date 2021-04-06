@@ -94,10 +94,13 @@ render(<SayHello salutation="Hi" name="Jane Doe" />, '#app')
 
 ### Example 5
 
+// the author's preferred syntax and naming convention -
+// may look a bit odd first, but you'll get used to it &#x1F609;
+
 ```jsx
 import { attr, define, h, render, Attr } from 'js-element'
 import { useEffect, useOnMount, useState } from 'js-element/hooks'
-import counterStyles from './counter.css'
+import counterStyles from './counter.scss'
 
 class CounterProps {
   @attr(Attr.number, true) // true as 2nd argument means: reflect attribute
@@ -111,31 +114,29 @@ const Counter = define({
   name: 'demo-counter',
   props: CounterProps,
   styles: counterStyles
-})((props) => {
+})((p) => {
   const state = useState({
-    count: props.initialCount
+    count: p.initialCount
   })
 
-  const onClick = () => state.count++
-
-  useStyles(counterStyles)
+  const onClick = () => s.count++
 
   useOnMount(() => {
-    console.log(`"${props.label}" has been mounted`)
+    console.log(`"${p.label}" has been mounted`)
 
-    return () => console.log(`Unmounting "${props.label}"`)
+    return () => console.log(`Unmounting "${p.label}"`)
   })
 
   useEffect(
-    () => console.log(`Value of "${props.label}": ${state.count}`),
-    () => [state.count]
+    () => console.log(`Value of "${p.label}": ${s.count}`),
+    () => [s.count]
   )
 
   return () => (
     <div class="counter">
-      <label class="label">{props.label}: </label>
+      <label class="label">{p.label}: </label>
       <button class="button" onclick={onClick}>
-        {state.count}
+        {s.count}
       </button>
     </div>
   )
