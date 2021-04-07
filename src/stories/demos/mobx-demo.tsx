@@ -1,5 +1,5 @@
 import { define, h } from 'js-element'
-import { microstore } from 'js-element/utils'
+import { createMobxHooks } from 'js-element/utils'
 import { makeAutoObservable } from 'mobx'
 
 class CounterStore {
@@ -30,7 +30,7 @@ const fn = () => ({
   }
 })
 
-const [useStoreProvider, useStore] = microstore<CounterStore>()
+const [useStoreProvider, useStore] = createMobxHooks<CounterStore>()
 
 const MobxDemo = define('mobx-demo--parent', () => {
   const store = useStoreProvider(new CounterStore())

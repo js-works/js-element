@@ -9,7 +9,10 @@ class CounterProps {
   label = 'Counter'
 }
 
-const Counter = define('simple-counter', CounterProps, (p) => {
+const Counter = define({
+  name: 'simple-counter',
+  props: CounterProps
+}).main((p) => {
   const s = useState({
     count: p.initialCount
   })

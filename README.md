@@ -114,7 +114,7 @@ const Counter = define({
   name: 'demo-counter',
   props: CounterProps,
   styles: counterStyles
-})((p) => {
+}).main((p) => {
   const state = useState({
     count: p.initialCount
   })

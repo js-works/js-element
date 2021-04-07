@@ -232,7 +232,10 @@ function createDefiner<C>(
     slots?: string[]
     uses?: (object | Function)[]
     styles?: string | string[] | (() => string | string[])
-  }): (init: (props: P) => () => C) => Component<P>
+  }): {
+    (init: (props: P) => () => C): Component<P>
+    main(init: (props: P) => () => C): Component<P>
+  }
 } {
   return function define(arg1: any, arg2?: any, arg3?: any): any {
     if (typeof arg1 === 'string') {
@@ -240,7 +243,11 @@ function createDefiner<C>(
         ? define({ name: arg1, props: arg2, init: arg3 })
         : define({ name: arg1, init: arg2 })
     } else if (!arg1.init) {
-      return (init: () => () => C) => define({ ...arg1, init })
+      // TODO
+      const ret = (init: () => () => C) => define({ ...arg1, init })
+      ret.main = ret
+
+      return ret
     }
 
     const tagName = arg1.name

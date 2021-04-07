@@ -6,7 +6,7 @@ import {
   useRefresher,
   useState
 } from 'js-element/hooks'
-export { initStore, createMobxHooks as microstore }
+export { initStore, createMobxHooks }
 
 // === types =========================================================
 
@@ -114,7 +114,7 @@ function initStore<S extends State>(arg1: any, arg2?: any): InitStoreResult<S> {
   return [store, setState, getState]
 }
 
-// === microstore ====================================================
+// === createMobxHooks ===============================================
 
 let nextStoreId = 1
 
