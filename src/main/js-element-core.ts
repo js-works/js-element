@@ -397,6 +397,16 @@ function buildCustomElementClass<T extends object, C>(
               console.error(`Render error in "${ctrl.getName()}"`)
               throw e
             }
+
+            isInitialized = true
+
+            if (!isMounted) {
+              isMounted = true
+              afterMountNotifier.notify()
+            } else {
+              hasUpdated = true
+              afterUpdateNotifier.notify()
+            }
           }
 
           for (let i = fns.length - 1; i >= 0; --i) {
@@ -405,16 +415,6 @@ function buildCustomElementClass<T extends object, C>(
           }
 
           next()
-        }
-
-        isInitialized = true
-
-        if (!isMounted) {
-          isMounted = true
-          afterMountNotifier.notify()
-        } else {
-          hasUpdated = true
-          afterUpdateNotifier.notify()
         }
       }
 
