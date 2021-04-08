@@ -344,23 +344,22 @@ function buildCustomElementClass<T extends object, C>(
       }
 
       root.append(stylesElement, contentElement)
+      this.connectedCallback = () => {
+        const fns = interceptions.init
 
-      const fns = interceptions.init
+        if (!fns.length) {
+          render = main(data)
+        } else {
+          let next = () => void (render = main(data))
 
-      if (!fns.length) {
-        render = main(data)
-      } else {
-        let next = () => void (render = main(data))
+          for (let i = fns.length - 1; i >= 0; --i) {
+            const nextFn = next
+            next = () => void fns[i](ctrl, nextFn)
+          }
 
-        for (let i = fns.length - 1; i >= 0; --i) {
-          const nextFn = next
-          next = () => void fns[i](ctrl, nextFn)
+          next()
         }
 
-        next()
-      }
-
-      this.connectedCallback = () => {
         beforeMountNotifier.notify()
         refresh()
       }
