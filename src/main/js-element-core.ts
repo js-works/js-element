@@ -1,5 +1,13 @@
 import { patch as superfinePatch } from './lib/superfine-patched'
 
+const superfineRender = (content: any, target: HTMLElement) => {
+  if (!target.firstChild) {
+    target.append(document.createElement('div'))
+  }
+
+  superfinePatch(target.firstChild, content)
+}
+
 // === exports =======================================================
 
 // public API
@@ -287,31 +295,17 @@ function buildCustomElementClass<T extends object, C>(
   attrInfoMap: AttrInfoMap | null,
   styles: string | string[] | (() => string | string[]),
   main: (props: T) => () => C,
-  patch: (content: C, target: Element) => void
+  render: (content: C, target: Element) => void
 ): CustomElementConstructor {
   let combinedStyles: string | null = null // will be set lazy
 
   const customElementClass = class extends BaseElement {
     constructor() {
       super()
-      const data: any = propsClass ? new propsClass() : {}
-      const beforeMountNotifier = createNotifier()
-      const afterMountNotifier = createNotifier()
-      const beforeUpdateNotifier = createNotifier()
-      const afterUpdateNotifier = createNotifier()
-      const beforeUnmountNotifier = createNotifier()
-      const onceBeforeUpdateActions: (() => void)[] = []
-      const ctrl = createCtrl(this)
-      ;(this as any).__ctrl = ctrl
-      ;(this as any).__data = data
 
-      let isInitialized = false
-      let isMounted = false
-      let hasUpdated = false
-      let hasRequestedRefresh = false
-      let stylesElement: HTMLElement | undefined
-      let contentElement: HTMLElement | undefined
-      let render: (() => C) | undefined
+      const data: any = propsClass ? new propsClass() : {}
+      ;(this as any).__data = data
+      ;(this as any).__ctrl = enhanceHost(this, main, render, data)
 
       if (propInfoMap && propInfoMap.has('ref')) {
         let componentMethods: any = null
@@ -332,111 +326,15 @@ function buildCustomElementClass<T extends object, C>(
         })
       }
 
-      const root = this.attachShadow({ mode: 'open' })
-      stylesElement = document.createElement('span')
-      contentElement = document.createElement('span')
-      stylesElement.setAttribute('data-role', 'styles')
-      contentElement.setAttribute('data-role', 'content')
-
       if (combinedStyles === null && styles) {
         combinedStyles = combineStyles(styles)
       }
 
       if (combinedStyles) {
-        const styleElement = document.createElement('style')
-
-        styleElement.append(document.createTextNode(combinedStyles))
-        stylesElement.append(styleElement)
-      }
-
-      root.append(stylesElement, contentElement)
-
-      this.connectedCallback = () => {
-        runIntercepted(
-          () => {
-            console.log(interceptions.init)
-            render = main(data)
-          },
-          ctrl,
-          interceptions.init
-        )
-
-        beforeMountNotifier.notify()
-        refresh()
-      }
-
-      this.disconnectedCallback = () => {
-        beforeUnmountNotifier.notify()
-        contentElement!.innerHTML = ''
-      }
-
-      function refresh() {
-        if (isMounted) {
-          if (onceBeforeUpdateActions && onceBeforeUpdateActions.length) {
-            try {
-              onceBeforeUpdateActions.forEach((action) => action())
-            } finally {
-              onceBeforeUpdateActions.length = 0
-            }
-          }
-
-          beforeUpdateNotifier.notify()
-        }
-
-        let content: C
-
-        runIntercepted(
-          () => {
-            content = render!()
-            // TODO
-            try {
-              patch(content!, contentElement!)
-            } catch (e) {
-              console.error(`Render error in "${ctrl.getName()}"`)
-              throw e
-            }
-
-            isInitialized = true
-
-            if (!isMounted) {
-              isMounted = true
-              afterMountNotifier.notify()
-            } else {
-              hasUpdated = true
-              afterUpdateNotifier.notify()
-            }
-          },
-          ctrl,
-          interceptions.render
-        )
-      }
-
-      function createCtrl(host: HTMLElement): Ctrl {
-        return {
-          getName: () => name,
-          getHost: () => host,
-          isInitialized: () => isInitialized,
-          isMounted: () => isMounted,
-          hasUpdated: () => hasUpdated,
-
-          refresh() {
-            if (!hasRequestedRefresh) {
-              hasRequestedRefresh = true
-
-              requestAnimationFrame(() => {
-                hasRequestedRefresh = false
-                refresh()
-              })
-            }
-          },
-
-          beforeMount: beforeMountNotifier.subscribe,
-          afterMount: afterMountNotifier.subscribe,
-          onceBeforeUpdate: (task) => void onceBeforeUpdateActions.push(task),
-          beforeUpdate: beforeUpdateNotifier.subscribe,
-          afterUpdate: afterUpdateNotifier.subscribe,
-          beforeUnmount: beforeUnmountNotifier.subscribe
-        }
+        // TODO!!!!!!!!!!!!!!!!!!!!!!!
+        //  this.shadowRoot!.firstChild!.appendChild(
+        //   document.createTextNode(combinedStyles)
+        // )
       }
     }
   }
@@ -682,7 +580,14 @@ function combineStyles(
 class GenericElement extends BaseElement {
   constructor() {
     super()
-    enhanceHost(this, () => (this as any).__fn)
+    ;(this as any).__props = {}
+
+    enhanceHost(
+      this,
+      (props: any) => (this as any).__fn(props),
+      superfineRender,
+      (this as any).__props
+    )
   }
 }
 
@@ -715,14 +620,15 @@ registerElement(GENERIC_TAG_NAME, GenericElement)
 // TODO - return value, see `any`
 function enhanceHost(
   host: BaseElement,
-  getMainFn: () => (props: Props) => () => any
-) {
+  mainFn: (props: any) => () => any,
+  render: (content: any, target: HTMLElement) => void,
+  props: any
+): Ctrl {
   let initialized = false
   let mounted = false
   let updated = false
   let shallCommit = false
-  let render: () => any // TODO
-  let props: any = {}
+  let getContent: () => any // TODO
 
   const contentElement = document.createElement('div')
   const beforeMountNotifier = createNotifier()
@@ -773,10 +679,10 @@ function enhanceHost(
     // TODO xxxx
     runIntercepted(
       () => {
-        const content = render()
+        const content = getContent()
         // TODO
         try {
-          superfinePatch(contentElement.firstChild, content)
+          render(content, contentElement)
         } catch (e) {
           console.error(`Render error in "${ctrl.getName()}"`)
           throw e
@@ -807,7 +713,7 @@ function enhanceHost(
 
       runIntercepted(
         () => {
-          render = getMainFn()(props)
+          getContent = mainFn(props)
         },
         ctrl,
         interceptions.init
@@ -819,6 +725,8 @@ function enhanceHost(
 
   host.disconnectedCallback = () => {
     beforeUnmountNotifier.notify()
-    contentElement.innerHTML = '<div></div>'
+    contentElement.innerHTML = ''
   }
+
+  return ctrl
 }

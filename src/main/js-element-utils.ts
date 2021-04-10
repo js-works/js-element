@@ -119,18 +119,18 @@ function initStore<S extends State>(arg1: any, arg2?: any): InitStoreResult<S> {
 let nextStoreId = 1
 
 function createMobxHooks<S extends State>(): [(s: S) => S, () => S] {
-  type MicrostoreEvent = CustomEvent<{
+  type ObservableEvent = CustomEvent<{
     callback: (state: S) => void
   }>
 
-  const eventName = 'js-element/utils::microstore::' + nextStoreId++
+  const eventName = 'js-element/utils::mobx::' + nextStoreId++
 
-  const useMicrostoreProvider = hook('useMicrostoreProvider', (s: S) => {
+  const useObservableProvider = hook('useObservableProvider', (s: S) => {
     const state = useReactive(s)
     const host = useHost()
 
     useBeforeMount(() => {
-      const listener = (ev: MicrostoreEvent) => {
+      const listener = (ev: ObservableEvent) => {
         ev.stopPropagation()
         ev.detail.callback(state)
       }
@@ -145,7 +145,7 @@ function createMobxHooks<S extends State>(): [(s: S) => S, () => S] {
     return state
   })
 
-  const useMicrostore = () => {
+  const useObservable = () => {
     let state: S | null = null
 
     const host = useHost()
@@ -170,7 +170,7 @@ function createMobxHooks<S extends State>(): [(s: S) => S, () => S] {
       {
         get(target, key) {
           if (!state) {
-            throw new Error('Microstore not available')
+            throw new Error('No mobx observable provided')
           }
 
           return state[key as any]
@@ -178,7 +178,7 @@ function createMobxHooks<S extends State>(): [(s: S) => S, () => S] {
 
         set(target: object, key: string | symbol, value: any) {
           if (!state) {
-            throw new Error('Microstore not available')
+            throw new Error('Observable not available')
           }
 
           ;(state as any)[key] = value
@@ -188,5 +188,5 @@ function createMobxHooks<S extends State>(): [(s: S) => S, () => S] {
     ) as any) as S
   }
 
-  return [useMicrostoreProvider, useMicrostore]
+  return [useObservableProvider, useObservable]
 }
