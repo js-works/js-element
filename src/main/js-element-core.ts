@@ -679,126 +679,10 @@ function combineStyles(
 
 // === GenericElement ================================================
 
-class GenericElement extends HTMLElement {
-  private __fn!: (props: Props) => () => any // TODO: VNode
-  private __initialized = false
-  private __mounted = false
-  private __updated = false
-  private __hasRequestedRefresh = false
-  private __render!: () => any // TODO: VNode
-  private __props: any = {}
-  private __contentElem: HTMLDivElement
-  private __beforeMountNotifier = createNotifier()
-  private __afterMountNotifier = createNotifier()
-  private __beforeUpdateNotifier = createNotifier()
-  private __afterUpdateNotifier = createNotifier()
-  private __beforeUnmountNotifier = createNotifier()
-  private __onceBeforeUpdateActions: (() => void)[] = []
-
-  private __ctrl: Ctrl = {
-    getName: () => '',
-
-    getHost: () => {
-      return this
-    },
-
-    hasUpdated: () => {
-      return this.__updated
-    },
-
-    isInitialized: () => {
-      return this.__initialized
-    },
-
-    isMounted: () => {
-      return this.__mounted
-    },
-
-    refresh: () => {
-      if (!this.__hasRequestedRefresh) {
-        this.__hasRequestedRefresh = true
-
-        requestAnimationFrame(() => {
-          this.__hasRequestedRefresh = false
-          this.__performRendering()
-        })
-      }
-    },
-    beforeMount: this.__beforeMountNotifier.subscribe,
-    afterMount: this.__afterMountNotifier.subscribe,
-    onceBeforeUpdate: (task) => void this.__onceBeforeUpdateActions.push(task),
-    beforeUpdate: this.__beforeUpdateNotifier.subscribe,
-    afterUpdate: this.__afterUpdateNotifier.subscribe,
-    beforeUnmount: this.__beforeUnmountNotifier.subscribe
-  }
-
+class GenericElement extends BaseElement {
   constructor() {
     super()
-    this.attachShadow({ mode: 'open' })
-
-    const styleElem = document.createElement('style')
-    this.__contentElem = document.createElement('div')
-    this.__contentElem.append(document.createElement('div'))
-    this.shadowRoot!.append(styleElem, this.__contentElem)
-  }
-
-  connectedCallback() {
-    if (!this.__initialized) {
-      runIntercepted(
-        () => {
-          this.__render = this.__fn(this.__props)
-          console.log(111, this.__render)
-        },
-        this.__ctrl,
-        interceptions.init
-      )
-
-      this.__initialized = true
-    }
-
-    this.__performRendering()
-
-    //    patch(this.__contentElem.firstChild, this.__render())
-  }
-
-  private __performRendering() {
-    if (this.__mounted) {
-      if (this.__onceBeforeUpdateActions.length) {
-        try {
-          this.__onceBeforeUpdateActions.forEach((action) => action())
-        } finally {
-          this.__onceBeforeUpdateActions.length = 0
-        }
-      }
-
-      this.__beforeUpdateNotifier.notify()
-    }
-
-    // TODO xxxx
-    runIntercepted(
-      () => {
-        const content = this.__render!()
-        // TODO
-        try {
-          superfinePatch(this.__contentElem.firstChild, content)
-        } catch (e) {
-          console.error(`Render error in "${this.__ctrl.getName()}"`)
-          throw e
-        }
-      },
-      this.__ctrl,
-      interceptions.render
-    )
-
-    this.__initialized = true
-
-    if (!this.__mounted) {
-      this.__mounted = true
-      this.__afterMountNotifier.notify()
-    } else {
-      this.__updated = true
-      this.__afterUpdateNotifier.notify()
-    }
+    enhanceHost(this, () => (this as any).__fn)
   }
 }
 
@@ -827,3 +711,114 @@ Object.setPrototypeOf(
 )
 
 registerElement(GENERIC_TAG_NAME, GenericElement)
+
+// TODO - return value, see `any`
+function enhanceHost(
+  host: BaseElement,
+  getMainFn: () => (props: Props) => () => any
+) {
+  let initialized = false
+  let mounted = false
+  let updated = false
+  let shallCommit = false
+  let render: () => any // TODO
+  let props: any = {}
+
+  const contentElement = document.createElement('div')
+  const beforeMountNotifier = createNotifier()
+  const afterMountNotifier = createNotifier()
+  const beforeUpdateNotifier = createNotifier()
+  const afterUpdateNotifier = createNotifier()
+  const beforeUnmountNotifier = createNotifier()
+  const onceBeforeUpdateActions: (() => void)[] = []
+
+  const ctrl: Ctrl = {
+    getName: () => host.tagName, // TODO!!!!
+    getHost: () => host,
+    isInitialized: () => initialized,
+    isMounted: () => mounted,
+    hasUpdated: () => updated,
+    beforeMount: beforeMountNotifier.subscribe,
+    afterMount: afterMountNotifier.subscribe,
+    onceBeforeUpdate: (task: () => void) => onceBeforeUpdateActions.push(task),
+    beforeUpdate: beforeUpdateNotifier.subscribe,
+    afterUpdate: afterUpdateNotifier.subscribe,
+    beforeUnmount: beforeUnmountNotifier.subscribe,
+
+    refresh: () => {
+      if (!shallCommit) {
+        shallCommit = true
+
+        requestAnimationFrame(() => {
+          shallCommit = false
+          commit()
+        })
+      }
+    }
+  }
+
+  const commit = () => {
+    if (mounted) {
+      if (onceBeforeUpdateActions.length) {
+        try {
+          onceBeforeUpdateActions.forEach((action) => action())
+        } finally {
+          onceBeforeUpdateActions.length = 0
+        }
+      }
+
+      beforeUpdateNotifier.notify()
+    }
+
+    // TODO xxxx
+    runIntercepted(
+      () => {
+        const content = render()
+        // TODO
+        try {
+          superfinePatch(contentElement.firstChild, content)
+        } catch (e) {
+          console.error(`Render error in "${ctrl.getName()}"`)
+          throw e
+        }
+      },
+      ctrl,
+      interceptions.render
+    )
+
+    initialized = true
+
+    if (!mounted) {
+      mounted = true
+      afterMountNotifier.notify()
+    } else {
+      updated = true
+      afterUpdateNotifier.notify()
+    }
+  }
+
+  host.connectedCallback = () => {
+    if (!initialized) {
+      const styleElement = document.createElement('style')
+
+      contentElement.append(document.createElement('div'))
+      host.attachShadow({ mode: 'open' })
+      host.shadowRoot!.append(styleElement, contentElement)
+
+      runIntercepted(
+        () => {
+          render = getMainFn()(props)
+        },
+        ctrl,
+        interceptions.init
+      )
+    }
+
+    commit()
+  }
+
+  host.disconnectedCallback = () => {
+    beforeUnmountNotifier.notify()
+    contentElement.innerHTML = '<div></div>'
+  }
+}
