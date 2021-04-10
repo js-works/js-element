@@ -351,20 +351,13 @@ function buildCustomElementClass<T extends object, C>(
 
       root.append(stylesElement, contentElement)
       this.connectedCallback = () => {
-        const fns = interceptions.init
-
-        if (!fns.length) {
-          render = main(data)
-        } else {
-          let next = () => void (render = main(data))
-
-          for (let i = fns.length - 1; i >= 0; --i) {
-            const nextFn = next
-            next = () => void fns[i](ctrl, nextFn)
-          }
-
-          next()
-        }
+        runIntercepted(
+          () => {
+            render = main(data)
+          },
+          ctrl,
+          interceptions.init
+        )
 
         beforeMountNotifier.notify()
         refresh()
@@ -389,11 +382,9 @@ function buildCustomElementClass<T extends object, C>(
         }
 
         let content: C
-        const fns = interceptions.render
-        if (!fns.length) {
-          patch(render!(), contentElement!)
-        } else {
-          let next = () => {
+
+        runIntercepted(
+          () => {
             content = render!()
             // TODO
             try {
@@ -412,15 +403,10 @@ function buildCustomElementClass<T extends object, C>(
               hasUpdated = true
               afterUpdateNotifier.notify()
             }
-          }
-
-          for (let i = fns.length - 1; i >= 0; --i) {
-            const nextFn = next
-            next = () => void fns[i](ctrl, nextFn)
-          }
-
-          next()
-        }
+          },
+          ctrl,
+          interceptions.render
+        )
       }
 
       function createCtrl(host: HTMLElement): Ctrl {
@@ -558,6 +544,26 @@ function addPropsHandling(
         this.__ctrl.refresh()
       }
     })
+  }
+}
+
+function runIntercepted<T = null>(
+  action: () => void,
+  payload: T,
+  interceptors: ((payload: T, next: () => void) => void)[]
+) {
+  if (interceptors.length === 0) {
+    action()
+  } else {
+    let next: () => void = () => action()
+
+    for (let i = interceptors.length - 1; i >= 0; --i) {
+      const nextFn = next
+
+      next = () => void interceptors[i](payload, nextFn)
+    }
+
+    next()
   }
 }
 
