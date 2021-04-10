@@ -63,9 +63,21 @@ function h<P extends Props>(
   ...children: VNode[]
 ): VElement
 
-function h(type: string | Component<any>, props?: Props | null): VElement {
+function h<P extends Props>(
+  type: (props: P) => () => VNode,
+  ...children: VNode[]
+): VElement
+
+function h(
+  type: string | Component<any> | ((props: any) => () => VNode),
+  props?: any | null
+): VElement {
   const argc = arguments.length
-  const tagName = typeof type === 'function' ? (type as any).tagName : type
+  let tagName = typeof type === 'function' ? (type as any).tagName : type
+
+  if (!tagName && typeof type === 'function') {
+    return h('jse-cc', { ...props, fn: type, 'data-type': type.name }) // TODO!!!!
+  }
 
   if (process.env.NODE_ENV === ('development' as string)) {
     if (typeof tagName !== 'string') {

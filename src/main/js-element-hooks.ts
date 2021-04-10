@@ -226,9 +226,9 @@ export const useValue = hook('useValue', function <T>(initialValue: T): [
   return [() => value, setValue as any] // TODO
 })
 
-// === useData =======================================================
+// === useState =======================================================
 
-export const useData = hook('useData', function <
+export const useState = hook('useState', function <
   T extends Record<string, any>
 >(initialState: T): [T, StateUpdater<T>] {
   let nextState: any, // TODO
@@ -264,9 +264,9 @@ export const useData = hook('useData', function <
   return [state, setState as any] // TODO
 })
 
-// === useState ======================================================
+// === useReactive ======================================================
 
-export const useState = hook('useState', function <
+export const useReactive = hook('useReactive', function <
   S extends State
 >(state: S): S {
   const ret: any = {}
@@ -539,7 +539,7 @@ const initialState: PromiseRes<any> = {
 export const usePromise = hook('usePromise', function <
   T
 >(getPromise: () => Promise<T>, getDeps?: () => any[]) {
-  const [state, setState] = useData<PromiseRes<T>>(initialState)
+  const [state, setState] = useState<PromiseRes<T>>(initialState)
 
   let promiseIdx = -1
 

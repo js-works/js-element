@@ -13,7 +13,7 @@ import {
   useEffect,
   useEmitter,
   useMethods,
-  useData,
+  useState,
   useStatus
 } from 'js-element/hooks'
 
@@ -40,7 +40,7 @@ const Counter = define('complex-counter', CounterProps, (p) => {
   const status = useStatus()
   const emit = useEmitter()
 
-  const [s, set] = useData({
+  const [s, set] = useState({
     count: p.initialCount
   })
 

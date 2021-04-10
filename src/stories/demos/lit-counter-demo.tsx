@@ -1,8 +1,8 @@
 import { define, html } from 'js-element/lit'
-import { useState } from 'js-element/hooks'
+import { useReactive } from 'js-element/hooks'
 
 const LitCounter = define('lit-counter', () => {
-  const s = useState({ count: 0 })
+  const s = useReactive({ count: 0 })
   const onClick = () => s.count++
 
   return () => html`<button @click=${onClick}>Count: ${s.count}</button>`

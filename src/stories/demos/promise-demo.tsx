@@ -1,5 +1,5 @@
 import { define, h } from 'js-element'
-import { usePromise, useRefresher, useData } from 'js-element/hooks'
+import { usePromise, useRefresher, useState } from 'js-element/hooks'
 
 class DataLoaderProps {
   loadingText = 'Loading...'
@@ -23,7 +23,7 @@ const DataLoader = define('data-loader', DataLoaderProps, (p) => {
 })
 
 const PromiseDemo = define('promise-demo', () => {
-  const [s, set] = useData({
+  const [s, set] = useState({
     key: 0,
     loadingText: 'Loading...',
     finishText: 'Finished!'

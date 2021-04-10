@@ -1,8 +1,8 @@
 import { define, h, createRef } from 'js-element'
-import { useEffect, useState } from 'js-element/hooks'
+import { useEffect, useReactive } from 'js-element/hooks'
 
 const TempDemo = define('temp-demo', () => {
-  const state = useState({ clicked: false })
+  const state = useReactive({ clicked: false })
   const buttonRef = createRef<HTMLButtonElement>()
 
   const onClick = () => (state.clicked = true)

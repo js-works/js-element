@@ -4,7 +4,7 @@ import {
   useBeforeMount,
   useHost,
   useRefresher,
-  useState
+  useReactive
 } from 'js-element/hooks'
 export { initStore, createMobxHooks }
 
@@ -126,7 +126,7 @@ function createMobxHooks<S extends State>(): [(s: S) => S, () => S] {
   const eventName = 'js-element/utils::microstore::' + nextStoreId++
 
   const useMicrostoreProvider = hook('useMicrostoreProvider', (s: S) => {
-    const state = useState(s)
+    const state = useReactive(s)
     const host = useHost()
 
     useBeforeMount(() => {

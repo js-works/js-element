@@ -1,3 +1,5 @@
+import { patch } from './lib/superfine-patched'
+
 // === exports =======================================================
 
 // public API
@@ -5,6 +7,10 @@ export { adapt, attr, createCtx, createEvent, createRef }
 export { defineProvider, intercept, Attr }
 export { Component, Context, Ctrl }
 export { MethodsOf, Ref, Listener, TypedEvent }
+
+// === constants =====================================================
+
+const GENERIC_TAG_NAME = 'jse-cc'
 
 // === local data =====================================================
 
@@ -662,3 +668,93 @@ function combineStyles(
 
   return styles
 }
+
+// === GenericElement ================================================
+
+class GenericElement extends HTMLElement {
+  fn!: (props: Props) => () => any // TODO: VNode
+  private __initialized = false
+  private __mounted = false
+  private __render!: () => any // TODO: VNode
+  private __props: any = {}
+  private __contentElem: HTMLDivElement
+
+  private __ctrl: Ctrl = {
+    getName: () => '',
+
+    afterMount() {},
+
+    afterUpdate() {},
+
+    beforeMount() {},
+
+    beforeUnmount() {},
+
+    beforeUpdate() {},
+
+    getHost: () => {
+      return this
+    },
+
+    hasUpdated() {
+      return false
+    },
+
+    isInitialized: () => {
+      return this.__initialized
+    },
+
+    isMounted: () => {
+      return this.__mounted
+    },
+
+    onceBeforeUpdate() {},
+
+    refresh() {}
+  }
+
+  constructor() {
+    super()
+    this.attachShadow({ mode: 'open' })
+
+    const styleElem = document.createElement('style')
+    this.__contentElem = document.createElement('div')
+    this.__contentElem.append(document.createElement('div'))
+    this.shadowRoot!.append(styleElem, this.__contentElem)
+  }
+
+  connectedCallback() {
+    if (!this.__initialized) {
+      this.__render = this.fn(this.__props)
+      this.__initialized = true
+    }
+
+    patch(this.__contentElem.firstChild, this.__render())
+  }
+}
+
+Object.setPrototypeOf(
+  GenericElement.prototype,
+  new Proxy(HTMLElement.prototype, {
+    set(target, key, value, receiver) {
+      if (key === 'data-type') {
+        receiver.setAttribute('data-type', value)
+        return true
+      } else if (key in target) {
+        Reflect.set(target, key, value, receiver)
+
+        return true
+      } else {
+        receiver.__props[key] = value
+      }
+
+      return true
+    },
+
+    has(target, propName) {
+      return true
+    }
+  })
+)
+
+registerElement(GENERIC_TAG_NAME, GenericElement)

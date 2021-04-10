@@ -18,8 +18,8 @@ import { define, h, render } from 'js-element'
 import { useState } from 'js-element/hooks'
 
 const Counter = define('demo-counter', () => {
-  const state = useState({ count: 0 })
-  const onClick = () => state.count++
+  const [state, setState] = useState({ count: 0 })
+  const onClick = () => setState('count', it => it + 1)
 
   return () => ( 
     <button onclick={onClick}>
@@ -38,8 +38,8 @@ import { define, html, render } from 'js-element/lit'
 import { useState } from 'js-element/hooks'
 
 define('demo-counter', () => {
-  const state = useState({ count: 0 })
-  const onClick = () => state.count++
+  const [state, setState] = useState({ count: 0 })
+  const onClick = () => setState('count', it => it + 1) 
 
   return () => html`
     <button @click=${onClick}>
@@ -58,8 +58,8 @@ import { define, html, render } from 'js-element/uhtml'
 import { useState } from 'js-element/hooks'
 
 define('demo-counter', () => {
-  const state = useState({ count: 0 })
-  const onClick = () => state.count++
+  const [state, setState] = useState({ count: 0 })
+  const onClick = () => setState('count', it => it + 1)
 
   return () => html`
     <button @click=${onClick}>
@@ -115,11 +115,11 @@ const Counter = define({
   props: CounterProps,
   styles: counterStyles
 }).main((p) => {
-  const state = useState({
+  const [state, setState] = useState({
     count: p.initialCount
   })
 
-  const onClick = () => s.count++
+  const onClick = () => setState('count', it => it + 1)
 
   useAfterMount(() => {
     console.log(`"${p.label}" has been mounted`)
@@ -169,10 +169,10 @@ const ThemeCtx = createCtx('light')
 const ThemeProvider = defineProvider('theme-provider', ThemeCtx)
 
 const ContextDemo = define('context-demo', () => {
-  const state = useState({ theme: 'light' })
+  const [state, setState] = useState({ theme: 'light' })
 
   useInterval(() => {
-    state.theme = state.theme === 'light' ? 'dark' : 'light'
+    setState('theme', state.theme === 'light' ? 'dark' : 'light')
   }, 1000)
 
   return () => (
