@@ -76,7 +76,7 @@ function h(
   let tagName = typeof type === 'function' ? (type as any).tagName : type
 
   if (!tagName && typeof type === 'function') {
-    return h('jse-cc', { ...props, fn: type, 'data-type': type.name }) // TODO!!!!
+    return h('jse-cc', { ...props, __fn: type, 'data-type': type.name }) // TODO!!!!
   }
 
   if (process.env.NODE_ENV === ('development' as string)) {

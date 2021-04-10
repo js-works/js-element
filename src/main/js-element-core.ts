@@ -1,4 +1,4 @@
-import { patch } from './lib/superfine-patched'
+import { patch as superfinePatch } from './lib/superfine-patched'
 
 // === exports =======================================================
 
@@ -350,9 +350,11 @@ function buildCustomElementClass<T extends object, C>(
       }
 
       root.append(stylesElement, contentElement)
+
       this.connectedCallback = () => {
         runIntercepted(
           () => {
+            console.log(interceptions.init)
             render = main(data)
           },
           ctrl,
@@ -678,32 +680,30 @@ function combineStyles(
 // === GenericElement ================================================
 
 class GenericElement extends HTMLElement {
-  fn!: (props: Props) => () => any // TODO: VNode
+  private __fn!: (props: Props) => () => any // TODO: VNode
   private __initialized = false
   private __mounted = false
+  private __updated = false
+  private __hasRequestedRefresh = false
   private __render!: () => any // TODO: VNode
   private __props: any = {}
   private __contentElem: HTMLDivElement
+  private __beforeMountNotifier = createNotifier()
+  private __afterMountNotifier = createNotifier()
+  private __beforeUpdateNotifier = createNotifier()
+  private __afterUpdateNotifier = createNotifier()
+  private __beforeUnmountNotifier = createNotifier()
+  private __onceBeforeUpdateActions: (() => void)[] = []
 
   private __ctrl: Ctrl = {
     getName: () => '',
-
-    afterMount() {},
-
-    afterUpdate() {},
-
-    beforeMount() {},
-
-    beforeUnmount() {},
-
-    beforeUpdate() {},
 
     getHost: () => {
       return this
     },
 
-    hasUpdated() {
-      return false
+    hasUpdated: () => {
+      return this.__updated
     },
 
     isInitialized: () => {
@@ -714,9 +714,22 @@ class GenericElement extends HTMLElement {
       return this.__mounted
     },
 
-    onceBeforeUpdate() {},
+    refresh: () => {
+      if (!this.__hasRequestedRefresh) {
+        this.__hasRequestedRefresh = true
 
-    refresh() {}
+        requestAnimationFrame(() => {
+          this.__hasRequestedRefresh = false
+          this.__performRendering()
+        })
+      }
+    },
+    beforeMount: this.__beforeMountNotifier.subscribe,
+    afterMount: this.__afterMountNotifier.subscribe,
+    onceBeforeUpdate: (task) => void this.__onceBeforeUpdateActions.push(task),
+    beforeUpdate: this.__beforeUpdateNotifier.subscribe,
+    afterUpdate: this.__afterUpdateNotifier.subscribe,
+    beforeUnmount: this.__beforeUnmountNotifier.subscribe
   }
 
   constructor() {
@@ -731,11 +744,61 @@ class GenericElement extends HTMLElement {
 
   connectedCallback() {
     if (!this.__initialized) {
-      this.__render = this.fn(this.__props)
+      runIntercepted(
+        () => {
+          this.__render = this.__fn(this.__props)
+          console.log(111, this.__render)
+        },
+        this.__ctrl,
+        interceptions.init
+      )
+
       this.__initialized = true
     }
 
-    patch(this.__contentElem.firstChild, this.__render())
+    this.__performRendering()
+
+    //    patch(this.__contentElem.firstChild, this.__render())
+  }
+
+  private __performRendering() {
+    if (this.__mounted) {
+      if (this.__onceBeforeUpdateActions.length) {
+        try {
+          this.__onceBeforeUpdateActions.forEach((action) => action())
+        } finally {
+          this.__onceBeforeUpdateActions.length = 0
+        }
+      }
+
+      this.__beforeUpdateNotifier.notify()
+    }
+
+    // TODO xxxx
+    runIntercepted(
+      () => {
+        const content = this.__render!()
+        // TODO
+        try {
+          superfinePatch(this.__contentElem.firstChild, content)
+        } catch (e) {
+          console.error(`Render error in "${this.__ctrl.getName()}"`)
+          throw e
+        }
+      },
+      this.__ctrl,
+      interceptions.render
+    )
+
+    this.__initialized = true
+
+    if (!this.__mounted) {
+      this.__mounted = true
+      this.__afterMountNotifier.notify()
+    } else {
+      this.__updated = true
+      this.__afterUpdateNotifier.notify()
+    }
   }
 }
 

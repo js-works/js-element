@@ -1,6 +1,5 @@
-import { intercept, Component, Context, Ctrl, Ref } from 'js-element/core'
-//import { observable, observe } from '@nx-js/observer-util'
-import { autorun, isObservable, observable } from 'mobx'
+import { intercept, Context, Ctrl, Ref } from 'js-element/core'
+import { isObservable, observable, observe } from '@nx-js/observer-util'
 
 // === constants =====================================================
 
@@ -274,7 +273,7 @@ export const useReactive = hook('useReactive', function <
 
   if (!observerInterceptorAdded) {
     intercept('render', (ctrl, next) => {
-      autorun(() => {
+      observe(() => {
         next()
       })
     })
