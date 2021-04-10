@@ -586,9 +586,10 @@ function combineStyles(
 // === GenericElement ================================================
 
 class GenericElement extends BaseElement {
+  private __props = {}
+
   constructor() {
     super()
-    ;(this as any).__props = {}
 
     enhanceHost(
       this,
@@ -601,12 +602,16 @@ class GenericElement extends BaseElement {
 
 Object.setPrototypeOf(
   GenericElement.prototype,
-  new Proxy(HTMLElement.prototype, {
+  new Proxy(BaseElement.prototype, {
+    getPrototypeOf(target) {
+      return target
+    },
+
     set(target, key, value, receiver) {
       if (key === 'data-type') {
         receiver.setAttribute('data-type', value)
         return true
-      } else if (key in target) {
+      } else if (key in target || key === '__fn') {
         Reflect.set(target, key, value, receiver)
 
         return true

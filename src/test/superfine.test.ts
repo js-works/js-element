@@ -1,4 +1,5 @@
-import { h, patch } from '../main/lib/superfine'
+// @ts-igore
+import { h, patch } from '../main/lib/superfine-patched'
 
 // === DOM helper object =============================================
 
