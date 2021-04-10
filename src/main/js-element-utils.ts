@@ -1,12 +1,12 @@
-import {
-  hook,
-  useAfterMount,
-  useBeforeMount,
-  useHost,
-  useRefresher,
-  useReactive
-} from 'js-element/hooks'
+import { intercept } from 'js-element'
+import { hook, useBeforeMount, useHost } from 'js-element/hooks'
+import { autorun } from 'mobx'
+
 export { initStore, createMobxHooks }
+
+// === data ==========================================================
+
+let mobxInterceptorRegistered = false
 
 // === types =========================================================
 
@@ -119,34 +119,44 @@ function initStore<S extends State>(arg1: any, arg2?: any): InitStoreResult<S> {
 let nextStoreId = 1
 
 function createMobxHooks<S extends State>(): [(s: S) => S, () => S] {
+  if (!mobxInterceptorRegistered) {
+    intercept('render', (ctlr, next) => {
+      autorun(next)
+    })
+
+    mobxInterceptorRegistered = true
+  }
+
   type ObservableEvent = CustomEvent<{
     callback: (state: S) => void
   }>
 
   const eventName = 'js-element/utils::mobx::' + nextStoreId++
 
-  const useObservableProvider = hook('useObservableProvider', (s: S) => {
-    const state = useReactive(s)
-    const host = useHost()
+  const useObservableProvider = hook(
+    'useObservableProvider',
+    (observable: S) => {
+      const host = useHost()
 
-    useBeforeMount(() => {
-      const listener = (ev: ObservableEvent) => {
-        ev.stopPropagation()
-        ev.detail.callback(state)
-      }
+      useBeforeMount(() => {
+        const listener = (ev: ObservableEvent) => {
+          ev.stopPropagation()
+          ev.detail.callback(observable)
+        }
 
-      host.addEventListener(eventName as any, listener)
+        host.addEventListener(eventName as any, listener)
 
-      return () => {
-        removeEventListener(eventName as any, listener)
-      }
-    })
+        return () => {
+          removeEventListener(eventName as any, listener)
+        }
+      })
 
-    return state
-  })
+      return observable
+    }
+  )
 
   const useObservable = () => {
-    let state: S | null = null
+    let observable: S | null = null
 
     const host = useHost()
 
@@ -154,8 +164,8 @@ function createMobxHooks<S extends State>(): [(s: S) => S, () => S] {
       host.dispatchEvent(
         new CustomEvent(eventName, {
           detail: {
-            callback: (s: S) => {
-              state = s
+            callback: (obs: S) => {
+              observable = obs
             }
           },
 
@@ -169,19 +179,19 @@ function createMobxHooks<S extends State>(): [(s: S) => S, () => S] {
       {},
       {
         get(target, key) {
-          if (!state) {
+          if (!observable) {
             throw new Error('No mobx observable provided')
           }
 
-          return state[key as any]
+          return observable[key as any]
         },
 
         set(target: object, key: string | symbol, value: any) {
-          if (!state) {
+          if (!observable) {
             throw new Error('Observable not available')
           }
 
-          ;(state as any)[key] = value
+          ;(observable as any)[key] = value
           return true
         }
       }

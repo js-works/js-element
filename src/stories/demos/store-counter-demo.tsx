@@ -29,8 +29,8 @@ const CounterDemo = define('store-counter-demo', () => {
 
   return () => (
     <div>
-      <button onclick={onDecrement}>-</button>
       <Counter />
+      <button onclick={onDecrement}>-</button>
       <button onclick={onIncrement}>+</button>
     </div>
   )

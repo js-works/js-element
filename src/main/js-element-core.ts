@@ -331,10 +331,9 @@ function buildCustomElementClass<T extends object, C>(
       }
 
       if (combinedStyles) {
-        // TODO!!!!!!!!!!!!!!!!!!!!!!!
-        //  this.shadowRoot!.firstChild!.appendChild(
-        //   document.createTextNode(combinedStyles)
-        // )
+        this.shadowRoot!.firstChild!.appendChild(
+          document.createTextNode(combinedStyles)
+        )
       }
     }
   }
@@ -347,6 +346,15 @@ function buildCustomElementClass<T extends object, C>(
 // === BaseElement ===================================================
 
 class BaseElement extends HTMLElement {
+  constructor() {
+    super()
+    const styleElement = document.createElement('style')
+    const contentElement = document.createElement('div')
+
+    this.attachShadow({ mode: 'open' })
+    contentElement.append(document.createElement('span'))
+    this.shadowRoot!.append(styleElement, contentElement)
+  }
   connectedCallback() {
     this.connectedCallback()
   }
@@ -630,7 +638,7 @@ function enhanceHost(
   let shallCommit = false
   let getContent: () => any // TODO
 
-  const contentElement = document.createElement('div')
+  const contentElement = host.shadowRoot!.children[1] as HTMLElement
   const beforeMountNotifier = createNotifier()
   const afterMountNotifier = createNotifier()
   const beforeUpdateNotifier = createNotifier()
@@ -679,6 +687,11 @@ function enhanceHost(
     // TODO xxxx
     runIntercepted(
       () => {
+        if (!getContent) {
+          // TODO: why is this happening sometimes
+          return
+        }
+
         const content = getContent()
         // TODO
         try {
@@ -705,12 +718,6 @@ function enhanceHost(
 
   host.connectedCallback = () => {
     if (!initialized) {
-      const styleElement = document.createElement('style')
-
-      contentElement.append(document.createElement('div'))
-      host.attachShadow({ mode: 'open' })
-      host.shadowRoot!.append(styleElement, contentElement)
-
       runIntercepted(
         () => {
           getContent = mainFn(props)
@@ -719,6 +726,8 @@ function enhanceHost(
         interceptions.init
       )
     }
+
+    beforeMountNotifier.notify()
 
     commit()
   }

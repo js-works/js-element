@@ -273,9 +273,7 @@ export const useReactive = hook('useReactive', function <
 
   if (!observerInterceptorAdded) {
     intercept('render', (ctrl, next) => {
-      observe(() => {
-        next()
-      })
+      observe(next)
     })
 
     observerInterceptorAdded = true
