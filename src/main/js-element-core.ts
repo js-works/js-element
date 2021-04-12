@@ -16,9 +16,12 @@ export { defineProvider, intercept, Attr }
 export { Component, Context, Ctrl }
 export { MethodsOf, Ref, Listener, TypedEvent }
 
+// TODO!!!!!
+export { registerElement, enhanceHost, BaseElement }
+
 // === constants =====================================================
 
-const GENERIC_TAG_NAME = 'jse-cc'
+const GENERIC_TAG_NAME = 'jse-generic'
 
 // === local data =====================================================
 
@@ -305,7 +308,7 @@ function buildCustomElementClass<T extends object, C>(
 
       const data: any = propsClass ? new propsClass() : {}
       ;(this as any).__data = data
-      ;(this as any).__ctrl = enhanceHost(this, main, render, data)
+      ;(this as any).__ctrl = enhanceHost(this, name, main, render, data)
 
       if (propInfoMap && propInfoMap.has('ref')) {
         let componentMethods: any = null
@@ -348,13 +351,14 @@ function buildCustomElementClass<T extends object, C>(
 class BaseElement extends HTMLElement {
   constructor() {
     super()
-    const styleElement = document.createElement('style')
+    const stylesElement = document.createElement('div')
     const contentElement = document.createElement('div')
-
+    console.log('attached')
     this.attachShadow({ mode: 'open' })
     contentElement.append(document.createElement('span'))
-    this.shadowRoot!.append(styleElement, contentElement)
+    this.shadowRoot!.append(stylesElement, contentElement)
   }
+
   connectedCallback() {
     this.connectedCallback()
   }
@@ -593,9 +597,14 @@ class GenericElement extends BaseElement {
 
     enhanceHost(
       this,
-      (props: any) => (this as any).__fn(props),
+      '::generic::', // TODO
+      (props: any) => {
+        const ret = (this as any).__fn(props)
+        console.log(ret)
+        return ret
+      },
       superfineRender,
-      (this as any).__props
+      this.__props
     )
   }
 }
@@ -610,11 +619,8 @@ Object.setPrototypeOf(
     set(target, key, value, receiver) {
       if (key === 'data-type') {
         receiver.setAttribute('data-type', value)
-        return true
-      } else if (key in target || key === '__fn') {
+      } else if (key in target || key === '__fn' || key === '__props') {
         Reflect.set(target, key, value, receiver)
-
-        return true
       } else {
         receiver.__props[key] = value
       }
@@ -633,6 +639,7 @@ registerElement(GENERIC_TAG_NAME, GenericElement)
 // TODO - return value, see `any`
 function enhanceHost(
   host: BaseElement,
+  name: string,
   mainFn: (props: any) => () => any,
   render: (content: any, target: HTMLElement) => void,
   props: any
@@ -652,7 +659,7 @@ function enhanceHost(
   const onceBeforeUpdateActions: (() => void)[] = []
 
   const ctrl: Ctrl = {
-    getName: () => host.tagName, // TODO!!!!
+    getName: () => name,
     getHost: () => host,
     isInitialized: () => initialized,
     isMounted: () => mounted,

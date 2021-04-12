@@ -1,5 +1,5 @@
 import { attr, define, h, Attr } from 'js-element'
-import { useReactive, useState } from 'js-element/hooks'
+import { useDefaults, useReactive, useState } from 'js-element/hooks'
 
 class CounterProps {
   @attr(Attr.number, true)
@@ -9,18 +9,31 @@ class CounterProps {
   label = 'Counter'
 }
 
-function Counter(p: { initialCount?: number; label?: string }) {
-  const [s, set] = useState({ count: p.initialCount || 0 })
+function Counter(props: { initialCount?: number; label?: string }) {
+  const p = useDefaults(props, {
+    initialCount: 100,
+    label: 'Counter'
+  })
+
+  const [s, set] = useState({ count: p.initialCount })
   const onClick = () => set('count', (it) => it + 1)
 
-  return () => <button onclick={onClick}>Count: {s.count}</button>
+  return () => (
+    <button onclick={onClick}>
+      {p.label}: {s.count}
+    </button>
+  )
 }
 
 function Test() {
   const s = useReactive({ count: 0 })
   const onClick = () => s.count++
 
-  return () => <button onclick={onClick}>Count: {s.count}</button>
+  return () => (
+    <div style="border: 1px solid red; z-index: 100;">
+      <slot>placeholder</slot>
+    </div>
+  )
 }
 
 /*
@@ -46,8 +59,10 @@ const CounterDemo = define('simple-counter-demo', () => {
   return () => (
     <div>
       <h3>Simple counter demo</h3>
-      <Counter label="Counter" initialCount={100} />
-      <Test />
+      <Counter initialCount={33} />
+      <Test>
+        <div>xxx</div>
+      </Test>
     </div>
   )
 })

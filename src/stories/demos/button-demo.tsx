@@ -31,7 +31,7 @@ const DemoButton = define({
   name: 'demo-button',
   props: ButtonProps,
   styles: buttonDemoStyles
-})((props) => {
+}).main((props) => {
   const emit = useEmitter()
 
   const onClick = () => {

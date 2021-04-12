@@ -5,18 +5,16 @@ export = JSX
 
 declare global {
   namespace JSX {
-    interface xHTMLAttributes<T> {}
-  }
-}
-
-declare global {
-  namespace JSX {
     interface HTMLAttributes<T> {
       ref?: { current: T | null } | ((elem: T) => void) // TODO
     }
 
     interface IntrinsicAttributes {
+      // TODO!!!!!!!!!!!!!!
       key?: string | number
+      class?: string
+      style?: string
+      id?: string
     }
 
     interface Element extends VElement<any> {}

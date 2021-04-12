@@ -2,6 +2,9 @@ import htm from 'htm'
 import { adapt, Component } from 'js-element/core'
 import { h as createElement, text, patch } from './lib/superfine-patched'
 
+import { registerElement, BaseElement, enhanceHost } from './js-element-core'
+import { VirtualTimeScheduler } from 'rxjs'
+
 export {
   attr,
   createCtx,
@@ -25,6 +28,11 @@ export const { define, render } = adapt<VElement, VNode>({
 
 export { h, VNode, VElement }
 export const html = htm.bind(h)
+
+// === data ==========================================================
+
+let nextTagNameId = 1
+const tagNameCounts = new Map<string, number>()
 
 // === types =========================================================
 
@@ -69,14 +77,38 @@ function h<P extends Props>(
 ): VElement
 
 function h(
-  type: string | Component<any> | ((props: any) => () => VNode),
+  type: any, //string | Component<any> | ((props: any) => () => VNode),
   props?: any | null
 ): VElement {
   const argc = arguments.length
   let tagName = typeof type === 'function' ? (type as any).tagName : type
 
   if (!tagName && typeof type === 'function') {
-    return h('jse-cc', { ...props, __fn: type, 'data-type': type.name }) // TODO!!!!
+    class CustomElement extends ProxyElement {
+      constructor() {
+        super()
+        const props = {}
+        enhanceHost(this, tagName, type, renderContent, props)
+      }
+    }
+
+    const name = toKebabCase(type.name)
+
+    if (!tagNameCounts.has(name)) {
+      tagNameCounts.set(name, 1)
+      tagName = name + '--n1'
+    } else {
+      const count = tagNameCounts.get(name)!
+
+      tagNameCounts.set(name, count + 1)
+      tagName = name + '--n' + (count + 1)
+    }
+
+    Object.defineProperty(type, 'tagName', {
+      value: tagName
+    })
+
+    registerElement(tagName, CustomElement)
   }
 
   if (process.env.NODE_ENV === ('development' as string)) {
@@ -110,3 +142,42 @@ function h(
 
 const EMPTY_ARR: any[] = []
 const EMPTY_OBJ = {}
+
+class ProxyElement extends BaseElement {
+  private __props: any = {}
+}
+
+Object.setPrototypeOf(
+  ProxyElement.prototype,
+  new Proxy(BaseElement.prototype, {
+    getPrototypeOf(target) {
+      return target
+    },
+
+    set(target, key, value, receiver) {
+      if (key === 'data-type') {
+        receiver.setAttribute('data-type', value)
+        return true
+      } else if (key in target || key === '__fn') {
+        Reflect.set(target, key, value, receiver)
+
+        return true
+      } else {
+        receiver.__props[key] = value
+      }
+
+      return true
+    },
+
+    has(target, propName) {
+      return true
+    }
+  })
+)
+
+function toKebabCase(s: string) {
+  return s
+    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .replace(/[\s_]+/g, '-')
+    .toLowerCase()
+}

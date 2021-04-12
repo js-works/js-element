@@ -201,6 +201,27 @@ export const useStatus = hook('useStatus', function (): {
   }
 })
 
+// === useDefault ====================================================
+
+export const useDefaults = hook('useDefaults', function <
+  P extends Record<string, any>,
+  D extends Partial<P>
+>(props: P, defaults: D): P & Required<D> {
+  const c = currentCtrl!
+
+  const ret = Object.assign({}, defaults, props)
+
+  c.beforeUpdate(() => {
+    for (const key in ret) {
+      delete ret[key]
+    }
+
+    Object.assign(ret, defaults, props)
+  })
+
+  return ret as any
+})
+
 // === useValue ======================================================
 
 export const useValue = hook('useValue', function <T>(initialValue: T): [
@@ -290,6 +311,35 @@ export const useReactive = hook('useReactive', function <
   return ret
 */
   return isObservable(state) ? state : observable(state)
+})
+
+// === useStyles =======================================================
+
+function addStyles(
+  stylesContainer: Element,
+  styles: string[] | HTMLStyleElement
+): void {
+  if (styles instanceof HTMLStyleElement) {
+    stylesContainer.appendChild(styles)
+  } else {
+    const css = styles.join('\n\n/* =============== */\n\n')
+    const styleElem = document.createElement('style')
+
+    styleElem.appendChild(document.createTextNode(css))
+    stylesContainer.appendChild(styleElem)
+  }
+}
+
+export const useStyles = hook('useStyles', (...styles: string[]) => {
+  const c = currentCtrl!
+
+  const ret = (...styles: string[]) => {
+    addStyles(c.getHost().shadowRoot!.firstChild as Element, styles)
+  }
+
+  ret.apply(null, styles)
+
+  return ret
 })
 
 // === useEmitter ======================================================
