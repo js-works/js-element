@@ -111,10 +111,10 @@ class CounterProps {
 }
 
 const Counter = define({
-  name: 'demo-counter',
+  tag: 'demo-counter',
   props: CounterProps,
   styles: counterStyles
-}).main((p) => {
+}).bind((p) => {
   const [state, setState] = useState({
     count: p.initialCount
   })

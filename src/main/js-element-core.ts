@@ -19,10 +19,6 @@ export { MethodsOf, Ref, Listener, TypedEvent }
 // TODO!!!!!
 export { registerElement, enhanceHost, BaseElement }
 
-// === constants =====================================================
-
-const GENERIC_TAG_NAME = 'jse-generic'
-
 // === local data =====================================================
 
 const attrInfoMapByPropsClass = new Map<PropsClass<any>, AttrInfoMap>()
@@ -338,9 +334,10 @@ function buildCustomElementClass<T extends object, C>(
       }
 
       if (combinedStyles) {
-        this.shadowRoot!.firstChild!.appendChild(
-          document.createTextNode(combinedStyles)
-        )
+        const styleElem = document.createElement('style')
+
+        styleElem.appendChild(document.createTextNode(combinedStyles))
+        this.shadowRoot!.firstChild!.appendChild(styleElem)
       }
     }
   }
@@ -559,7 +556,12 @@ function registerElement(
 ): void {
   if (customElements.get(tagName)) {
     console.clear()
-    location.reload()
+    console.log(`Custom element ${tagName} already defined -> reloading...`)
+
+    setTimeout(() => {
+      console.clear()
+      location.reload()
+    }, 1000)
   } else {
     customElements.define(tagName, elementClass)
   }
@@ -590,55 +592,6 @@ function combineStyles(
 
   return styles
 }
-
-// === GenericElement ================================================
-
-class GenericElement extends BaseElement {
-  private __props = {}
-
-  constructor() {
-    super()
-
-    enhanceHost(
-      this,
-      '::generic::', // TODO
-      (props: any) => {
-        const ret = (this as any).__fn(props)
-        console.log(ret)
-        return ret
-      },
-      superfineRender,
-      this.__props
-    )
-  }
-}
-
-Object.setPrototypeOf(
-  GenericElement.prototype,
-  new Proxy(BaseElement.prototype, {
-    getPrototypeOf(target) {
-      return target
-    },
-
-    set(target, key, value, receiver) {
-      if (key === 'data-type') {
-        receiver.setAttribute('data-type', value)
-      } else if (key in target || key === '__fn' || key === '__props') {
-        Reflect.set(target, key, value, receiver)
-      } else {
-        receiver.__props[key] = value
-      }
-
-      return true
-    },
-
-    has(target, propName) {
-      return true
-    }
-  })
-)
-
-registerElement(GENERIC_TAG_NAME, GenericElement)
 
 // TODO - return value, see `any`
 function enhanceHost(
@@ -704,7 +657,7 @@ function enhanceHost(
     runIntercepted(
       () => {
         if (!getContent) {
-          // TODO: why is this happening sometimes
+          // TODO: why is this happening sometimes?
           return
         }
 
