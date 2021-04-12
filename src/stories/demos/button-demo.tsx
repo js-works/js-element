@@ -31,7 +31,7 @@ const DemoButton = define({
   tag: 'demo-button',
   props: ButtonProps,
   styles: buttonDemoStyles
-}).main((props) => {
+}).bind((props) => {
   const emit = useEmitter()
 
   const onClick = () => {

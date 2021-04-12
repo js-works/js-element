@@ -354,7 +354,6 @@ class BaseElement extends HTMLElement {
     super()
     const stylesElement = document.createElement('div')
     const contentElement = document.createElement('div')
-    console.log('attached')
     this.attachShadow({ mode: 'open' })
     contentElement.append(document.createElement('span'))
     this.shadowRoot!.append(stylesElement, contentElement)
