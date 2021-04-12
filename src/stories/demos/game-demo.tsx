@@ -191,7 +191,7 @@ const [useStoreProvider, useSelectors] = createStoreHooks<AppState>()
 // === components ====================================================
 
 const Field = define({
-  name: 'x-field',
+  tag: 'x-field',
   styles: () => styles.field
 })(() => {
   const style = `
@@ -207,7 +207,7 @@ const Field = define({
 })
 
 const Ball = define({
-  name: 'x-ball',
+  tag: 'x-ball',
   styles: () => styles.ball
 })(() => {
   const stateSel = useSelectors(StateSel)
@@ -225,7 +225,7 @@ const Ball = define({
 })
 
 const Racket = define({
-  name: 'x-racket',
+  tag: 'x-racket',
   styles: () => styles.racket
 })(() => {
   const stateSel = useSelectors(StateSel)
@@ -242,7 +242,7 @@ const Racket = define({
 })
 
 const Scoreboard = define({
-  name: 'x-scoreboard',
+  tag: 'x-scoreboard',
   styles: () => styles.scoreboard
 })(() => {
   const stateSel = useSelectors(StateSel)
@@ -259,7 +259,7 @@ const Scoreboard = define({
 })
 
 const CountdownPane = define({
-  name: 'x-countdown-pane',
+  tag: 'x-countdown-pane',
   styles: () => styles.countdownPane
 })(() => {
   const [state, setState] = useState({
@@ -284,7 +284,7 @@ const CountdownPane = define({
 })
 
 const AlarmPane = define({
-  name: 'x-alarm-pane',
+  tag: 'x-alarm-pane',
   styles: () => styles.alarmPane
 })(() => {
   const getLightClass = useTimer(150, (idx) =>
@@ -295,7 +295,7 @@ const AlarmPane = define({
 })
 
 const Game = define({
-  name: 'x-game',
+  tag: 'x-game',
   styles: () => styles.game
 })(() => {
   const actions = useActions(ActionMsg)

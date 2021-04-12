@@ -28,7 +28,7 @@ class ButtonProps {
 }
 
 const DemoButton = define({
-  name: 'demo-button',
+  tag: 'demo-button',
   props: ButtonProps,
   styles: buttonDemoStyles
 }).main((props) => {

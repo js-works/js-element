@@ -227,7 +227,7 @@ function createDefiner<C>(
   patch: (content: C, target: Element) => void
 ): {
   <P extends Props = {}>(config: {
-    name: string
+    tag: string
     props?: PropsClass<P>
     slots?: string[]
     uses?: string[]
@@ -238,36 +238,40 @@ function createDefiner<C>(
   (name: string, init: () => () => C): Component<{}>
 
   <P extends Props>(
-    name: string,
+    tag: string,
     propsClass: PropsClass<P>,
     init: (props: P) => () => C
   ): Component<P>
 
   <P extends Props = {}>(config: {
-    name: string
+    tag: string
     props?: PropsClass<P>
     slots?: string[]
     uses?: (object | Function)[]
     styles?: string | string[] | (() => string | string[])
   }): {
     (init: (props: P) => () => C): Component<P>
+    bind(init: (props: P) => () => C): Component<P>
     main(init: (props: P) => () => C): Component<P>
+    init(init: (props: P) => () => C): Component<P>
   }
 } {
   return function define(arg1: any, arg2?: any, arg3?: any): any {
     if (typeof arg1 === 'string') {
       return arg3
-        ? define({ name: arg1, props: arg2, init: arg3 })
-        : define({ name: arg1, init: arg2 })
+        ? define({ tag: arg1, props: arg2, init: arg3 })
+        : define({ tag: arg1, init: arg2 })
     } else if (!arg1.init) {
       // TODO
       const ret = (init: () => () => C) => define({ ...arg1, init })
+      ret.bind = ret
       ret.main = ret
+      ret.init = ret
 
       return ret
     }
 
-    const tagName = arg1.name
+    const tagName = arg1.tag
     const propsClass = arg1.props || null
 
     const attrInfoMap =

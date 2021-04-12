@@ -38,7 +38,7 @@ function Test() {
 
 /*
 const Counter = define({
-  name: 'simple-counter',
+ tag: 'simple-counter',
   props: CounterProps
 }).main((p) => {
   const s = useReactive({
