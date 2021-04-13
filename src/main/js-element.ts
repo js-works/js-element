@@ -88,11 +88,13 @@ function h(
   let tagName = typeof type === 'function' ? (type as any).tagName : type
 
   if (!tagName && typeof type === 'function') {
-    class CustomElement extends ProxyElement {
+    class CustomElement extends BaseElement {
+      private __alwaysSetProps = true
+      private __props = {}
+
       constructor() {
         super()
-        const props = {}
-        enhanceHost(this, tagName, type, renderContent, props)
+        enhanceHost(this, tagName, type, renderContent, this.__props)
       }
     }
 
@@ -146,63 +148,6 @@ function h(
 
 const EMPTY_ARR: any[] = []
 const EMPTY_OBJ = {}
-
-class ProxyElement extends BaseElement {
-  private __props: any = {}
-}
-
-Object.setPrototypeOf(
-  ProxyElement.prototype,
-  new Proxy(BaseElement.prototype, {
-    getPrototypeOf(target) {
-      return target
-    },
-
-    set(target, key, value, receiver) {
-      console.log(333, 'setting...', key, value)
-
-      if (key in target || key === '__props') {
-        Reflect.set(target, key, value, receiver)
-
-        return true
-      } else {
-        if (!receiver.__props) {
-          console.log(111, key, receiver, value)
-        }
-        receiver.__props[key] = value
-      }
-
-      console.log(444, key)
-      return true
-    },
-
-    get(target, key, receiver) {
-      if (key in target || key === '__props') {
-        return Reflect.get(target, key, receiver)
-      } else {
-        if (!receiver.__props) {
-          console.log(1111, key, Object.keys(receiver), Object.keys(target))
-
-          return Reflect.get(target, key, receiver)
-        }
-
-        console.log(222, key, receiver.__props)
-
-        return receiver.__props[key]
-      }
-    },
-
-    has(target, propName) {
-      console.log(5555, propName)
-
-      const ret =
-        propName in target || (target.__props && propName in target.__props)
-      console.log(6666, propName, ret)
-
-      return ret
-    }
-  })
-)
 
 function toKebabCase(s: string) {
   return s

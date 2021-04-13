@@ -20,8 +20,6 @@ var patchProperty = (node, key, oldValue, newValue, isSvg) => {
       oldValue && passToRef(oldValue, null)
       newValue && passToRef(newValue, node)
     }
-  } else if (!isSvg && key !== 'list' && key !== 'form' && key in node) {
-    node[key] = newValue == null ? '' : newValue
   } else if (key[0] === 'o' && key[1] === 'n') {
     // TODO // Patch: This "starts with 'on'" condition has been moved
     if (
@@ -30,6 +28,17 @@ var patchProperty = (node, key, oldValue, newValue, isSvg) => {
       node.removeEventListener(key, listener)
     } else if (!oldValue) {
       node.addEventListener(key, listener)
+    }
+  } else if (
+    !isSvg &&
+    key !== 'list' &&
+    key !== 'form' &&
+    (key in node || (node.__alwaysSetProps && !key.includes('-'))) // TODO: Patch
+  ) {
+    if (!node.__alwaysSetProps) {
+      node[key] = newValue == null ? '' : newValue // TODO: Patch
+    } else {
+      node.__props[key] = newValue
     }
   } else if (newValue == null || newValue === false) {
     node.removeAttribute(key)
