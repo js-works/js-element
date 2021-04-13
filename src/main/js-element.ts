@@ -117,7 +117,7 @@ function h(
       }
     }
 
-    const name = toKebabCase(type.name)
+    const name = type.name ? toKebabCase(type.name) : 'ce'
 
     if (!tagNameCounts.has(name)) {
       tagNameCounts.set(name, 1)
