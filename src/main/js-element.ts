@@ -2,8 +2,12 @@ import htm from 'htm'
 import { adapt, Component } from 'js-element/core'
 import { h as createElement, text, patch } from './lib/superfine-patched'
 
-import { registerElement, BaseElement, enhanceHost } from './js-element-core'
-import { VirtualTimeScheduler } from 'rxjs'
+// TODO - this is evil !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+const {
+  registerElement,
+  BaseElement,
+  enhanceHost
+} = adapt.prototype.toString.__getHiddenAPI()
 
 export {
   attr,
@@ -155,22 +159,47 @@ Object.setPrototypeOf(
     },
 
     set(target, key, value, receiver) {
-      if (key === 'data-type') {
-        receiver.setAttribute('data-type', value)
-        return true
-      } else if (key in target || key === '__fn') {
+      console.log(333, 'setting...', key, value)
+
+      if (key in target || key === '__props') {
         Reflect.set(target, key, value, receiver)
 
         return true
       } else {
+        if (!receiver.__props) {
+          console.log(111, key, receiver, value)
+        }
         receiver.__props[key] = value
       }
 
+      console.log(444, key)
       return true
     },
 
+    get(target, key, receiver) {
+      if (key in target || key === '__props') {
+        return Reflect.get(target, key, receiver)
+      } else {
+        if (!receiver.__props) {
+          console.log(1111, key, Object.keys(receiver), Object.keys(target))
+
+          return Reflect.get(target, key, receiver)
+        }
+
+        console.log(222, key, receiver.__props)
+
+        return receiver.__props[key]
+      }
+    },
+
     has(target, propName) {
-      return true
+      console.log(5555, propName)
+
+      const ret =
+        propName in target || (target.__props && propName in target.__props)
+      console.log(6666, propName, ret)
+
+      return ret
     }
   })
 )

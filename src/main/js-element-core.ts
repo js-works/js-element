@@ -1,13 +1,5 @@
 import { patch as superfinePatch } from './lib/superfine-patched'
 
-const superfineRender = (content: any, target: HTMLElement) => {
-  if (!target.firstChild) {
-    target.append(document.createElement('div'))
-  }
-
-  superfinePatch(target.firstChild, content)
-}
-
 // === exports =======================================================
 
 // public API
@@ -16,8 +8,19 @@ export { defineProvider, intercept, Attr }
 export { Component, Context, Ctrl }
 export { MethodsOf, Ref, Listener, TypedEvent }
 
-// TODO!!!!!
-export { registerElement, enhanceHost, BaseElement }
+// TODO - this is evil !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// hidden API
+const getHiddenAPI = () => ({ registerElement, enhanceHost, BaseElement })
+
+const toString = () => adapt.prototype.toString()
+
+Object.defineProperty(toString, '__getHiddenAPI', {
+  value: getHiddenAPI
+})
+
+Object.defineProperty(adapt.prototype, 'toString', {
+  value: toString
+})
 
 // === local data =====================================================
 
