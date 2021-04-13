@@ -1,12 +1,13 @@
 import htm from 'htm'
-import { adapt, Component } from 'js-element/core'
+import { adapt, Component, Ctrl } from 'js-element/core'
 import { h as createElement, text, patch } from './lib/superfine-patched'
 
 // TODO - this is evil !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 const {
+  createComponentType,
+  enhanceHost,
   registerElement,
-  BaseElement,
-  enhanceHost
+  BaseElement
 } = adapt.prototype.toString.__getHiddenAPI()
 
 export {
@@ -17,6 +18,7 @@ export {
   defineProvider,
   intercept,
   Attr,
+  Ctrl,
   Component,
   Context,
   Listener,
@@ -30,7 +32,7 @@ export const { define, render } = adapt<VElement, VNode>({
   patchContent: renderContent
 })
 
-export { h, VNode, VElement }
+export { h, toComponent, VNode, VElement }
 export const html = htm.bind(h)
 
 // === data ==========================================================
@@ -59,6 +61,16 @@ function renderContent(content: VNode, target: Element) {
 
 function asVNode(x: any): any {
   return typeof x === 'number' || typeof x === 'string' ? text(x, null) : x
+}
+
+// === toComponent ===================================================
+
+function toComponent<P extends Props = any>(
+  tagName: string,
+  customElementClass: { new (): HTMLElement },
+  deps?: any[]
+): Component<P> {
+  return createComponentType(tagName)
 }
 
 // === h ==============================================================
@@ -91,10 +103,17 @@ function h(
     class CustomElement extends BaseElement {
       private __alwaysSetProps = true
       private __props = {}
+      private __ctrl: Ctrl
 
       constructor() {
         super()
-        enhanceHost(this, tagName, type, renderContent, this.__props)
+        this.__ctrl = enhanceHost(
+          this,
+          tagName,
+          type,
+          renderContent,
+          this.__props
+        )
       }
     }
 

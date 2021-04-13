@@ -33,12 +33,15 @@ var patchProperty = (node, key, oldValue, newValue, isSvg) => {
     !isSvg &&
     key !== 'list' &&
     key !== 'form' &&
-    (key in node || (node.__alwaysSetProps && !key.includes('-'))) // TODO: Patch
+    (key in node ||
+      (node.__alwaysSetProps && key !== 'class' && !key.includes('-'))) // TODO: Patch
   ) {
-    if (!node.__alwaysSetProps) {
-      node[key] = newValue == null ? '' : newValue // TODO: Patch
-    } else {
+    node[key] = newValue == null ? '' : newValue
+
+    // TODO: patched
+    if (node.__alwaysSetProps) {
       node.__props[key] = newValue
+      node.__ctrl.refresh()
     }
   } else if (newValue == null || newValue === false) {
     node.removeAttribute(key)
@@ -104,9 +107,9 @@ var patchNode = (parent, node, oldVNode, newVNode, isSvg) => {
 
     for (var i in { ...oldProps, ...newProps }) {
       if (
-        (i === 'value' || i === 'selected' || i === 'checked'
+        i === 'value' || i === 'selected' || i === 'checked'
           ? node[i]
-          : oldProps[i]) !== newProps[i]
+          : oldProps[i] !== newProps[i]
       ) {
         patchProperty(node, i, oldProps[i], newProps[i], isSvg)
       }

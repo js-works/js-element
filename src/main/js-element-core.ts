@@ -10,7 +10,12 @@ export { MethodsOf, Ref, Listener, TypedEvent }
 
 // TODO - this is evil !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // hidden API
-const getHiddenAPI = () => ({ registerElement, enhanceHost, BaseElement })
+const getHiddenAPI = () => ({
+  createComponentType,
+  enhanceHost,
+  registerElement,
+  BaseElement
+})
 
 const toString = () => adapt.prototype.toString()
 
