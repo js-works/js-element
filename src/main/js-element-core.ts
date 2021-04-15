@@ -194,7 +194,7 @@ function defineProvider<T>(
   return createComponentType(tagName)
 }
 
-function createRef<T>(value: T | null = null): Ref<T> {
+function createRef<T = any>(value: T | null = null): Ref<T> {
   return { current: value }
 }
 

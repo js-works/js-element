@@ -93,7 +93,7 @@ function h<P extends Props>(
 ): VElement
 
 function h(
-  type: any, //string | Component<any> | ((props: any) => () => VNode),
+  type: string | Component<any> | ((props: any) => () => VNode),
   props?: any | null
 ): VElement {
   const argc = arguments.length
@@ -117,7 +117,7 @@ function h(
       }
     }
 
-    const name = type.name ? toKebabCase(type.name) : 'ce'
+    const name = type.name ? toKebabCase(type.name.replace('$', 'x')) : 'ce'
 
     if (!tagNameCounts.has(name)) {
       tagNameCounts.set(name, 1)
