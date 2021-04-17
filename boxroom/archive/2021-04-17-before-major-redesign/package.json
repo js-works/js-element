@@ -1,0 +1,202 @@
+{
+  "name": "js-element",
+  "version": "0.0.107",
+  "description": "",
+  "license": "LGPL-3.0",
+  "main": "./index.js",
+  "module": "./dist/js-element.esm.production.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "development": {
+        "browser": "./dist/js-element.umd.development.js",
+        "umd": "./dist/js-element.umd.development.js",
+        "import": "./dist/js-element.esm.development.js",
+        "require": "./dist/js-element.cjs.development.js"
+      },
+      "production": {
+        "browser": "./dist/js-element.umd.production.js",
+        "umd": "./dist/js-element.umd.production.js",
+        "import": "./dist/js-element.esm.production.js",
+        "require": "./dist/js-element.cjs.production.js"
+      },
+      "default": {
+        "browser": "./dist/js-element.umd.production.js",
+        "umd": "./dist/js-element.umd.production.js",
+        "import": "./dist/js-element.esm.production.js",
+        "require": "./dist/js-element.cjs.production.js"
+      }
+    },
+    "./core": {
+      "development": {
+        "browser": "./dist/js-element-core.umd.development.js",
+        "umd": "./dist/js-element-core.umd.development.js",
+        "import": "./dist/js-element-core.esm.development.js",
+        "require": "./dist/js-element-core.cjs.development.js"
+      },
+      "production": {
+        "browser": "./dist/js-element-core.umd.production.js",
+        "umd": "./dist/js-element-core.umd.production.js",
+        "import": "./dist/js-element-core.esm.production.js",
+        "require": "./dist/js-element-core.cjs.production.js"
+      },
+      "default": {
+        "browser": "./dist/js-element-core.umd.production.js",
+        "umd": "./dist/js-element-core.umd.production.js",
+        "import": "./dist/js-element-core.esm.production.js",
+        "require": "./dist/js-element-core.cjs.production.js"
+      }
+    },
+    "./hooks": {
+      "development": {
+        "browser": "./dist/js-element-hooks.umd.development.js",
+        "umd": "./dist/js-element-hooks.umd.development.js",
+        "import": "./dist/js-element-hooks.esm.development.js",
+        "require": "./dist/js-element-hooks.cjs.development.js"
+      },
+      "production": {
+        "browser": "./dist/js-element-hooks.umd.production.js",
+        "umd": "./dist/js-element-hooks.umd.production.js",
+        "import": "./dist/js-element-hooks.esm.production.js",
+        "require": "./dist/js-element-hooks.cjs.production.js"
+      },
+      "default": {
+        "browser": "./dist/js-element-hooks.umd.production.js",
+        "umd": "./dist/js-element-hooks.umd.production.js",
+        "import": "./dist/js-element-hooks.esm.production.js",
+        "require": "./dist/js-element-hooks.cjs.production.js"
+      }
+    },
+    "./utils": {
+      "development": {
+        "browser": "./dist/js-element-utils.umd.development.js",
+        "umd": "./dist/js-element-utils.umd.development.js",
+        "import": "./dist/js-element-utils.esm.development.js",
+        "require": "./dist/js-element-utils.cjs.development.js"
+      },
+      "production": {
+        "browser": "./dist/js-element-utils.umd.production.js",
+        "umd": "./dist/js-element-utils.umd.production.js",
+        "import": "./dist/js-element-utils.esm.production.js",
+        "require": "./dist/js-element-utils.cjs.production.js"
+      },
+      "default": {
+        "browser": "./dist/js-element-utils.umd.production.js",
+        "umd": "./dist/js-element-utils.umd.production.js",
+        "import": "./dist/js-element-utils.esm.production.js",
+        "require": "./dist/js-element-utils.cjs.production.js"
+      }
+    },
+    "./lit": {
+      "development": {
+        "browser": "./dist/js-element-lit.umd.development.js",
+        "umd": "./dist/js-element-lit.umd.development.js",
+        "import": "./dist/js-element-lit.esm.development.js",
+        "require": "./dist/js-element-lit.cjs.development.js"
+      },
+      "production": {
+        "browser": "./dist/js-element-lit.umd.production.js",
+        "umd": "./dist/js-element-lit.umd.production.js",
+        "import": "./dist/js-element-lit.esm.production.js",
+        "require": "./dist/js-element-lit.cjs.production.js"
+      },
+      "default": {
+        "browser": "./dist/js-element-lit.umd.production.js",
+        "umd": "./dist/js-element-lit.umd.production.js",
+        "import": "./dist/js-element-lit.esm.production.js",
+        "require": "./dist/js-element-lit.cjs.production.js"
+      }
+    },
+    "./uhtml": {
+      "development": {
+        "browser": "./dist/js-element-uhtml.umd.development.js",
+        "umd": "./dist/js-element-uhtml.umd.development.js",
+        "import": "./dist/js-element-uhtml.esm.development.js",
+        "require": "./dist/js-element-uhtml.cjs.development.js"
+      },
+      "production": {
+        "browser": "./dist/js-element-uhtml.umd.production.js",
+        "umd": "./dist/js-element-uhtml.umd.production.js",
+        "import": "./dist/js-element-uhtml.esm.production.js",
+        "require": "./dist/js-element-uhtml.cjs.production.js"
+      },
+      "default": {
+        "browser": "./dist/js-element-uhtml.umd.production.js",
+        "umd": "./dist/js-element-uhtml.umd.production.js",
+        "import": "./dist/js-element-uhtml.esm.production.js",
+        "require": "./dist/js-element-uhtml.cjs.production.js"
+      }
+    },
+    "./package.json": "./package.json",
+    "./": "./"
+  },
+  "files": [
+    "index.js",
+    "dist",
+    "core",
+    "hooks",
+    "utils",
+    "lit",
+    "uhtml"
+  ],
+  "scripts": {
+    "clean": "shx rm -rf ./build ./dist",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --watch",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook",
+    "build": "npm run clean && cross-env NODE_OPTIONS=--max_old_space_size=4096 rollup --c rollup.config.js && tsc -p tsconfig.dist.json -d --emitDeclarationOnly --declarationDir dist/types && shx cp ./src/main/jsx.d.ts ./dist/types && shx cp ./assets/index.d.ts ./dist/types",
+    "dist": "npm run build && npm run zipsource",
+    "zipsource": "shx rm -rf ./build/source && shx mkdir -p ./build/source && copyfiles -a ./* ./build/source && shx cp -r ./src ./build/source && shx mkdir -p ./dist/source && cd build && bestzip --force node ../dist/source/source.zip source && cd .."
+  },
+  "devDependencies": {
+    "@babel/core": "^7.13.14",
+    "@nx-js/observer-util": "^4.2.2",
+    "@rollup/plugin-commonjs": "^18.0.0",
+    "@rollup/plugin-node-resolve": "^11.2.1",
+    "@rollup/plugin-replace": "^2.4.2",
+    "@rollup/plugin-typescript": "^8.2.1",
+    "@storybook/addon-actions": "^6.2.3",
+    "@storybook/addon-essentials": "^6.2.3",
+    "@storybook/addon-links": "^6.2.3",
+    "@storybook/addons": "^6.2.3",
+    "@storybook/html": "^6.2.3",
+    "@storybook/web-components": "^6.2.3",
+    "@types/chai": "^4.2.16",
+    "@types/jest": "^26.0.22",
+    "@types/mocha": "^8.2.2",
+    "awesome-typescript-loader": "^5.2.1",
+    "babel-loader": "^8.2.2",
+    "bestzip": "^2.2.0",
+    "copyfiles": "^2.4.1",
+    "cross-env": "^7.0.3",
+    "eslint": "^7.23.0",
+    "htm": "^3.0.4",
+    "html-webpack-plugin": "^5.3.1",
+    "jest": "^26.6.3",
+    "js-immutables": "^0.0.5",
+    "js-messages": "^0.1.37",
+    "js-reducers": "0.0.8",
+    "js-stores": "^0.1.24",
+    "npm-check-updates": "^11.3.0",
+    "prettier": "^2.2.1",
+    "rollup": "^2.44.0",
+    "rollup-plugin-brotli": "^3.1.0",
+    "rollup-plugin-gzip": "^2.5.0",
+    "rollup-plugin-replace": "^2.2.0",
+    "rollup-plugin-terser": "^7.0.2",
+    "rollup-plugin-typescript2": "^0.30.0",
+    "rxjs": "^6.6.7",
+    "shx": "^0.3.3",
+    "ts-jest": "^26.5.4",
+    "ts-loader": "^8.1.0",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.3"
+  },
+  "dependencies": {
+    "lit-html": "^1.3.0",
+    "mobx": "^6.1.8",
+    "uhtml": "^2.7.1"
+  }
+}
