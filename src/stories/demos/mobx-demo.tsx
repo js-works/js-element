@@ -51,7 +51,7 @@ const CounterController = define('mobx-demo-controller', () => {
   return () => (
     <div>
       <button onclick={onDecClick}>-1</button>
-      {` ${store.count} `}
+      {` [${store.count}] `}
       <button onclick={onIncClick}>+1</button>
     </div>
   )

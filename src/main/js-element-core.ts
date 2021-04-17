@@ -28,13 +28,14 @@ Object.defineProperty(adapt.prototype, 'toString', {
 
 // === local data =====================================================
 
-const attrInfoMapByPropsClass = new Map<PropsClass<any>, AttrInfoMap>()
 let ignoreAttributeChange = false
 
 const interceptions = {
   init: [] as InterceptFn[],
   render: [] as InterceptFn[]
 }
+
+const globalPropConfigs = new Map<any, Map<string, PropConfig>>()
 
 // === types ==========================================================
 
@@ -53,19 +54,6 @@ type Component<P = {}> = {
   (props?: Partial<P> | JSX.HTMLAttributes<HTMLElement>): HTMLElement
   tagName: string
 }
-
-type AttrInfo<T> = {
-  propName: string
-  hasAttr: true
-  attrName: string
-  reflect: boolean
-  mapPropToAttr: (value: T) => string | null
-  mapAttrToProp: (value: string | null) => T
-}
-
-type PropInfo<T> = { propName: string; hasAttr: false } | AttrInfo<T>
-type AttrInfoMap = Map<string, AttrInfo<any>>
-type PropInfoMap = Map<string, PropInfo<any>>
 
 type PropConfig =
   | {
@@ -118,21 +106,22 @@ function attr<T>(
   return (proto: object, propName: string) => {
     const propsClass = proto.constructor as PropsClass<any>
     const attrName = propNameToAttrName(propName)
-    let attrInfoMap = attrInfoMapByPropsClass.get(propsClass)
+    let propConfigMap = globalPropConfigs.get(propsClass)
 
-    if (!attrInfoMap) {
-      attrInfoMap = new Map()
-      attrInfoMapByPropsClass.set(propsClass, attrInfoMap)
+    if (!propConfigMap) {
+      propConfigMap = new Map()
+
+      propConfigMap.set(propName, {
+        propName,
+        attrName: propNameToAttrName(propName),
+        hasAttr: true,
+        reflect,
+        mapPropToAttr: type.mapPropToAttr,
+        mapAttrToProp: type.mapAttrToProp
+      })
+
+      globalPropConfigs.set(propsClass, propConfigMap)
     }
-
-    attrInfoMap.set(attrName, {
-      propName,
-      hasAttr: true,
-      attrName,
-      reflect,
-      mapPropToAttr: type.mapPropToAttr,
-      mapAttrToProp: type.mapAttrToProp
-    })
   }
 }
 
@@ -291,13 +280,29 @@ function createDefiner<C>(
     const tagName = arg1.tag
     const propsClass = arg1.props || null
 
-    const attrInfoMap =
-      (propsClass && attrInfoMapByPropsClass.get(propsClass)) || null
+    if (propsClass) {
+      const props = new propsClass()
+      let propConfigMap = globalPropConfigs.get(propsClass)
+
+      if (!propConfigMap) {
+        propConfigMap = new Map()
+        globalPropConfigs.set(propsClass, propConfigMap)
+      }
+
+      for (const key of Object.keys(props)) {
+        if (!propConfigMap.has(key)) {
+          propConfigMap.set(key, {
+            propName: key,
+            hasAttr: false
+          })
+        }
+      }
+    }
 
     const customElementClass = buildCustomElementClass(
       tagName,
       propsClass,
-      propsClass ? getPropInfoMap(propsClass, attrInfoMap) : null,
+      globalPropConfigs.get(propsClass),
       arg1.styles,
       arg1.init,
       patch
@@ -314,7 +319,7 @@ function createDefiner<C>(
 function buildCustomElementClass<T extends object, C>(
   name: string,
   propsClass: { new (): T } | null,
-  propInfoMap: PropInfoMap | null,
+  propConfigMap: Map<string, PropConfig> | null | undefined,
   styles: string | string[] | (() => string | string[]),
   main: (props: T) => () => C,
   render: (content: C, target: Element) => void
@@ -327,7 +332,7 @@ function buildCustomElementClass<T extends object, C>(
     ;(host as any).__data = data
     ;(host as any).__ctrl = ctrl
 
-    if (propInfoMap && propInfoMap.has('ref')) {
+    if (propConfigMap && propConfigMap.has('ref')) {
       let componentMethods: any = null
       data.ref = {}
 
@@ -367,7 +372,7 @@ function buildCustomElementClass<T extends object, C>(
     prepare,
     init,
     render,
-    propInfoMap ? Array.from(propInfoMap.values()) : [],
+    propConfigMap ? Array.from(propConfigMap.values()) : [],
     (ctrl, propName, value) => {
       ;(ctrl.getHost() as any).__data[propName] = value
       ctrl.refresh()
@@ -381,26 +386,6 @@ function buildCustomElementClass<T extends object, C>(
 
 function propNameToAttrName(propName: string) {
   return propName.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase()
-}
-
-function getPropInfoMap(
-  propsClass: PropsClass<any>,
-  attrInfoMap: AttrInfoMap | null
-): PropInfoMap {
-  const ret: PropInfoMap = new Map()
-
-  Object.keys(new propsClass()).forEach((propName) => {
-    const attrName = propNameToAttrName(propName)
-
-    ret.set(
-      propName,
-      attrInfoMap && attrInfoMap.has(attrName)
-        ? attrInfoMap.get(attrName)!
-        : { propName, hasAttr: false }
-    )
-  })
-
-  return ret
 }
 
 function runIntercepted<T = null>(
