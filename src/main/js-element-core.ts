@@ -12,9 +12,8 @@ export { MethodsOf, Ref, Listener, TypedEvent }
 // hidden API
 const getHiddenAPI = () => ({
   createComponentType,
-  enhanceHost,
-  registerElement,
-  BaseElement
+  createCustomElementClass,
+  registerElement
 })
 
 const toString = () => adapt.prototype.toString()
@@ -310,70 +309,55 @@ function buildCustomElementClass<T extends object, C>(
 ): CustomElementConstructor {
   let combinedStyles: string | null = null // will be set lazy
 
-  const customElementClass = class extends BaseElement {
-    constructor() {
-      super()
+  const prepare = (host: HTMLElement) => {
+    const data: any = propsClass ? new propsClass() : {}
 
-      const data: any = propsClass ? new propsClass() : {}
-      ;(this as any).__data = data
-      ;(this as any).__ctrl = enhanceHost(this, name, main, render, data)
+    ;(host as any).__data = data
 
-      if (propInfoMap && propInfoMap.has('ref')) {
-        let componentMethods: any = null
-        data.ref = {}
+    if (propInfoMap && propInfoMap.has('ref')) {
+      let componentMethods: any = null
+      data.ref = {}
 
-        Object.defineProperty(data.ref, 'current', {
-          enumerable: true,
-          get: () => componentMethods,
+      Object.defineProperty(data.ref, 'current', {
+        enumerable: true,
+        get: () => componentMethods,
 
-          set: (methods: any) => {
-            if (componentMethods) {
-              throw new Error('Methods can only be set once')
-            } else if (methods) {
-              componentMethods = methods
-              Object.assign(this, componentMethods)
-            }
+        set: (methods: any) => {
+          if (componentMethods) {
+            throw new Error('Methods can only be set once')
+          } else if (methods) {
+            componentMethods = methods
+            Object.assign(host, componentMethods)
           }
-        })
-      }
+        }
+      })
+    }
 
-      if (combinedStyles === null && styles) {
-        combinedStyles = combineStyles(styles)
-      }
+    if (combinedStyles === null && styles) {
+      combinedStyles = combineStyles(styles)
+    }
 
-      if (combinedStyles) {
-        const styleElem = document.createElement('style')
+    if (combinedStyles) {
+      const styleElem = document.createElement('style')
 
-        styleElem.appendChild(document.createTextNode(combinedStyles))
-        this.shadowRoot!.firstChild!.appendChild(styleElem)
-      }
+      styleElem.appendChild(document.createTextNode(combinedStyles))
+      host.shadowRoot!.firstChild!.appendChild(styleElem)
     }
   }
 
+  function init(host: any) {
+    return main(host.__data)
+  }
+
+  const customElementClass = createCustomElementClass(
+    name,
+    prepare,
+    init,
+    render
+  )
   propInfoMap && addPropsHandling(customElementClass, propInfoMap, attrInfoMap)
 
   return customElementClass
-}
-
-// === BaseElement ===================================================
-
-class BaseElement extends HTMLElement {
-  constructor() {
-    super()
-    const stylesElement = document.createElement('div')
-    const contentElement = document.createElement('div')
-    this.attachShadow({ mode: 'open' })
-    contentElement.append(document.createElement('span'))
-    this.shadowRoot!.append(stylesElement, contentElement)
-  }
-
-  connectedCallback() {
-    this.connectedCallback()
-  }
-
-  disconnectedCallback() {
-    this.disconnectedCallback()
-  }
 }
 
 // === tools ========================================================
@@ -403,7 +387,7 @@ function getPropInfoMap(
 }
 
 function addPropsHandling(
-  customElementClass: { new (): BaseElement },
+  customElementClass: { new (): HTMLElement },
   propInfoMap: PropInfoMap,
   attrInfoMap: AttrInfoMap | null
 ) {
@@ -600,118 +584,139 @@ function combineStyles(
   return styles
 }
 
-// TODO - return value, see `any`
-function enhanceHost(
-  host: BaseElement,
+function createCustomElementClass<C>(
   name: string,
-  mainFn: (props: any) => () => any,
-  render: (content: any, target: HTMLElement) => void,
-  props: any
-): Ctrl {
-  let initialized = false
-  let mounted = false
-  let updated = false
-  let shallCommit = false
-  let getContent: () => any // TODO
+  prepare: (host: HTMLElement) => void,
+  init: (host: HTMLElement) => () => C,
+  render: (content: C, target: HTMLElement) => void
+): { new (): HTMLElement } {
+  return class extends HTMLElement {
+    public __ctrl!: Ctrl
 
-  const contentElement = host.shadowRoot!.children[1] as HTMLElement
-  const beforeMountNotifier = createNotifier()
-  const afterMountNotifier = createNotifier()
-  const beforeUpdateNotifier = createNotifier()
-  const afterUpdateNotifier = createNotifier()
-  const beforeUnmountNotifier = createNotifier()
-  const onceBeforeUpdateActions: (() => void)[] = []
+    constructor() {
+      super()
 
-  const ctrl: Ctrl = {
-    getName: () => name,
-    getHost: () => host,
-    isInitialized: () => initialized,
-    isMounted: () => mounted,
-    hasUpdated: () => updated,
-    beforeMount: beforeMountNotifier.subscribe,
-    afterMount: afterMountNotifier.subscribe,
-    onceBeforeUpdate: (task: () => void) => onceBeforeUpdateActions.push(task),
-    beforeUpdate: beforeUpdateNotifier.subscribe,
-    afterUpdate: afterUpdateNotifier.subscribe,
-    beforeUnmount: beforeUnmountNotifier.subscribe,
+      const stylesElement = document.createElement('div')
+      const contentElement = document.createElement('div')
+      this.attachShadow({ mode: 'open' })
+      contentElement.append(document.createElement('span'))
+      this.shadowRoot!.append(stylesElement, contentElement)
 
-    refresh: () => {
-      if (!shallCommit) {
-        shallCommit = true
+      let initialized = false
+      let mounted = false
+      let updated = false
+      let shallCommit = false
+      let getContent: () => any // TODO
 
-        requestAnimationFrame(() => {
-          shallCommit = false
-          commit()
-        })
-      }
-    }
-  }
+      const beforeMountNotifier = createNotifier()
+      const afterMountNotifier = createNotifier()
+      const beforeUpdateNotifier = createNotifier()
+      const afterUpdateNotifier = createNotifier()
+      const beforeUnmountNotifier = createNotifier()
+      const onceBeforeUpdateActions: (() => void)[] = []
 
-  const commit = () => {
-    if (mounted) {
-      if (onceBeforeUpdateActions.length) {
-        try {
-          onceBeforeUpdateActions.forEach((action) => action())
-        } finally {
-          onceBeforeUpdateActions.length = 0
+      const ctrl: Ctrl = {
+        getName: () => name,
+        getHost: () => this,
+        isInitialized: () => initialized,
+        isMounted: () => mounted,
+        hasUpdated: () => updated,
+        beforeMount: beforeMountNotifier.subscribe,
+        afterMount: afterMountNotifier.subscribe,
+        onceBeforeUpdate: (task: () => void) =>
+          onceBeforeUpdateActions.push(task),
+        beforeUpdate: beforeUpdateNotifier.subscribe,
+        afterUpdate: afterUpdateNotifier.subscribe,
+        beforeUnmount: beforeUnmountNotifier.subscribe,
+
+        refresh: () => {
+          if (!shallCommit) {
+            shallCommit = true
+
+            requestAnimationFrame(() => {
+              shallCommit = false
+              commit()
+            })
+          }
         }
       }
 
-      beforeUpdateNotifier.notify()
-    }
+      this.__ctrl = ctrl
 
-    // TODO xxxx
-    runIntercepted(
-      () => {
-        if (!getContent) {
-          // TODO: why is this happening sometimes?
-          return
+      const commit = () => {
+        if (mounted) {
+          if (onceBeforeUpdateActions.length) {
+            try {
+              onceBeforeUpdateActions.forEach((action) => action())
+            } finally {
+              onceBeforeUpdateActions.length = 0
+            }
+          }
+
+          beforeUpdateNotifier.notify()
         }
 
-        const content = getContent()
-        // TODO
-        try {
-          render(content, contentElement)
-        } catch (e) {
-          console.error(`Render error in "${ctrl.getName()}"`)
-          throw e
+        // TODO xxxx
+        runIntercepted(
+          () => {
+            if (!getContent) {
+              // TODO: why is this happening sometimes?
+              return
+            }
+
+            const content = getContent()
+            // TODO
+            try {
+              render(content, contentElement)
+            } catch (e) {
+              console.error(`Render error in "${ctrl.getName()}"`)
+              throw e
+            }
+          },
+          ctrl,
+          interceptions.render
+        )
+
+        initialized = true
+
+        if (!mounted) {
+          mounted = true
+          afterMountNotifier.notify()
+        } else {
+          updated = true
+          afterUpdateNotifier.notify()
         }
-      },
-      ctrl,
-      interceptions.render
-    )
+      }
 
-    initialized = true
+      ;(this as any).connectedCallback = () => {
+        if (!initialized) {
+          runIntercepted(
+            () => {
+              getContent = init(this)
+            },
+            ctrl,
+            interceptions.init
+          )
+        }
 
-    if (!mounted) {
-      mounted = true
-      afterMountNotifier.notify()
-    } else {
-      updated = true
-      afterUpdateNotifier.notify()
-    }
-  }
+        beforeMountNotifier.notify()
 
-  host.connectedCallback = () => {
-    if (!initialized) {
-      runIntercepted(
-        () => {
-          getContent = mainFn(props)
-        },
-        ctrl,
-        interceptions.init
-      )
+        commit()
+      }
+      ;(this as any).disconnectedCallback = () => {
+        beforeUnmountNotifier.notify()
+        contentElement.innerHTML = ''
+      }
+
+      prepare(this)
     }
 
-    beforeMountNotifier.notify()
+    connectedCallback() {
+      this.connectedCallback()
+    }
 
-    commit()
+    disconnectedCallback() {
+      this.disconnectedCallback()
+    }
   }
-
-  host.disconnectedCallback = () => {
-    beforeUnmountNotifier.notify()
-    contentElement.innerHTML = ''
-  }
-
-  return ctrl
 }

@@ -5,9 +5,8 @@ import { h as createElement, text, patch } from './lib/superfine-patched'
 // TODO - this is evil !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 const {
   createComponentType,
-  enhanceHost,
-  registerElement,
-  BaseElement
+  createCustomElementClass,
+  registerElement
 } = adapt.prototype.toString.__getHiddenAPI()
 
 export {
@@ -32,7 +31,7 @@ export const { define, render } = adapt<VElement, VNode>({
   patchContent: renderContent
 })
 
-export { h, toComponent, VNode, VElement }
+export { h, asComponent, VNode, VElement }
 export const html = htm.bind(h)
 
 // === data ==========================================================
@@ -65,7 +64,7 @@ function asVNode(x: any): any {
 
 // === toComponent ===================================================
 
-function toComponent<P extends Props = any>(
+function asComponent<P extends Props = any>(
   tagName: string,
   customElementClass: { new (): HTMLElement },
   deps?: any[]
@@ -100,21 +99,9 @@ function h(
   let tagName = typeof type === 'function' ? (type as any).tagName : type
 
   if (!tagName && typeof type === 'function') {
-    class CustomElement extends BaseElement {
-      private __alwaysSetProps = true
-      private __props = {}
-      private __ctrl: Ctrl
-
-      constructor() {
-        super()
-        this.__ctrl = enhanceHost(
-          this,
-          tagName,
-          type,
-          renderContent,
-          this.__props
-        )
-      }
+    const prepare = (host: any) => {
+      host.__alwaysSetProps = true
+      host.__props = {}
     }
 
     const name = type.name ? toKebabCase(type.name.replace('$', 'x')) : 'ce'
@@ -129,11 +116,13 @@ function h(
       tagName = name + '--n' + (count + 1)
     }
 
+    type = createCustomElementClass(tagName, prepare, type, render)
+
     Object.defineProperty(type, 'tagName', {
       value: tagName
     })
 
-    registerElement(tagName, CustomElement)
+    registerElement(tagName, type)
   }
 
   if (process.env.NODE_ENV === ('development' as string)) {
