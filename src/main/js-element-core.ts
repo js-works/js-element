@@ -309,10 +309,11 @@ function buildCustomElementClass<T extends object, C>(
 ): CustomElementConstructor {
   let combinedStyles: string | null = null // will be set lazy
 
-  const prepare = (host: HTMLElement) => {
+  const prepare = (host: HTMLElement, ctrl: Ctrl) => {
     const data: any = propsClass ? new propsClass() : {}
 
     ;(host as any).__data = data
+    ;(host as any).__ctrl = ctrl
 
     if (propInfoMap && propInfoMap.has('ref')) {
       let componentMethods: any = null
@@ -355,6 +356,7 @@ function buildCustomElementClass<T extends object, C>(
     init,
     render
   )
+
   propInfoMap && addPropsHandling(customElementClass, propInfoMap, attrInfoMap)
 
   return customElementClass
@@ -586,13 +588,11 @@ function combineStyles(
 
 function createCustomElementClass<C>(
   name: string,
-  prepare: (host: HTMLElement) => void,
-  init: (host: HTMLElement) => () => C,
+  prepare: (host: HTMLElement, ctrl: Ctrl) => void,
+  init: (host: HTMLElement, ctrl: Ctrl) => () => C,
   render: (content: C, target: HTMLElement) => void
 ): { new (): HTMLElement } {
   return class extends HTMLElement {
-    public __ctrl!: Ctrl
-
     constructor() {
       super()
 
@@ -640,8 +640,6 @@ function createCustomElementClass<C>(
           }
         }
       }
-
-      this.__ctrl = ctrl
 
       const commit = () => {
         if (mounted) {
@@ -692,7 +690,7 @@ function createCustomElementClass<C>(
         if (!initialized) {
           runIntercepted(
             () => {
-              getContent = init(this)
+              getContent = init(this, ctrl)
             },
             ctrl,
             interceptions.init
@@ -708,7 +706,7 @@ function createCustomElementClass<C>(
         contentElement.innerHTML = ''
       }
 
-      prepare(this)
+      prepare(this, ctrl)
     }
 
     connectedCallback() {
