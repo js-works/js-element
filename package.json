@@ -144,6 +144,7 @@
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch",
+    "start": "npm run storybook",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
     "build": "npm run clean && cross-env NODE_OPTIONS=--max_old_space_size=4096 rollup --c rollup.config.js && tsc -p tsconfig.dist.json -d --emitDeclarationOnly --declarationDir dist/types && shx cp ./src/main/jsx.d.ts ./dist/types && shx cp ./assets/index.d.ts ./dist/types",
