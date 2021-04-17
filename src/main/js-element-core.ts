@@ -67,6 +67,20 @@ type PropInfo<T> = { propName: string; hasAttr: false } | AttrInfo<T>
 type AttrInfoMap = Map<string, AttrInfo<any>>
 type PropInfoMap = Map<string, PropInfo<any>>
 
+type PropConfig =
+  | {
+      propName: string
+      hasAttr: false
+    }
+  | {
+      propName: string
+      hasAttr: true
+      attrName: string
+      reflect: boolean
+      mapPropToAttr: (value: any) => string | null
+      mapAttrToProp: (value: string | null) => any
+    }
+
 type MethodsOf<C> = C extends Component<infer P>
   ? P extends { ref?: Ref<infer M> }
     ? M extends Record<string, (...args: any[]) => any>
@@ -284,7 +298,6 @@ function createDefiner<C>(
       tagName,
       propsClass,
       propsClass ? getPropInfoMap(propsClass, attrInfoMap) : null,
-      attrInfoMap,
       arg1.styles,
       arg1.init,
       patch
@@ -302,7 +315,6 @@ function buildCustomElementClass<T extends object, C>(
   name: string,
   propsClass: { new (): T } | null,
   propInfoMap: PropInfoMap | null,
-  attrInfoMap: AttrInfoMap | null,
   styles: string | string[] | (() => string | string[]),
   main: (props: T) => () => C,
   render: (content: C, target: Element) => void
@@ -354,10 +366,13 @@ function buildCustomElementClass<T extends object, C>(
     name,
     prepare,
     init,
-    render
+    render,
+    propInfoMap ? Array.from(propInfoMap.values()) : [],
+    (ctrl, propName, value) => {
+      ;(ctrl.getHost() as any).__data[propName] = value
+      ctrl.refresh()
+    }
   )
-
-  propInfoMap && addPropsHandling(customElementClass, propInfoMap, attrInfoMap)
 
   return customElementClass
 }
@@ -386,71 +401,6 @@ function getPropInfoMap(
   })
 
   return ret
-}
-
-function addPropsHandling(
-  customElementClass: { new (): HTMLElement },
-  propInfoMap: PropInfoMap,
-  attrInfoMap: AttrInfoMap | null
-) {
-  const proto = customElementClass.prototype
-
-  ;(customElementClass as any).observedAttributes = attrInfoMap
-    ? Array.from(attrInfoMap.keys())
-    : []
-
-  proto.getAttribute = function (attrName: string): string | null {
-    const attrInfo = attrInfoMap && attrInfoMap.get(attrName)
-
-    return attrInfo
-      ? attrInfo.mapPropToAttr(this[attrInfo.propName])
-      : HTMLElement.prototype.getAttribute.call(this, attrName)
-  }
-
-  proto.attributeChangedCallback = function (
-    this: any,
-    attrName: string,
-    oldValue: string | null,
-    value: string | null
-  ) {
-    if (!ignoreAttributeChange) {
-      const attrInfo = attrInfoMap!.get(attrName)!
-
-      if (typeof value === 'string') {
-        this[attrInfo.propName] = attrInfo.mapAttrToProp(value)
-      }
-    }
-  }
-
-  for (const propInfo of propInfoMap.values()) {
-    const { propName } = propInfo
-
-    if (propName === 'ref') {
-      continue
-    }
-
-    Object.defineProperty(proto, propName, {
-      get() {
-        this.__data[propName]
-      },
-
-      set(this: any, value: any) {
-        this.__data[propName] = value
-
-        if (propInfo.hasAttr && propInfo.reflect) {
-          try {
-            ignoreAttributeChange = true
-
-            this.setAttribute(propInfo.attrName, propInfo.mapPropToAttr(value))
-          } finally {
-            ignoreAttributeChange = false
-          }
-        }
-
-        this.__ctrl.refresh()
-      }
-    })
-  }
 }
 
 function runIntercepted<T = null>(
@@ -590,9 +540,13 @@ function createCustomElementClass<C>(
   name: string,
   prepare: (host: HTMLElement, ctrl: Ctrl) => void,
   init: (host: HTMLElement, ctrl: Ctrl) => () => C,
-  render: (content: C, target: HTMLElement) => void
+  render: (content: C, target: HTMLElement) => void,
+  propConfigs?: PropConfig[] | null,
+  onPropChange?: ((ctrl: Ctrl, propName: string, value: any) => void) | null
 ): { new (): HTMLElement } {
-  return class extends HTMLElement {
+  const ctrls = new WeakMap<HTMLElement, Ctrl>() // TODO!!!!!
+
+  const customElementClass = class extends HTMLElement {
     constructor() {
       super()
 
@@ -707,6 +661,9 @@ function createCustomElementClass<C>(
       }
 
       prepare(this, ctrl)
+      ctrls.set(this, ctrl) // TODO!!!!!!!!!!!!!!!!!!!!
+
+      ctrl.beforeUnmount(() => ctrls.delete(this))
     }
 
     connectedCallback() {
@@ -717,4 +674,104 @@ function createCustomElementClass<C>(
       this.disconnectedCallback()
     }
   }
+
+  // --- add props handling ------------------------------------------
+
+  if (propConfigs && propConfigs.length > 0) {
+    const propConfigByPropName = new Map<string, PropConfig>()
+    const propConfigByAttrName = new Map<string, PropConfig>()
+
+    for (const propConfig of propConfigs) {
+      propConfigByPropName.set(propConfig.propName, propConfig)
+
+      if (propConfig.hasAttr) {
+        propConfigByAttrName.set(propConfig.attrName, propConfig)
+      }
+
+      const proto: any = customElementClass.prototype
+
+      ;(customElementClass as any).observedAttributes = Array.from(
+        propConfigByAttrName.keys()
+      )
+
+      proto.getAttribute = function (attrName: string): string | null {
+        const propInfo = propConfigByAttrName.get(attrName)
+
+        return propInfo && propInfo.hasAttr
+          ? propInfo.mapPropToAttr((this as any)[propInfo.propName])
+          : HTMLElement.prototype.getAttribute.call(this, attrName)
+      }
+
+      proto.attributeChangedCallback = function (
+        this: any,
+        attrName: string,
+        oldValue: string | null,
+        value: string | null
+      ) {
+        if (!ignoreAttributeChange) {
+          const propInfo = propConfigByAttrName.get(attrName)!
+
+          if (typeof value === 'string') {
+            this[propInfo.propName] = ((propInfo as any).mapAttrToProp as any)(
+              value
+            )
+          }
+        }
+      }
+
+      for (const propConfig of propConfigByPropName.values()) {
+        const { propName } = propConfig
+
+        if (propName === 'ref') {
+          continue
+        }
+
+        const setPropDescriptor = function (target: any) {
+          let propValue: any
+
+          Object.defineProperty(target, propName, {
+            get() {
+              return propValue
+            },
+
+            set(value: any) {
+              propValue = value
+
+              if (propConfig.hasAttr && propConfig.reflect) {
+                try {
+                  ignoreAttributeChange = true
+
+                  target.setAttribute(
+                    propConfig.attrName,
+                    propConfig.mapPropToAttr(value)
+                  )
+                } finally {
+                  ignoreAttributeChange = false
+                }
+              }
+
+              const ctrl = ctrls.get(this) // TODO!!!!!!!!!!
+              ctrl && onPropChange && onPropChange(ctrl, propName, value) // TODO!!!!!!
+            }
+          })
+        }
+
+        Object.defineProperty(proto, propName, {
+          configurable: true,
+
+          get() {
+            setPropDescriptor(this)
+            return undefined
+          },
+
+          set(this: any, value: any) {
+            setPropDescriptor(this)
+            this[propName] = value
+          }
+        })
+      }
+    }
+  }
+
+  return customElementClass
 }

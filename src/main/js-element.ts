@@ -99,9 +99,10 @@ function h(
   let tagName = typeof type === 'function' ? (type as any).tagName : type
 
   if (!tagName && typeof type === 'function') {
-    const prepare = (host: any) => {
+    const prepare = (host: any, ctrl: Ctrl) => {
       host.__alwaysSetProps = true
       host.__props = {}
+      host.__ctrl = ctrl
     }
 
     const name = type.name ? toKebabCase(type.name.replace('$', 'x')) : 'ce'
