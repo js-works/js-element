@@ -15,7 +15,10 @@ export {
   createEvent,
   createRef,
   defineProvider,
+  event,
   intercept,
+  prop,
+  ref,
   Attr,
   Ctrl,
   Component,
@@ -26,7 +29,7 @@ export {
   TypedEvent
 } from 'js-element/core'
 
-export const { define, render } = adapt<VElement, VNode>({
+export const { define, render, impl } = adapt<VElement, VNode>({
   isMountable: (it) => !!it && it.isVElement === true,
   patchContent: renderContent
 })

@@ -1,6 +1,21 @@
-import { attr, define, createEvent, h, Attr } from 'js-element'
+import {
+  attr,
+  define,
+  createEvent,
+  createRef,
+  event,
+  impl,
+  h,
+  ref,
+  Attr,
+  Ref
+} from 'js-element'
+
 import { Listener, TypedEvent } from 'js-element'
-import { useEmitter } from 'js-element/hooks'
+import { useEffect, useEmitter, useMethods, useState } from 'js-element/hooks'
+
+// new stuff
+import { elem, prop } from 'js-element/core'
 
 const buttonDemoStyles = ` 
   .demo-button {
@@ -47,9 +62,13 @@ const DemoButton = define({
 
 const ButtonDemo = define('button-demo', () => {
   const onButtonClick = (ev: ButtonClickEvent) => alert(ev.type)
+  const onCountChange = (ev: any) => console.log(ev)
+  const counterRef = createRef()
 
   return () => (
     <div>
+      <Counter ref={counterRef} onCountChange={onCountChange}></Counter>
+      <button onclick={() => counterRef.current.reset()}>Reset</button>
       <h3>Button demo</h3>
       <DemoButton onButtonClick={onButtonClick} text="Click me" />
     </div>
@@ -57,3 +76,47 @@ const ButtonDemo = define('button-demo', () => {
 })
 
 export default ButtonDemo
+
+@elem('demo-counter')
+class CounterScheme {
+  @prop(Attr.string)
+  initialCount = 32
+
+  @prop(Attr.string)
+  labelText = 'Counter'
+
+  @event('count-change')
+  onCountChange?: EventListener
+
+  @ref()
+  ref?: Ref<{
+    reset(): void
+  }>
+}
+
+const Counter = impl(CounterScheme, (p) => {
+  const [s, set] = useState({ count: p.initialCount })
+  const emit = useEmitter()
+  const onClick = () => set('count', (it) => it + 1)
+
+  useMethods(p.ref, {
+    reset() {
+      set('count', 0)
+    }
+  })
+
+  useEffect(
+    () => {
+      emit(createEvent('count-change', { count: s.count }), p.onCountChange)
+      console.log('changed', s.count)
+    },
+
+    () => [s.count]
+  )
+
+  return () => (
+    <button onclick={onClick}>
+      {p.labelText}: {s.count}
+    </button>
+  )
+})

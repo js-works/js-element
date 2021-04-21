@@ -10,8 +10,11 @@ import {
 
 // === exports =======================================================
 
+// new stuff
+export { elem, prop }
+
 // public API
-export { adapt, attr, createCtx, createEvent, createRef }
+export { adapt, attr, event, createCtx, createEvent, createRef, ref }
 export { defineProvider, intercept, Attr }
 export { Component, Context, Ctrl }
 export { MethodsOf, Ref, Listener, TypedEvent }
@@ -189,7 +192,8 @@ function adapt<M, N>(config: {
 }) {
   return {
     define: createDefiner<N>(config.patchContent),
-    render: createRenderer<M>(config.isMountable, config.patchContent)
+    render: createRenderer<M>(config.isMountable, config.patchContent),
+    impl: createImplementer<N>(config.patchContent)
   }
 }
 
@@ -432,4 +436,158 @@ function combineStyles(
   }
 
   return styles
+}
+
+// ============================================
+// = new stuff ================================
+// ============================================
+
+const elemConfigByClass = new Map<
+  Function,
+  {
+    tag: string
+    props: Map<string, PropConfig>
+  }
+>()
+
+function elem(tag: string): (constructor: Function) => void
+
+function elem(config: {
+  tag: string
+  slots?: string[]
+}): (constructor: Function) => void
+
+function elem(config: any): (constructor: Function) => void {
+  return (constructor) => {
+    const tag = typeof config === 'string' ? config : config.tag
+    let elemConfig = elemConfigByClass.get(constructor)
+
+    if (!elemConfig) {
+      elemConfig = { tag: tag, props: new Map() }
+      elemConfigByClass.set(constructor, elemConfig)
+    } else {
+      elemConfig.tag = tag
+    }
+  }
+}
+
+function prop<T>(
+  attr?: {
+    mapPropToAttr(value: T): string | null
+    mapAttrToProp(value: string | null): T
+  },
+  reflect?: boolean
+) {
+  return (proto: any, propName: string) => {
+    const constructor = proto.constructor
+
+    const propConfig: PropConfig = !attr
+      ? { propName, hasAttr: false }
+      : {
+          propName,
+          hasAttr: true,
+          attrName: propNameToAttrName(propName),
+          reflect: !!reflect,
+          mapPropToAttr: attr.mapPropToAttr,
+          mapAttrToProp: attr.mapAttrToProp
+        }
+
+    let elemConfig = elemConfigByClass.get(constructor)
+
+    if (!elemConfig) {
+      elemConfig = { tag: '', props: new Map() }
+      elemConfigByClass.set(constructor, elemConfig)
+    }
+
+    elemConfig.props.set(propName, propConfig)
+  }
+}
+
+function event<T>(type: string) {
+  // TODO!!!!!
+  return prop()
+}
+
+function ref<T>() {
+  // TODO!!!!!
+  return prop()
+}
+
+function createImplementer<N>(
+  patch: (content: N, target: Element) => void
+): <T extends Props>(
+  constructor: { new (): T },
+  fn: (data: T) => () => N
+) => Component<T> {
+  return (constructor, fn) => {
+    const elemConfig = elemConfigByClass.get(constructor)
+
+    if (
+      process.env.NODE_ENV === ('development' as string) &&
+      (!elemConfig || !elemConfig.tag)
+    ) {
+      throw new Error('[implement] Class has not been decorated by @element')
+    }
+
+    const tag = elemConfig!.tag
+
+    const prepare = (host: any, ctrl: Ctrl) => {
+      let hasRefProp = false
+      host.__data = new constructor()
+
+      for (const { propName } of propConfigs) {
+        if (propName !== 'ref') {
+          host[propName] = host.__data[propName]
+        } else {
+          hasRefProp = true
+        }
+      }
+
+      if (hasRefProp) {
+        let componentMethods: any = null
+
+        host.__data.ref = {}
+
+        Object.defineProperty(host.__data.ref, 'current', {
+          enumerable: true,
+          get: () => componentMethods,
+
+          set: (methods: any) => {
+            if (componentMethods) {
+              throw new Error('Methods can only be set once')
+            } else if (methods) {
+              componentMethods = methods
+              Object.assign(host, componentMethods)
+            }
+          }
+        })
+      }
+    }
+
+    const init = (host: any, ctrl: Ctrl) => {
+      return fn(host.__data)
+    }
+
+    const onPropChange = (ctrl: Ctrl, propName: string, value: any) => {
+      const host: any = ctrl.getHost()
+
+      host.__data[propName] = value
+      ctrl.refresh()
+    }
+
+    const propConfigs = Array.from(elemConfig!.props.values())
+
+    const customElementClass = createCustomElementClass(
+      tag,
+      prepare,
+      init,
+      patch,
+      propConfigs,
+      onPropChange
+    )
+
+    registerElement(tag, customElementClass)
+
+    return createComponentType(tag)
+  }
 }
