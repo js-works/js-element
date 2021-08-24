@@ -1,169 +1,529 @@
-import htm from 'htm'
-import { adapt, Component, Ctrl } from 'js-element/core'
-import { h as createElement, text, patch } from './lib/superfine-patched'
+import { render, TemplateResult } from 'lit-html'
 
-// TODO - this is evil !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-const {
-  createComponentType,
-  createCustomElementClass,
-  registerElement
-} = adapt.prototype.toString.__getHiddenAPI()
+// === exports =======================================================
 
-export {
-  attr,
-  createCtx,
-  createEvent,
-  createRef,
-  defineProvider,
-  event,
-  intercept,
-  prop,
-  ref,
-  Attr,
-  Ctrl,
-  Component,
-  Context,
-  Listener,
-  MethodsOf,
-  Ref,
-  TypedEvent
-} from 'js-element/core'
+// functions and singletons
+export { component, elem, intercept, prop, setMethods, Attrs }
 
-export const { define, render, impl } = adapt<VElement, VNode>({
-  isMountable: (it) => !!it && it.isVElement === true,
-  patchContent: renderContent
-})
-
-export { h, asComponent, VNode, VElement }
-export const html = htm.bind(h)
+// types
+export { Ctrl, MethodsOf }
 
 // === data ==========================================================
 
-let nextTagNameId = 1
-const tagNameCounts = new Map<string, number>()
+const elemConfigByClass = new Map<
+  Function,
+  {
+    tag: string
+    impl: Function | null // TODO,
+    styles: string | string[] | (() => string | string[]) | null
+    props: Map<string, PropConfig>
+  }
+>()
+
+let ignoreAttributeChange = false
+
+const interceptions = {
+  init: [] as InterceptFn[],
+  render: [] as InterceptFn[]
+}
 
 // === types =========================================================
 
-type Props = Record<string, any> // TODO
-type VElement<T extends Props = any> = Record<any, any> // TODO!!!!!
-type VNode = null | boolean | number | string | VElement | Iterable<VNode>
+declare const methodsSymbol: unique symbol
 
-// === helpers =======================================================
+type Methods = Record<string, (...args: any[]) => any>
 
-function renderContent(content: VNode, target: Element) {
-  if (target.hasChildNodes()) {
-    patch(target.firstChild, content)
-  } else {
-    const newTarget = document.createElement('span')
+type Component<M extends Methods = {}> = HTMLElement &
+  M & { [methodsSymbol]: M }
 
-    target.append(newTarget)
-    patch(newTarget, content)
-  }
-}
+type MethodsOf<T> = T extends Component<infer M> ? M : never
 
-function asVNode(x: any): any {
-  return typeof x === 'number' || typeof x === 'string' ? text(x, null) : x
-}
-
-// === toComponent ===================================================
-
-function asComponent<P extends Props = any>(
-  tagName: string,
-  customElementClass: { new (): HTMLElement },
-  deps?: any[]
-): Component<P> {
-  return createComponentType(tagName)
-}
-
-// === h ==============================================================
-
-function h(
-  type: string,
-  props?: Props | null, // TODO!!!
-  ...children: VNode[]
-): VElement
-
-function h<P extends Props>(
-  type: Component<P>,
-  props?: Partial<P> | null,
-  ...children: VNode[]
-): VElement
-
-function h<P extends Props>(
-  type: (props: P) => () => VNode,
-  ...children: VNode[]
-): VElement
-
-function h(
-  type: string | Component<any> | ((props: any) => () => VNode),
-  props?: any | null
-): VElement {
-  const argc = arguments.length
-  let tagName = typeof type === 'function' ? (type as any).tagName : type
-
-  if (!tagName && typeof type === 'function') {
-    const prepare = (host: any, ctrl: Ctrl) => {
-      host.__alwaysSetProps = true
-      host.__props = {}
-      host.__ctrl = ctrl
+type PropConfig =
+  | {
+      propName: string
+      hasAttr: false
+    }
+  | {
+      propName: string
+      hasAttr: true
+      attrName: string
+      reflect: boolean
+      mapPropToAttr: (value: any) => string | null
+      mapAttrToProp: (value: string | null) => any
     }
 
-    const name = type.name ? toKebabCase(type.name.replace('$', 'x')) : 'ce'
+type Ctrl = {
+  getName(): string
+  getHost(): HTMLElement
+  isInitialized(): boolean
+  isMounted(): boolean
+  hasUpdated(): boolean
+  refresh(): void
+  beforeMount(taks: () => void): void
+  afterMount(task: () => void): void
+  onceBeforeUpdate(task: () => void): void
+  beforeUpdate(task: () => void): void
+  afterUpdate(task: () => void): void
+  beforeUnmount(task: () => void): void
+}
 
-    if (!tagNameCounts.has(name)) {
-      tagNameCounts.set(name, 1)
-      tagName = name + '--n1'
+type InterceptFn = (ctrl: Ctrl, next: () => void) => void
+
+// === decorators (all public) =======================================
+
+function elem<E extends Component>(params: {
+  tag: string
+  impl: (self: E, ctrl: Ctrl) => () => TemplateResult
+  styles?: string | string[] | (() => string | string[])
+  uses?: any[]
+}) {
+  return (clazz: new () => E): void => {
+    definePropValue(clazz, 'tagName', params.tag)
+
+    let elemConfig = elemConfigByClass.get(clazz)
+
+    if (!elemConfig) {
+      elemConfig = {
+        tag: params.tag,
+        impl: params.impl,
+        styles: params.styles || null,
+        props: new Map()
+      }
+
+      elemConfigByClass.set(clazz, elemConfig)
     } else {
-      const count = tagNameCounts.get(name)!
-
-      tagNameCounts.set(name, count + 1)
-      tagName = name + '--n' + (count + 1)
+      elemConfig.tag = params.tag
+      elemConfig.styles = params.styles || null
+      elemConfig.impl = params.impl
     }
 
-    type = createCustomElementClass(tagName, prepare, type, render)
+    const propConfigs = Array.from(elemConfigByClass.get(clazz)!.props.values())
 
-    Object.defineProperty(type, 'tagName', {
-      value: tagName
-    })
-
-    registerElement(tagName, type)
-  }
-
-  if (process.env.NODE_ENV === ('development' as string)) {
-    if (typeof tagName !== 'string') {
-      throw new Error('[h] First argument must be a string or a component')
+    if (propConfigs.length > 0) {
+      addAttributeHandling(clazz, propConfigs)
     }
+
+    registerElement(params.tag, clazz)
   }
+}
 
-  const children = argc > 2 ? [] : EMPTY_ARR
+function prop<T>(params?: {
+  attr: {
+    mapPropToAttr(value: T): string | null
+    mapAttrToProp(value: string | null): T
+  }
+  refl?: boolean
+}) {
+  const { attr, refl: reflect } = params || {}
 
-  if (argc > 2) {
-    for (let i = 2; i < argc; ++i) {
-      const child = arguments[i]
+  return (proto: Component, propName: string) => {
+    const constructor = proto.constructor
 
-      if (!Array.isArray(child)) {
-        children.push(asVNode(child))
-      } else {
-        for (let j = 0; j < child.length; ++j) {
-          children.push(asVNode(child[j]))
+    const propConfig: PropConfig = !attr
+      ? { propName, hasAttr: false }
+      : {
+          propName,
+          hasAttr: true,
+          attrName: propNameToAttrName(propName),
+          reflect: !!reflect,
+          mapPropToAttr: attr.mapPropToAttr,
+          mapAttrToProp: attr.mapAttrToProp
+        }
+
+    let elemConfig = elemConfigByClass.get(constructor)
+
+    if (!elemConfig) {
+      elemConfig = { tag: '', impl: null, styles: null, props: new Map() }
+      elemConfigByClass.set(constructor, elemConfig)
+    }
+
+    elemConfig.props.set(propName, propConfig)
+  }
+}
+
+// === other public functions ========================================
+
+function component<M extends Methods = {}>(): new () => Component<M> {
+  return BaseElement as any
+}
+
+function setMethods<M extends Methods>(obj: Component<M>, methods: M) {
+  Object.assign(obj, methods)
+}
+
+function intercept(point: 'init' | 'render', fn: InterceptFn) {
+  interceptions[point].push(fn)
+}
+
+// === base custom element class =====================================
+
+class BaseElement extends HTMLElement {
+  private __ctrl!: Ctrl
+  private __hasAddedPropHandling = false
+
+  constructor() {
+    super()
+
+    let styles = elemConfigByClass.get(this.constructor)!.styles
+
+    if (typeof styles !== 'string') {
+      styles = typeof styles === 'function' ? styles() : (styles = '')
+
+      if (Array.isArray(styles)) {
+        styles = styles.map((it) => it.trim()).join('\n\n/*******/\n\n')
+      }
+
+      elemConfigByClass.get(this.constructor)!.styles = styles
+    }
+
+    const stylesElement = document.createElement('span')
+
+    if (styles) {
+      const styleElem = document.createElement('style')
+      styleElem.innerText = styles
+      stylesElement.appendChild(styleElem)
+    }
+
+    const contentElement = document.createElement('span')
+    this.attachShadow({ mode: 'open' })
+    contentElement.append(document.createElement('span'))
+    this.shadowRoot!.append(stylesElement, contentElement)
+
+    let initialized = false
+    let mounted = false
+    let updated = false
+    let shallCommit = false
+    let getContent: () => any // TODO
+
+    const beforeMountNotifier = createNotifier()
+    const afterMountNotifier = createNotifier()
+    const beforeUpdateNotifier = createNotifier()
+    const afterUpdateNotifier = createNotifier()
+    const beforeUnmountNotifier = createNotifier()
+    const onceBeforeUpdateActions: (() => void)[] = []
+
+    const ctrl: Ctrl = {
+      getName: () => this.localName,
+      getHost: () => this,
+      isInitialized: () => initialized,
+      isMounted: () => mounted,
+      hasUpdated: () => updated,
+      beforeMount: beforeMountNotifier.subscribe,
+      afterMount: afterMountNotifier.subscribe,
+      onceBeforeUpdate: (task: () => void) =>
+        onceBeforeUpdateActions.push(task),
+      beforeUpdate: beforeUpdateNotifier.subscribe,
+      afterUpdate: afterUpdateNotifier.subscribe,
+      beforeUnmount: beforeUnmountNotifier.subscribe,
+
+      refresh: () => {
+        if (!shallCommit) {
+          shallCommit = true
+
+          requestAnimationFrame(() => {
+            shallCommit = false
+            commit()
+          })
         }
       }
     }
+
+    this.__ctrl = ctrl
+
+    const commit = () => {
+      if (mounted) {
+        if (onceBeforeUpdateActions.length) {
+          try {
+            onceBeforeUpdateActions.forEach((action) => action())
+          } finally {
+            onceBeforeUpdateActions.length = 0
+          }
+        }
+
+        beforeUpdateNotifier.notify()
+      }
+
+      runIntercepted(
+        () => {
+          const content = getContent()
+          // TODO
+          try {
+            render(content, contentElement)
+          } catch (e) {
+            console.error(`Render error in "${ctrl.getName()}"`)
+            throw e
+          }
+        },
+        ctrl,
+        interceptions.render
+      )
+
+      initialized = true
+
+      if (!mounted) {
+        mounted = true
+        afterMountNotifier.notify()
+      } else {
+        updated = true
+        afterUpdateNotifier.notify()
+      }
+    }
+
+    ;(this as any).connectedCallback = () => {
+      if (!this.__hasAddedPropHandling) {
+        addPropHandling(this)
+        this.__hasAddedPropHandling = true
+      }
+
+      addPropHandling(this)
+      if (!initialized) {
+        runIntercepted(
+          () => {
+            getContent = elemConfigByClass.get(this.constructor)!.impl!(
+              this,
+              ctrl
+            ) // TODO!!!!
+          },
+          ctrl,
+          interceptions.init
+        )
+      }
+
+      beforeMountNotifier.notify()
+
+      commit()
+    }
+    ;(this as any).disconnectedCallback = () => {
+      beforeUnmountNotifier.notify()
+      contentElement.innerHTML = ''
+    }
   }
 
-  const ret: any = createElement(tagName, props || EMPTY_OBJ, children)
-  ret.isVElement = true
-  return ret
+  // will be overridden in constructor
+  connectedCallback() {
+    this.connectedCallback()
+  }
+
+  // will be overridden in constructor
+  disconnectedCallback() {
+    this.disconnectedCallback()
+  }
 }
 
-// === constants =====================================================
+function addAttributeHandling(
+  clazz: new () => Component,
+  propConfigs: PropConfig[]
+) {
+  const proto: any = clazz.prototype
+  const propConfigByPropName = new Map<string, PropConfig>()
+  const propConfigByAttrName = new Map<string, PropConfig>()
 
-const EMPTY_ARR: any[] = []
-const EMPTY_OBJ = {}
+  for (const propConfig of propConfigs) {
+    propConfigByPropName.set(propConfig.propName, propConfig)
 
-function toKebabCase(s: string) {
-  return s
-    .replace(/([a-z])([A-Z])/g, '$1-$2')
-    .replace(/[\s_]+/g, '-')
-    .toLowerCase()
+    if (propConfig.hasAttr) {
+      propConfigByAttrName.set(propConfig.attrName, propConfig)
+    }
+  }
+
+  ;(clazz as any).observedAttributes = Array.from(propConfigByAttrName.keys())
+
+  proto.getAttribute = function (attrName: string): string | null {
+    const propInfo = propConfigByAttrName.get(attrName)
+
+    return propInfo && propInfo.hasAttr
+      ? propInfo.mapPropToAttr((this as any)[propInfo.propName])
+      : HTMLElement.prototype.getAttribute.call(this, attrName)
+  }
+
+  proto.attributeChangedCallback = function (
+    this: any,
+    attrName: string,
+    oldValue: string | null,
+    value: string | null
+  ) {
+    if (!this.__hasAddedPropHandling) {
+      addPropHandling(this)
+      this.__hasAddedPropHandling = true
+    }
+
+    if (!ignoreAttributeChange) {
+      const { propName, mapAttrToProp } = propConfigByAttrName.get(
+        attrName
+      ) as any
+
+      if (typeof value === 'string') {
+        console.log(9, attrName)
+        this[propName] = mapAttrToProp(value)
+      }
+    }
+  }
+  /*
+  for (const propConfig of propConfigByPropName.values()) {
+    const { propName } = propConfig
+
+    const setPropDescriptor = (target: any) => {
+      let propValue: any
+
+      Object.defineProperty(target, propName, {
+        get() {
+          return propValue
+        },
+
+        set(value: any) {
+          console.log(5555, propName)
+          propValue = value
+
+          if (propConfig.hasAttr && propConfig.reflect) {
+            try {
+              ignoreAttributeChange = true
+
+              target.setAttribute(
+                propConfig.attrName,
+                propConfig.mapPropToAttr(value)
+              )
+            } finally {
+              ignoreAttributeChange = false
+            }
+          }
+          console.log('refresh')
+          ctrls.get(this)!.refresh()
+        }
+      })
+    }
+
+    console.log(4444, propName)
+
+    Object.defineProperty(proto, propName, {
+      get() {
+        console.log(6666, propName)
+        setPropDescriptor(this)
+        return undefined
+      },
+
+      set(this: any, value: any) {
+        console.log(2222, propName)
+        setPropDescriptor(this)
+        this[propName] = value
+      }
+    })
+  }
+*/
+}
+
+function addPropHandling(obj: any) {
+  const clazz = obj.constructor
+  const ctrl: Ctrl = obj.__ctrl
+  const propConfigs = Array.from(elemConfigByClass.get(clazz)!.props.values())
+
+  propConfigs.forEach((propConfig) => {
+    const { propName, hasAttr } = propConfig
+
+    let propValue = obj[propName]
+
+    Object.defineProperty(obj, propName, {
+      get() {
+        return propValue
+      },
+
+      set(value: any) {
+        console.log(5555, propName)
+        propValue = value
+
+        if (propConfig.hasAttr && propConfig.reflect) {
+          try {
+            ignoreAttributeChange = true
+
+            obj.setAttribute(
+              propConfig.attrName,
+              propConfig.mapPropToAttr(value)
+            )
+          } finally {
+            ignoreAttributeChange = false
+          }
+        }
+        console.log('refresh')
+        ctrl.refresh()
+      }
+    })
+  })
+}
+
+// === Attrs =========================================================
+
+const Attrs = {
+  string: {
+    mapPropToAttr: (it: string | null) => it,
+    mapAttrToProp: (it: string | null) => it
+  },
+
+  number: {
+    mapPropToAttr: (it: number | null) => (it === null ? null : String(it)),
+    mapAttrToProp: (it: string | null) =>
+      it === null ? null : Number.parseFloat(it)
+  },
+
+  boolean: {
+    mapPropToAttr: (it: boolean | null) => (!it ? null : ''),
+    mapAttrToProp: (it: string | null) => (it === null ? false : true)
+  }
+}
+
+// === tools =========================================================
+
+function propNameToAttrName(propName: string) {
+  return propName.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase()
+}
+
+function createNotifier() {
+  const subscribers: (() => void)[] = []
+
+  return {
+    subscribe: (subscriber: () => void) => void subscribers.push(subscriber),
+    notify: () => void (subscribers.length && subscribers.forEach((it) => it()))
+  }
+}
+
+function runIntercepted<T = null>(
+  action: () => void,
+  payload: T,
+  interceptors: ((payload: T, next: () => void) => void)[]
+) {
+  if (interceptors.length === 0) {
+    action()
+  } else {
+    let next: () => void = () => action()
+
+    for (let i = interceptors.length - 1; i >= 0; --i) {
+      const nextFn = next
+
+      next = () => void interceptors[i](payload, nextFn)
+    }
+
+    next()
+  }
+}
+
+// === utils ================================================
+
+function definePropValue(obj: object, propName: string, value: any) {
+  Object.defineProperty(obj, propName, { value })
+}
+
+function registerElement(
+  tagName: string,
+  elementClass: CustomElementConstructor
+): void {
+  // TODO!!!!
+  if (customElements.get(tagName)) {
+    console.clear()
+    console.log(`Custom element ${tagName} already defined -> reloading...`)
+
+    setTimeout(() => {
+      console.clear()
+      location.reload()
+    }, 1000)
+  } else {
+    customElements.define(tagName, elementClass)
+  }
 }

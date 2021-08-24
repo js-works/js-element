@@ -1,9 +1,4 @@
-import { intercept, Context, Ctrl, Ref } from 'js-element/core'
-import { isObservable, observable, observe } from '@nx-js/observer-util'
-
-// === constants =====================================================
-
-const STORE_KEY = 'js-element::ext::store'
+import { intercept, Ctrl } from 'js-element'
 
 // === data ==========================================================
 
@@ -16,19 +11,6 @@ let currentCtrl: Ctrl | null = null
 type State = Record<string, any>
 type Task = () => void
 type Methods = Record<string, (...args: any[]) => any>
-
-type ContextDetail<T> = {
-  context: Context<T>
-  callback: (newValue: T) => void
-  cancelled: Promise<null>
-}
-
-type Store<S extends State> = {
-  getState(): S
-  subscribe(subscriber: () => void): () => void
-  dispatch(msg: any): void // TODO
-  destroy?(): void
-}
 
 type StateUpdater<T extends Record<string, any>> = {
   (newState: Partial<T>): void
@@ -87,99 +69,11 @@ export function hook<A extends any[], R, F extends { (...args: A): R }>(
   }) as any
 }
 
-// === useCtx ========================================================
-
-function withConsumer<T>(ctx: Context<T>): () => T {
-  const c = currentCtrl!
-  const host = c.getHost()
-  let cancel: null | (() => void) = null
-
-  const cancelled = new Promise<null>((resolve) => {
-    cancel = () => resolve(null)
-  })
-
-  let value = ctx.defaultValue
-
-  c.beforeMount(() => {
-    const detail: ContextDetail<T> = {
-      context: ctx,
-
-      callback: (newValue: T) => {
-        value = newValue
-        c.refresh()
-      },
-
-      cancelled
-    }
-
-    host.dispatchEvent(
-      new CustomEvent('$$context$$', {
-        detail,
-        bubbles: true,
-        composed: true
-      })
-    )
-  })
-
-  c.beforeUnmount(() => cancel!())
-
-  return () => value! // TODO
-}
-
-type CtxConfig = Record<string, Context<any> | (() => any)>
-
-type ResultOfCtxConfig<C extends CtxConfig> = {
-  [K in keyof C]: C[K] extends Context<infer R>
-    ? R
-    : C[K] extends () => infer R
-    ? R
-    : never
-}
-
-export const useCtx = hook('useCtx', useCtxFn)
-
-function useCtxFn<C extends CtxConfig>(config: C): ResultOfCtxConfig<C>
-
-function useCtxFn<T>(ctx: Context<T>): () => T
-
-function useCtxFn(arg: any): any {
-  if (arg && arg.kind === 'context') {
-    return withConsumer(arg)
-  }
-
-  const ret: any = {}
-
-  Object.entries(arg).forEach(([k, v]) => {
-    Object.defineProperty(ret, k, {
-      get:
-        (v as any).kind === 'context'
-          ? withConsumer(v as any)
-          : (arg[k] as () => any)
-    })
-  })
-
-  return ret
-}
-
 // === useHost =======================================================
 
 export const useHost = hook('useHost', () => {
   return currentCtrl!.getHost()
 })
-
-// === useMethods ====================================================
-
-export const useMethods = hook(
-  'useMethods',
-  <M extends Methods, R extends Ref<M>>(
-    ref: R | undefined,
-    methods: M | null
-  ) => {
-    if (ref && methods) {
-      ref.current = methods
-    }
-  }
-)
 
 // === useRefresher ==================================================
 
@@ -282,35 +176,6 @@ export const useState = hook('useState', function <
   nextState = { ...state }
 
   return [state, setState as any] // TODO
-})
-
-// === useReactive ======================================================
-
-export const useReactive = hook('useReactive', function <
-  S extends State
->(state: S): S {
-  const ret: any = {}
-  const c = currentCtrl!
-
-  if (!observerInterceptorAdded) {
-    intercept('render', (ctrl, next) => {
-      observe(next)
-    })
-
-    observerInterceptorAdded = true
-  }
-
-  /*
-  Object.keys(state || {}).forEach((key) => {
-    Object.defineProperty(ret, key, {
-      get: () => state[key],
-      set: (value: any) => void (((state as any)[key] = value), c.refresh())
-    })
-  })
-
-  return ret
-*/
-  return isObservable(state) ? state : observable(state)
 })
 
 // === useStyles =======================================================
@@ -628,140 +493,6 @@ export const usePromise = hook('usePromise', function <
   }
 })
 
-// === useActions ======================================================
-
-type ActionsOf<C extends MessageCreators> = {
-  [K in keyof C]: C[K] extends (...args: infer A) => any
-    ? (...args: A) => void
-    : never
-}
-
-export const useActions = hook('useActions', function <
-  C extends MessageCreators
->(msgCreators: C): ActionsOf<C> {
-  let store: Store<any> | null = null
-  const c = currentCtrl!
-
-  const ret: any = {}
-
-  c.beforeMount(() => {
-    send(c, {
-      type: STORE_KEY,
-
-      payload: {
-        setStore(st: Store<any>) {
-          store = st
-        }
-      }
-    })
-
-    if (!store) {
-      throw new Error(`Store for actions not available (-> ${c.getName()})`)
-    }
-  })
-
-  for (const key of Object.keys(msgCreators)) {
-    ret[key] = (...args: any[]) => {
-      store!.dispatch(msgCreators[key](...args))
-    }
-  }
-
-  return ret
-})
-
-// === createStoreHook ===============================================
-
-export function createStoreHook<S extends State>(store: Store<S>): () => S {
-  return () => {
-    const ret: any = {} // will be filled below
-    const refresh = useRefresher()
-
-    for (const key of Object.keys(store.getState())) {
-      Object.defineProperty(ret, key, {
-        get: () => store.getState()[key]
-      })
-    }
-
-    useAfterMount(() => {
-      const unsubscribe = store.subscribe(() => {
-        refresh()
-      })
-
-      return unsubscribe
-    })
-
-    return ret
-  }
-}
-
-// === createStoreHooks ==============================================
-
-let eventKeyCounter = 0
-
-export function createStoreHooks<S extends State>(): [
-  (store: Store<S>) => void,
-  <U extends Selectors<S>>(selectors: U) => SelectorsOf<S, U>
-] {
-  const STORE_KEY2 = STORE_KEY + ++eventKeyCounter
-
-  const useStore = hook('useStore', (store: Store<S>): void => {
-    const c = currentCtrl!
-
-    c.beforeMount(() => {
-      receive(c, STORE_KEY, (msg: Message) => {
-        msg.payload.setStore(store)
-      })
-
-      receive(c, STORE_KEY2, (msg: Message) => {
-        msg.payload.setStore(store)
-      })
-    })
-  })
-
-  const useSelectors = hook('useSelectors', function <
-    U extends Selectors<S>
-  >(selectors: U): SelectorsOf<S, U> {
-    let store: Store<S> | null = null
-    const c = currentCtrl!
-
-    const ret: any = {}
-
-    c.beforeMount(() => {
-      send(c, {
-        type: STORE_KEY2,
-
-        payload: {
-          setStore(st: Store<any>) {
-            store = st
-          }
-        }
-      })
-
-      if (!store) {
-        throw new Error(`Store for selectors not available (-> ${c.getName()})`)
-      }
-
-      const unsubscribe = store!.subscribe(() => {
-        c.refresh()
-      })
-
-      c.beforeUnmount(unsubscribe)
-    })
-
-    for (const key of Object.keys(selectors)) {
-      Object.defineProperty(ret, key, {
-        get: () => {
-          return selectors[key]((store as any).getState()) // TODO!!!
-        }
-      })
-    }
-
-    return ret
-  })
-
-  return [useStore, useSelectors]
-}
-
 // === locals ========================================================
 
 function isEqualArray(arr1: any[], arr2: any[]) {
@@ -778,40 +509,4 @@ function isEqualArray(arr1: any[], arr2: any[]) {
   }
 
   return ret
-}
-
-// === helpers =======================================================
-
-const SEND_RECEIVE_MESSAGE_TYPE_SUFFIX = 'js-element/hooks::send+receive'
-
-function send(c: Ctrl, msg: Message): void {
-  c.getHost().dispatchEvent(
-    new CustomEvent(SEND_RECEIVE_MESSAGE_TYPE_SUFFIX + msg.type, {
-      bubbles: true,
-      composed: true,
-      detail: msg
-    })
-  )
-}
-
-function receive(
-  c: Ctrl,
-  type: string,
-  handler: (message: Message) => void
-): () => void {
-  const host = c.getHost()
-
-  const listener = (ev: Event) => {
-    ev.stopPropagation()
-    handler((ev as any).detail)
-  }
-
-  const unsubscribe = () => {
-    host.removeEventListener(SEND_RECEIVE_MESSAGE_TYPE_SUFFIX + type, listener)
-  }
-
-  host.addEventListener(SEND_RECEIVE_MESSAGE_TYPE_SUFFIX + type, listener)
-  c.beforeUnmount(unsubscribe)
-
-  return unsubscribe
 }

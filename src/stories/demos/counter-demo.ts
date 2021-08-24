@@ -1,24 +1,11 @@
-# js-element
-
-A R&D project to evaluate an alternative approach to develop custom elements.
-
-#### Disclaimer:
-
-Project is in an early state ...
-and it is currently not meant to ever be used in production.
-
-## Example (simple counter)
-
-```tsx
 import { component, elem, prop, setMethods, Attrs } from 'js-element'
 import { useState } from 'js-element/hooks'
 import { html } from 'lit-html'
 import { createRef, ref } from 'lit-html/directives/ref'
-import counterStyles from './counter.css'
 
 @elem({
   tag: 'x-counter',
-  styles: counterStyles,
+  styles: () => styles,
   impl: counterImpl
 })
 class Counter extends component<{
@@ -52,5 +39,48 @@ function counterImpl(self: Counter) {
     </button>
   `
 }
-```
 
+@elem({
+  tag: 'x-counter-demo',
+  styles: () => styles,
+  impl: counterDemo
+})
+class CounterDemo extends component() {}
+
+function counterDemo() {
+  const counterRef = createRef<Counter>()
+
+  const onResetClick = () => counterRef.value!.reset()
+  const onDecrementClick = () => counterRef.value!.decrement()
+  const onIncrementClick = () => counterRef.value!.increment()
+
+  return () => html`
+    <div>
+      <h3>Counter demo</h3>
+      <x-counter ${ref(counterRef)}></x-counter>
+      <button @click=${onDecrementClick}>-1</button>
+      <button @click=${onIncrementClick}>+1</button>
+      <button @click=${onResetClick}>Reset</button>
+    </div>
+  `
+}
+
+const styles = `
+  * {
+    font-family: Helvetica, Arial, sans-serif;
+  }
+
+  h3 {
+    font-weight: 400;
+  }
+
+  button {
+    border: none;
+    color: white;
+    background-color: rgb(0, 137, 223);
+    cursor: pointer;
+    padding: 6px 12px;
+  }
+`
+
+export default CounterDemo
