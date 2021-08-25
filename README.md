@@ -11,8 +11,8 @@ and it is currently not meant to ever be used in production.
 
 ```tsx
 import { component, elem, prop, setMethods, Attrs } from 'js-element'
-import { useState } from 'js-element/hooks'
 import { html, createRef, ref, withLit } from 'js-element/lit'
+import { useState } from 'js-element/hooks'
 import counterStyles from './counter.css'
 
 @elem({
