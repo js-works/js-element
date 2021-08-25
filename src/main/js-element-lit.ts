@@ -1,5 +1,5 @@
 import { html, render } from 'lit-html'
-import { createRef, ref, Ref } from 'lit-html/directives/ref.js'
+import { createRef, ref, Ref } from 'lit-html/directives/ref'
 
 // === exports =======================================================
 

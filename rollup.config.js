@@ -44,8 +44,8 @@ function createConfig(pkg, moduleFormat, productive) {
         'js-element/hooks': 'jsElement.hooks',
         'js-element/utils': 'jsElement.utils',
         'js-element/lit': 'jsElement.lit',
-        'lit-html': 'lit',
-        'lit-html/directives/ref.js': 'lit'
+        //'lit-html': 'lit',
+        'lit-html/**': 'lit'
       }
     },
 
@@ -55,7 +55,7 @@ function createConfig(pkg, moduleFormat, productive) {
       'js-element/utils',
       'js-element/lit',
       'lit-html',
-      'lit-html/directives/ref.js'
+      'lit-html/directives/ref'
     ],
 
     plugins: [
