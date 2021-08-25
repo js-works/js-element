@@ -20,6 +20,7 @@
     "paths": {
       "js-element/hooks": ["src/main/js-element-hooks.ts"],
       "js-element/utils": ["src/main/js-element-utils.ts"],
+      "js-element/lit": ["src/main/js-element-lit.ts"],
       "js-element": ["src/main/js-element.ts"]
     },
     "typeRoots": ["node_modules/@types"],
@@ -28,7 +29,8 @@
   "files": [
     "src/main/js-element.ts",
     "src/main/js-element-hooks.ts",
-    "src/main/js-element-utils.ts"
+    "src/main/js-element-utils.ts",
+    "src/main/js-element-lit.ts"
   ],
   "include": ["./src/main/**/*.*", "./src/stories/**/*.*"],
   "exclude": ["node_modules"]

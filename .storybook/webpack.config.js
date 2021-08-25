@@ -10,6 +10,11 @@ module.exports = ({ config }) => {
     '../src/main/js-element-hooks.ts'
   )
 
+  alias['js-element/lit$'] = path.resolve(
+    __dirname,
+    '../src/main/js-element-lit.ts'
+  )
+
   alias['js-element/utils$'] = path.resolve(
     __dirname,
     '../src/main/js-element-utils.ts'

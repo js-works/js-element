@@ -12,14 +12,13 @@ and it is currently not meant to ever be used in production.
 ```tsx
 import { component, elem, prop, setMethods, Attrs } from 'js-element'
 import { useState } from 'js-element/hooks'
-import { html } from 'lit-html'
-import { createRef, ref } from 'lit-html/directives/ref'
+import { html, createRef, ref, withLit } from 'js-element/lit'
 import counterStyles from './counter.css'
 
 @elem({
   tag: 'x-counter',
   styles: counterStyles,
-  impl: counterImpl
+  impl: withLit(counterImpl)
 })
 class Counter extends component<{
   reset(): void

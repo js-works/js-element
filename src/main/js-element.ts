@@ -1,5 +1,3 @@
-import { render, TemplateResult } from 'lit-html'
-
 // === exports =======================================================
 
 // functions and singletons
@@ -14,7 +12,7 @@ const elemConfigByClass = new Map<
   Function,
   {
     tag: string
-    impl: Function | null // TODO,
+    impl: any // TODO!!!!!,
     styles: string | string[] | (() => string | string[]) | null
     props: Map<string, PropConfig>
   }
@@ -71,9 +69,12 @@ type InterceptFn = (ctrl: Ctrl, next: () => void) => void
 
 // === decorators (all public) =======================================
 
-function elem<E extends Component>(params: {
+function elem<E extends Component, C>(params: {
   tag: string
-  impl: (self: E, ctrl: Ctrl) => () => TemplateResult
+  impl: {
+    patch: (content: C, container: HTMLElement) => void
+    init: (self: E, ctrl: Ctrl) => () => C
+  }
   styles?: string | string[] | (() => string | string[])
   uses?: any[]
 }) {
@@ -163,6 +164,7 @@ class BaseElement extends HTMLElement {
 
   constructor() {
     super()
+    const { init, patch } = elemConfigByClass.get(this.constructor)!.impl
 
     let styles = elemConfigByClass.get(this.constructor)!.styles
 
@@ -248,7 +250,7 @@ class BaseElement extends HTMLElement {
           const content = getContent()
           // TODO
           try {
-            render(content, contentElement)
+            patch(content, contentElement)
           } catch (e) {
             console.error(`Render error in "${ctrl.getName()}"`)
             throw e
@@ -275,14 +277,10 @@ class BaseElement extends HTMLElement {
         this.__hasAddedPropHandling = true
       }
 
-      addPropHandling(this)
       if (!initialized) {
         runIntercepted(
           () => {
-            getContent = elemConfigByClass.get(this.constructor)!.impl!(
-              this,
-              ctrl
-            ) // TODO!!!!
+            getContent = init(this, ctrl)
           },
           ctrl,
           interceptions.init
