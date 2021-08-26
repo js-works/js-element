@@ -179,10 +179,14 @@ class BaseElement extends HTMLElement {
     let styles = elemConfigByClass.get(this.constructor)!.styles
 
     if (typeof styles !== 'string') {
-      styles = typeof styles === 'function' ? styles() : (styles = '')
+      styles = typeof styles === 'function' ? styles() : styles
 
       if (Array.isArray(styles)) {
         styles = styles.map((it) => it.trim()).join('\n\n/*******/\n\n')
+      }
+
+      if (!styles) {
+        styles = ''
       }
 
       elemConfigByClass.get(this.constructor)!.styles = styles
