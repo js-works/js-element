@@ -44,8 +44,7 @@ function createConfig(pkg, moduleFormat, productive) {
         'js-element/hooks': 'jsElement.hooks',
         'js-element/utils': 'jsElement.utils',
         'js-element/lit': 'jsElement.lit',
-        //'lit-html': 'lit',
-        'lit-html/**': 'lit'
+        'lit-html': 'lit'
       }
     },
 
@@ -70,6 +69,7 @@ function createConfig(pkg, moduleFormat, productive) {
           'process.env.NODE_ENV': productive ? "'production'" : "'development'"
         }
       }),
+
       typescript({
         tsconfig: './tsconfig.dist.json'
       }),
