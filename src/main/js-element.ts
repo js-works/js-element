@@ -196,7 +196,7 @@ class BaseElement extends HTMLElement {
 
     if (styles) {
       const styleElem = document.createElement('style')
-      styleElem.innerText = styles
+      styleElem.appendChild(document.createTextNode(styles))
       stylesElement.appendChild(styleElem)
     }
 
