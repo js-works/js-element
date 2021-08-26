@@ -11,7 +11,7 @@ and it is currently not meant to ever be used in production.
 
 ```tsx
 import { component, elem, prop, setMethods, Attrs } from 'js-element'
-import { html, createRef, ref, withLit } from 'js-element/lit'
+import { html, withLit } from 'js-element/lit'
 import { useState } from 'js-element/hooks'
 import counterStyles from './counter.css'
 

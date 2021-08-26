@@ -54,7 +54,10 @@ function createConfig(pkg, moduleFormat, productive) {
       'js-element/utils',
       'js-element/lit',
       'lit-html',
-      'lit-html/directives/ref'
+      'lit-html/directives/class-map',
+      'lit-html/directives/ref',
+      'lit-html/directives/repeat',
+      'lit-html/directives/style-map'
     ],
 
     plugins: [

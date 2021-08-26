@@ -108,13 +108,23 @@ function elem<E extends Component, C>(params: {
   }
 }
 
+function prop<T>(proto: Component, propName: string): void
+
 function prop<T>(params?: {
   attr: {
     mapPropToAttr(value: T): string | null
     mapAttrToProp(value: string | null): T
   }
   refl?: boolean
-}) {
+}): (proto: Component, propName: string) => void
+
+function prop(arg1?: any, arg2?: any): any {
+  if (typeof arg2 === 'string') {
+    return prop()(arg1, arg2)
+  }
+
+  const params = arg1 // TODO!!!
+
   const { attr, refl: reflect } = params || {}
 
   return (proto: Component, propName: string) => {
