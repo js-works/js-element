@@ -365,7 +365,6 @@ function addAttributeHandling(
       ) as any
 
       if (typeof value === 'string') {
-        console.log(9, attrName)
         this[propName] = mapAttrToProp(value)
       }
     }
@@ -388,7 +387,6 @@ function addPropHandling(obj: any) {
       },
 
       set(value: any) {
-        console.log(5555, propName)
         propValue = value
 
         if (propConfig.hasAttr && propConfig.reflect) {
@@ -403,7 +401,7 @@ function addPropHandling(obj: any) {
             ignoreAttributeChange = false
           }
         }
-        console.log('refresh')
+
         ctrl.refresh()
       }
     })
