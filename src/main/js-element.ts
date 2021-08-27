@@ -370,57 +370,6 @@ function addAttributeHandling(
       }
     }
   }
-  /*
-  for (const propConfig of propConfigByPropName.values()) {
-    const { propName } = propConfig
-
-    const setPropDescriptor = (target: any) => {
-      let propValue: any
-
-      Object.defineProperty(target, propName, {
-        get() {
-          return propValue
-        },
-
-        set(value: any) {
-          console.log(5555, propName)
-          propValue = value
-
-          if (propConfig.hasAttr && propConfig.reflect) {
-            try {
-              ignoreAttributeChange = true
-
-              target.setAttribute(
-                propConfig.attrName,
-                propConfig.mapPropToAttr(value)
-              )
-            } finally {
-              ignoreAttributeChange = false
-            }
-          }
-          console.log('refresh')
-          ctrls.get(this)!.refresh()
-        }
-      })
-    }
-
-    console.log(4444, propName)
-
-    Object.defineProperty(proto, propName, {
-      get() {
-        console.log(6666, propName)
-        setPropDescriptor(this)
-        return undefined
-      },
-
-      set(this: any, value: any) {
-        console.log(2222, propName)
-        setPropDescriptor(this)
-        this[propName] = value
-      }
-    })
-  }
-*/
 }
 
 function addPropHandling(obj: any) {
