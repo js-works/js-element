@@ -1,4 +1,4 @@
-import { intercept, Ctrl } from 'js-element'
+import { intercept, Context, Ctrl } from 'js-element'
 
 // === data ==========================================================
 
@@ -31,6 +31,16 @@ type Selectors<S extends State> = {
 
 type SelectorsOf<S extends State, U extends Selectors<S>> = {
   [K in keyof U]: U[K] extends (state: S) => infer R ? R : never
+}
+
+type CtxConfig = Record<string, Context<any> | (() => any)>
+
+type ResultOfCtxConfig<C extends CtxConfig> = {
+  [K in keyof C]: C[K] extends Context<infer R>
+    ? R
+    : C[K] extends () => infer R
+    ? R
+    : never
 }
 
 // === hook ====================================================
@@ -509,4 +519,74 @@ function isEqualArray(arr1: any[], arr2: any[]) {
   }
 
   return ret
+}
+
+// === context =======================================================
+
+type ContextDetail<T> = {
+  context: Context<T>
+  callback: (newValue: T) => void
+  cancelled: Promise<null>
+}
+
+export const useCtx = hook('useCtx', useCtxFn)
+
+function useCtxFn<C extends CtxConfig>(config: C): ResultOfCtxConfig<C>
+
+function useCtxFn<T>(ctx: Context<T>): () => T
+
+function useCtxFn(arg: any): any {
+  if (arg && arg.kind === 'context') {
+    return withConsumer(arg)
+  }
+
+  const ret: any = {}
+
+  Object.entries(arg).forEach(([k, v]) => {
+    Object.defineProperty(ret, k, {
+      get:
+        (v as any).kind === 'context'
+          ? withConsumer(v as any)
+          : (arg[k] as () => any)
+    })
+  })
+
+  return ret
+}
+
+function withConsumer<T>(ctx: Context<T>): () => T {
+  const c = currentCtrl!
+  const host = c.getHost()
+  let cancel: null | (() => void) = null
+
+  const cancelled = new Promise<null>((resolve) => {
+    cancel = () => resolve(null)
+  })
+
+  let value = ctx.defaultValue
+
+  c.beforeMount(() => {
+    const detail: ContextDetail<T> = {
+      context: ctx,
+
+      callback: (newValue: T) => {
+        value = newValue
+        c.refresh()
+      },
+
+      cancelled
+    }
+
+    host.dispatchEvent(
+      new CustomEvent('$$context$$', {
+        detail,
+        bubbles: true,
+        composed: true
+      })
+    )
+  })
+
+  c.beforeUnmount(() => cancel!())
+
+  return () => value! // TODO
 }

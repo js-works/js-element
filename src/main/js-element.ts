@@ -1,10 +1,19 @@
 // === exports =======================================================
 
 // functions and singletons
-export { component, elem, intercept, prop, setMethods, Attrs }
+export {
+  component,
+  createCtx,
+  defineProvider,
+  elem,
+  intercept,
+  prop,
+  setMethods,
+  Attrs
+}
 
 // types
-export { Ctrl, MethodsOf }
+export { Context, Ctrl, MethodsOf }
 
 // === data ==========================================================
 
@@ -66,6 +75,11 @@ type Ctrl = {
 }
 
 type InterceptFn = (ctrl: Ctrl, next: () => void) => void
+
+type Context<T> = {
+  kind: 'context'
+  defaultValue: T
+}
 
 // === decorators (all public) =======================================
 
@@ -485,4 +499,75 @@ function registerElement(
   } else {
     customElements.define(tagName, elementClass)
   }
+}
+
+// === context =======================================================
+
+function createCtx<T>(defaultValue?: T): Context<T> {
+  return Object.freeze({
+    kind: 'context',
+    defaultValue: defaultValue!
+  })
+}
+
+function defineProvider<T>(
+  tagName: string,
+  ctx: Context<T>
+): { new (): HTMLElement & { value: T | undefined } } {
+  const eventName = `$$context$$`
+
+  class CtxProviderElement extends HTMLElement {
+    private __value?: T = undefined
+    private __subscribers: ((value: T) => void)[] = []
+    private __cleanup: (() => void) | null = null
+
+    constructor() {
+      super()
+      this.attachShadow({ mode: 'open' })
+    }
+
+    get value(): T | undefined {
+      return this.__value
+    }
+
+    set value(val: T | undefined) {
+      if (val !== this.__value) {
+        this.__value = val
+        this.__subscribers.forEach((subscriber) => subscriber(val!))
+      }
+    }
+
+    connectedCallback() {
+      this.shadowRoot!.innerHTML = '<slot></slot>'
+
+      const eventListener = (ev: any) => {
+        if (ev.detail.context !== ctx) {
+          return
+        }
+
+        ev.stopPropagation()
+        this.__subscribers.push(ev.detail.callback)
+
+        ev.detail.cancelled.then(() => {
+          this.__subscribers.splice(
+            this.__subscribers.indexOf(ev.detail.callback),
+            1
+          )
+        })
+      }
+
+      this.addEventListener(eventName, eventListener)
+      this.__cleanup = () => this.removeEventListener(eventName, eventListener)
+    }
+
+    disconnectCallback() {
+      this.__subscribers.length === 0
+      this.__cleanup!()
+      this.__cleanup = null
+    }
+  }
+
+  registerElement(tagName, CtxProviderElement)
+
+  return CtxProviderElement
 }
