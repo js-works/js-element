@@ -4,7 +4,7 @@
 export { component, createCtx, elem, intercept, prop, setMethods, Attrs }
 
 // types
-export { Context, Ctrl, MethodsOf }
+export { Ctx, Ctrl, MethodsOf }
 
 // === data ==========================================================
 
@@ -67,7 +67,7 @@ type Ctrl = {
 
 type InterceptFn = (ctrl: Ctrl, next: () => void) => void
 
-type Context<T> = Readonly<{
+type Ctx<T> = Readonly<{
   kind: 'context'
   defaultValue: T
 }>
@@ -86,7 +86,7 @@ function elem<E extends Component, C>(params: {
 
 function elem<T, E extends Component & { value?: T }>(params: {
   tag: `${string}-provider`
-  ctx: Context<T>
+  ctx: Ctx<T>
 }): (clazz: new () => E) => void
 
 function elem<E extends Component>(params: any) {
@@ -516,14 +516,14 @@ function registerElement(
 
 // === context =======================================================
 
-function createCtx<T>(defaultValue?: T): Context<T> {
+function createCtx<T>(defaultValue?: T): Ctx<T> {
   return Object.freeze({
     kind: 'context',
     defaultValue: defaultValue!
   })
 }
 
-function initProvider(self: any, ctrl: Ctrl, ctx: Context<any>): () => null {
+function initProvider(self: any, ctrl: Ctrl, ctx: Ctx<any>): () => null {
   const subscribers = new Set<any>() // TODO
   let cleanup: any = null // TODO
   let value = ctx.defaultValue

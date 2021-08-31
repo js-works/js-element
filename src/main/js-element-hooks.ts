@@ -1,4 +1,4 @@
-import { intercept, Context, Ctrl } from 'js-element'
+import { intercept, Ctrl, Ctx } from 'js-element'
 
 // === data ==========================================================
 
@@ -25,18 +25,10 @@ type MessageCreators = {
   [key: string]: (...args: any[]) => Message
 }
 
-type Selectors<S extends State> = {
-  [key: string]: (state: S) => any
-}
-
-type SelectorsOf<S extends State, U extends Selectors<S>> = {
-  [K in keyof U]: U[K] extends (state: S) => infer R ? R : never
-}
-
-type CtxConfig = Record<string, Context<any> | (() => any)>
+type CtxConfig = Record<string, Ctx<any> | (() => any)>
 
 type ResultOfCtxConfig<C extends CtxConfig> = {
-  [K in keyof C]: C[K] extends Context<infer R>
+  [K in keyof C]: C[K] extends Ctx<infer R>
     ? R
     : C[K] extends () => infer R
     ? R
@@ -524,7 +516,7 @@ function isEqualArray(arr1: any[], arr2: any[]) {
 // === context =======================================================
 
 type ContextDetail<T> = {
-  context: Context<T>
+  context: Ctx<T>
   callback: (newValue: T) => void
   cancelled: Promise<null>
 }
@@ -533,7 +525,7 @@ export const useCtx = hook('useCtx', useCtxFn)
 
 function useCtxFn<C extends CtxConfig>(config: C): ResultOfCtxConfig<C>
 
-function useCtxFn<T>(ctx: Context<T>): () => T
+function useCtxFn<T>(ctx: Ctx<T>): () => T
 
 function useCtxFn(arg: any): any {
   if (arg && arg.kind === 'context') {
@@ -554,7 +546,7 @@ function useCtxFn(arg: any): any {
   return ret
 }
 
-function withConsumer<T>(ctx: Context<T>): () => T {
+function withConsumer<T>(ctx: Ctx<T>): () => T {
   const c = currentCtrl!
   const host = c.getHost()
   let cancel: null | (() => void) = null
