@@ -1,16 +1,7 @@
 // === exports =======================================================
 
 // functions and singletons
-export {
-  component,
-  createCtx,
-  defineProvider,
-  elem,
-  intercept,
-  prop,
-  setMethods,
-  Attrs
-}
+export { component, createCtx, elem, intercept, prop, setMethods, Attrs }
 
 // types
 export { Context, Ctrl, MethodsOf }
@@ -76,10 +67,10 @@ type Ctrl = {
 
 type InterceptFn = (ctrl: Ctrl, next: () => void) => void
 
-type Context<T> = {
+type Context<T> = Readonly<{
   kind: 'context'
   defaultValue: T
-}
+}>
 
 // === decorators (all public) =======================================
 
@@ -91,9 +82,28 @@ function elem<E extends Component, C>(params: {
   }
   styles?: string | string[] | (() => string | string[])
   uses?: any[]
-}) {
+}): (clazz: new () => E) => void
+
+function elem<T, E extends Component & { value?: T }>(params: {
+  tag: `${string}-provider`
+  ctx: Context<T>
+}): (clazz: new () => E) => void
+
+function elem<E extends Component>(params: any) {
   return (clazz: new () => E): void => {
     definePropValue(clazz, 'tagName', params.tag)
+
+    if (params.ctx) {
+      const ctx = params.ctx
+      console.log(params)
+      params = {
+        tag: params.tag,
+        impl: {
+          init: (self: E, ctrl: Ctrl) => initProvider(self, ctrl, ctx),
+          patch: () => {}
+        }
+      }
+    }
 
     let elemConfig = elemConfigByClass.get(clazz)
 
@@ -188,9 +198,10 @@ class BaseElement extends HTMLElement {
 
   constructor() {
     super()
-    const { init, patch } = elemConfigByClass.get(this.constructor)!.impl
 
-    let styles = elemConfigByClass.get(this.constructor)!.styles
+    const elemConfig = elemConfigByClass.get(this.constructor)!
+    const { init, patch } = elemConfig.impl
+    let styles = elemConfig.styles
 
     if (typeof styles !== 'string') {
       styles = typeof styles === 'function' ? styles() : styles
@@ -207,6 +218,7 @@ class BaseElement extends HTMLElement {
     }
 
     const stylesElement = document.createElement('span')
+    stylesElement.setAttribute('data-role', 'styles')
 
     if (styles) {
       const styleElem = document.createElement('style')
@@ -215,8 +227,9 @@ class BaseElement extends HTMLElement {
     }
 
     const contentElement = document.createElement('span')
+    contentElement.setAttribute('data-role', 'content')
     this.attachShadow({ mode: 'open' })
-    contentElement.append(document.createElement('span'))
+    //contentElement.append(document.createElement('span'))
     this.shadowRoot!.append(stylesElement, contentElement)
 
     let initialized = false
@@ -510,64 +523,39 @@ function createCtx<T>(defaultValue?: T): Context<T> {
   })
 }
 
-function defineProvider<T>(
-  tagName: string,
-  ctx: Context<T>
-): { new (): HTMLElement & { value: T | undefined } } {
-  const eventName = `$$context$$`
+function initProvider(self: any, ctrl: Ctrl, ctx: Context<any>): () => null {
+  const subscribers = new Set<any>() // TODO
+  let cleanup: any = null // TODO
+  let value = ctx.defaultValue
 
-  class CtxProviderElement extends HTMLElement {
-    private __value?: T = undefined
-    private __subscribers: ((value: T) => void)[] = []
-    private __cleanup: (() => void) | null = null
-
-    constructor() {
-      super()
-      this.attachShadow({ mode: 'open' })
+  const eventListener = (ev: any) => {
+    if (ev.detail.context !== ctx) {
+      return
     }
 
-    get value(): T | undefined {
-      return this.__value
-    }
+    const callback = ev.detail.callback
 
-    set value(val: T | undefined) {
-      if (val !== this.__value) {
-        this.__value = val
-        this.__subscribers.forEach((subscriber) => subscriber(val!))
-      }
-    }
+    ev.stopPropagation()
+    subscribers.add(callback)
 
-    connectedCallback() {
-      this.shadowRoot!.innerHTML = '<slot></slot>'
-
-      const eventListener = (ev: any) => {
-        if (ev.detail.context !== ctx) {
-          return
-        }
-
-        ev.stopPropagation()
-        this.__subscribers.push(ev.detail.callback)
-
-        ev.detail.cancelled.then(() => {
-          this.__subscribers.splice(
-            this.__subscribers.indexOf(ev.detail.callback),
-            1
-          )
-        })
-      }
-
-      this.addEventListener(eventName, eventListener)
-      this.__cleanup = () => this.removeEventListener(eventName, eventListener)
-    }
-
-    disconnectCallback() {
-      this.__subscribers.length === 0
-      this.__cleanup!()
-      this.__cleanup = null
-    }
+    ev.detail.cancelled.then(() => {
+      subscribers.delete(callback)
+    })
   }
 
-  registerElement(tagName, CtxProviderElement)
+  self.addEventListener('$$context$$', eventListener)
 
-  return CtxProviderElement
+  cleanup = () => self.removeEventListener('$$context$$', eventListener)
+
+  ctrl.afterUpdate(() => {
+    if (self.value !== value) {
+      value = self.value
+      subscribers.forEach((subscriber) => subscriber(value))
+    }
+  })
+
+  const contentContainer = self.shadowRoot.lastChild
+  contentContainer.appendChild(document.createElement('slot'))
+
+  return () => null
 }
