@@ -1,6 +1,6 @@
 import { component, createCtx, elem, prop, Attrs } from 'js-element'
 import { useCtx, useInterval, useState } from 'js-element/hooks'
-import { html, withLit } from 'js-element/lit'
+import { html, lit } from 'js-element/lit'
 
 const themeCtx = createCtx('light')
 
@@ -15,7 +15,7 @@ class ThemeProvider extends component() {
 
 @elem({
   tag: 'theme-info',
-  impl: withLit(implThemeInfo)
+  impl: lit(implThemeInfo)
 })
 class ThemeInfo extends component() {}
 
@@ -28,7 +28,7 @@ function implThemeInfo() {
 @elem({
   tag: 'context-demo',
   uses: [ThemeProvider, ThemeInfo],
-  impl: withLit(implContextDemo)
+  impl: lit(implContextDemo)
 })
 class ContextDemo extends component() {}
 

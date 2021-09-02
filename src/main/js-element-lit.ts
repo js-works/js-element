@@ -6,12 +6,12 @@ import { repeat } from 'lit-html/directives/repeat'
 
 // === exports =======================================================
 
-export { classMap, createRef, html, ref, repeat, styleMap, withLit }
+export { classMap, createRef, html, ref, repeat, styleMap, lit }
 export { Ref, TemplateResult }
 
 // === functions =====================================================
 
-function withLit(init: Function): any {
+function lit(init: Function): any {
   return {
     patch: render,
     init
