@@ -1,4 +1,4 @@
-import { component, elem, prop, setMethods, Attrs } from 'js-element'
+import { component, css, elem, prop, setMethods, Attrs } from 'js-element'
 import { useState } from 'js-element/hooks'
 import { createRef, html, lit, ref } from 'js-element/lit'
 
@@ -64,7 +64,7 @@ function counterDemo() {
   `
 }
 
-const styles = `
+const styles = css`
   * {
     font-family: Helvetica, Arial, sans-serif;
   }
