@@ -1,7 +1,7 @@
 // === exports =======================================================
 
 // functions and singletons
-export { component, createCtx, css, elem, intercept, prop, setMethods, Attrs }
+export { component, createCtx, elem, intercept, prop, setMethods, Attrs }
 
 // types
 export { Ctx, Ctrl, MethodsOf }
@@ -433,30 +433,6 @@ function addPropHandling(obj: any) {
       }
     })
   })
-}
-
-// === css ===========================================================
-
-function css(strings: TemplateStringsArray, data?: any[]): string {
-  const tokens: string[] = []
-
-  if (!data) {
-    return strings[0]
-  }
-
-  for (let i = 0; i < strings.length; ++i) {
-    tokens.push(stringify(strings[i]))
-
-    if (i < data.length - 1) {
-      tokens.push(stringify(data[i]))
-    }
-  }
-  console.log(tokens.join(''))
-  return tokens.join('')
-}
-
-function stringify(val: any): string {
-  return val == null ? '' : String(val)
 }
 
 // === Attrs =========================================================
