@@ -11,14 +11,14 @@ and it is currently not meant to ever be used in production.
 
 ```tsx
 import { component, elem, prop, setMethods, Attrs } from 'js-element'
-import { html, withLit } from 'js-element/lit'
+import { html, lit } from 'js-element/lit'
 import { useState } from 'js-element/hooks'
 import counterStyles from './counter.css'
 
 @elem({
   tag: 'x-counter',
   styles: counterStyles,
-  impl: withLit(counterImpl)
+  impl: lit(counterImpl)
 })
 class Counter extends component<{
   reset(): void
