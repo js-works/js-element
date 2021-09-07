@@ -93,7 +93,7 @@ function elem<E extends Component>(params: any) {
 
     if (params.ctx) {
       const ctx = params.ctx
-      console.log(params)
+
       params = {
         tag: params.tag,
         impl: {
