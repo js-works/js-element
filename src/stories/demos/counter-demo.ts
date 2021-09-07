@@ -42,11 +42,11 @@ function counterImpl(self: Counter) {
 @elem({
   tag: 'x-counter-demo',
   styles: () => styles,
-  impl: lit(counterDemo)
+  impl: lit(counterDemoImpl)
 })
 class CounterDemo extends component() {}
 
-function counterDemo() {
+function counterDemoImpl() {
   const counterRef = createRef<Counter>()
 
   const onResetClick = () => counterRef.value!.reset()

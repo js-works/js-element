@@ -27,12 +27,10 @@ const interceptions = {
 
 // === types =========================================================
 
-declare const methodsSymbol: unique symbol
-
 type Methods = Record<string, (...args: any[]) => any>
 
 type Component<M extends Methods = {}> = HTMLElement &
-  M & { [methodsSymbol]: M }
+  M & { valueOf(): HTMLElement & M }
 
 type MethodsOf<T> = T extends Component<infer M> ? M : never
 

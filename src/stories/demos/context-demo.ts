@@ -28,11 +28,11 @@ function implThemeInfo() {
 @elem({
   tag: 'context-demo',
   uses: [ThemeProvider, ThemeInfo],
-  impl: lit(implContextDemo)
+  impl: lit(contextDemoImpl)
 })
 class ContextDemo extends component() {}
 
-function implContextDemo(self: ContextDemo) {
+function contextDemoImpl(self: ContextDemo) {
   const [state, setState] = useState({ theme: 'light' })
 
   useInterval(() => {
