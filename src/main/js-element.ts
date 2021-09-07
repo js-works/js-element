@@ -30,7 +30,7 @@ const interceptions = {
 type Methods = Record<string, (...args: any[]) => any>
 
 type Component<M extends Methods = {}> = HTMLElement &
-  M & { valueOf(): HTMLElement & M }
+  M & { valueOf(): Component<M> }
 
 type MethodsOf<T> = T extends Component<infer M> ? M : never
 
