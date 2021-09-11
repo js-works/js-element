@@ -1,4 +1,4 @@
-import { intercept, Ctrl, Ctx } from 'js-element'
+import { intercept, Ctrl, Ctx, Listener } from 'js-element'
 
 // === data ==========================================================
 
@@ -211,22 +211,52 @@ export const useStyles = hook('useStyles', (...styles: string[]) => {
 
 // === useEmitter ======================================================
 
-export const useEmitter = hook('useEmitter', function (): <
-  E extends CustomEvent<any>
->(
-  ev: E,
-  handler?: (ev: E) => void
-) => void {
-  const host = currentCtrl!.getHost()
+function useEmitterFn(): (ev: CustomEvent<any>) => void
+function useEmitterFn<D = void>(type: string): (detail: D) => void
+function useEmitterFn<T extends string, D>(
+  type: T,
+  getEventProp: () => Listener<CustomEvent<D> & { type: T }> | undefined
+): (detail: D) => void
 
-  return (ev, handler?) => {
-    host.dispatchEvent(ev)
+function useEmitterFn(type?: string, getEventProp?: Function) {
+  const host = useHost()
 
-    if (handler) {
-      handler(ev)
-    }
+  if (arguments.length > 0 && typeof type !== 'string') {
+    throw new Error('[useEmitter] Invalid type of first argument')
   }
-})
+
+  if (type === undefined) {
+    return (ev: CustomEvent<any>) => host.dispatchEvent(ev)
+  }
+
+  if (getEventProp) {
+    const eventListener = (ev: Event) => {
+      const eventProp = getEventProp()
+
+      eventProp && eventProp(ev)
+    }
+
+    useAfterMount(() => {
+      host.addEventListener(type, eventListener)
+
+      return () => host.removeEventListener(type, eventListener)
+    })
+  }
+
+  return <D>(detail: D, options?: CustomEventInit<D>) => {
+    const ev = new CustomEvent<D>(type, {
+      bubbles: true,
+      composed: true,
+      cancelable: true,
+      ...options,
+      detail
+    })
+
+    host.dispatchEvent(ev)
+  }
+}
+
+export const useEmitter = hook('useEmitter', useEmitterFn)
 
 // === useMemo =========================================================
 
