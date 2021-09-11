@@ -4,7 +4,7 @@
 export { component, createCtx, elem, intercept, prop, setMethods, Attrs }
 
 // types
-export { Ctx, Ctrl, MethodsOf }
+export { Ctx, Ctrl, MethodsOf, Listener }
 
 // === data ==========================================================
 
@@ -69,6 +69,8 @@ type Ctx<T> = Readonly<{
   kind: 'context'
   defaultValue: T
 }>
+
+type Listener<T> = (v: T) => void
 
 // === decorators (all public) =======================================
 
