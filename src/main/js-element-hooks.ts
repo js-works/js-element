@@ -370,6 +370,59 @@ export const useBeforeUnmount = hook(
   }
 )
 
+// === useAfterInit =====================================================
+
+export const useOnInit = hook('useOnInit', function (action: () => void) {
+  const c = currentCtrl!
+  const done = false
+
+  c.beforeMount(() => {
+    if (done) {
+      return
+    }
+
+    action()
+  })
+})
+
+// === usePreEffect =====================================================
+
+export const usePreEffect = hook(
+  'usePreEffect',
+  function (
+    action: () => void | undefined | null | (() => void),
+    getDeps?: () => any[]
+  ): void {
+    let oldDeps: any[] | null = null
+    let cleanup: Task | null | undefined | void
+    const c = currentCtrl!
+
+    const callback = () => {
+      let needsAction = getDeps === undefined
+
+      if (!needsAction) {
+        const newDeps = getDeps!()
+
+        needsAction =
+          oldDeps === null ||
+          newDeps === null ||
+          !isEqualArray(oldDeps, newDeps)
+
+        oldDeps = newDeps
+      }
+
+      if (needsAction) {
+        cleanup && cleanup()
+        cleanup = action()
+      }
+    }
+
+    c.beforeMount(callback)
+    c.beforeUpdate(callback)
+    c.beforeUnmount(() => cleanup && cleanup())
+  }
+)
+
 // === useEffect =====================================================
 
 export const useEffect = hook(

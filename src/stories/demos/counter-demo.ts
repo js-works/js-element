@@ -1,5 +1,5 @@
 import { component, elem, prop, setMethods, Attrs } from 'js-element'
-import { useState } from 'js-element/hooks'
+import { useOnInit, useState } from 'js-element/hooks'
 import { createRef, html, lit, ref } from 'js-element/lit'
 
 @elem({
@@ -12,6 +12,9 @@ class Counter extends component<{
   increment(): void
   decrement(): void
 }>() {
+  @prop({ attr: Attrs.number, refl: true })
+  initialCount = 0
+
   @prop({ attr: Attrs.string, refl: true })
   labelText = 'Counter'
 
@@ -30,6 +33,10 @@ function counterImpl(self: Counter) {
     reset: () => setState('count', 0),
     increment: () => setState('count', (it) => it + 1),
     decrement: () => setState('count', (it) => it - 1)
+  })
+
+  useOnInit(() => {
+    setState('count', self.initialCount)
   })
 
   return () => html`
@@ -56,7 +63,7 @@ function counterDemoImpl() {
   return () => html`
     <div>
       <h3>Counter demo</h3>
-      <x-counter ${ref(counterRef)}></x-counter>
+      <x-counter .initialCount=${100} ${ref(counterRef)}></x-counter>
       <button @click=${onDecrementClick}>-1</button>
       <button @click=${onIncrementClick}>+1</button>
       <button @click=${onResetClick}>Reset</button>

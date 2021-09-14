@@ -51,10 +51,11 @@ type PropConfig =
 type Ctrl = {
   getName(): string
   getHost(): HTMLElement
-  isInitialized(): boolean
+  hasRendered(): boolean
   isMounted(): boolean
   hasUpdated(): boolean
   refresh(): void
+  onceBeforeMount(task: () => void): void
   beforeMount(taks: () => void): void
   afterMount(task: () => void): void
   onceBeforeUpdate(task: () => void): void
@@ -194,11 +195,11 @@ function intercept(point: 'init' | 'render', fn: InterceptFn) {
 
 class BaseElement extends HTMLElement {
   private __ctrl!: Ctrl
-  private __hasAddedPropHandling = false
 
   constructor() {
     super()
 
+    const self: any = this
     const elemConfig = elemConfigByClass.get(this.constructor)!
     const { init, patch } = elemConfig.impl
     let styles = elemConfig.styles
@@ -232,29 +233,30 @@ class BaseElement extends HTMLElement {
     //contentElement.append(document.createElement('span'))
     this.shadowRoot!.append(stylesElement, contentElement)
 
-    let initialized = false
+    let rendered = false
     let mounted = false
     let updated = false
     let shallCommit = false
     let getContent: () => any // TODO
 
+    const onceBeforeMountNotifier = createNotifier()
+    const onceBeforeUpdateNotifier = createNotifier()
     const beforeMountNotifier = createNotifier()
     const afterMountNotifier = createNotifier()
     const beforeUpdateNotifier = createNotifier()
     const afterUpdateNotifier = createNotifier()
     const beforeUnmountNotifier = createNotifier()
-    const onceBeforeUpdateActions: (() => void)[] = []
 
     const ctrl: Ctrl = {
       getName: () => this.localName,
       getHost: () => this,
-      isInitialized: () => initialized,
+      hasRendered: () => rendered,
       isMounted: () => mounted,
       hasUpdated: () => updated,
+      onceBeforeMount: onceBeforeMountNotifier.subscribe,
       beforeMount: beforeMountNotifier.subscribe,
       afterMount: afterMountNotifier.subscribe,
-      onceBeforeUpdate: (task: () => void) =>
-        onceBeforeUpdateActions.push(task),
+      onceBeforeUpdate: onceBeforeUpdateNotifier.subscribe,
       beforeUpdate: beforeUpdateNotifier.subscribe,
       afterUpdate: afterUpdateNotifier.subscribe,
       beforeUnmount: beforeUnmountNotifier.subscribe,
@@ -275,12 +277,10 @@ class BaseElement extends HTMLElement {
 
     const commit = () => {
       if (mounted) {
-        if (onceBeforeUpdateActions.length) {
-          try {
-            onceBeforeUpdateActions.forEach((action) => action())
-          } finally {
-            onceBeforeUpdateActions.length = 0
-          }
+        try {
+          onceBeforeUpdateNotifier.notify()
+        } finally {
+          onceBeforeMountNotifier.clear()
         }
 
         beforeUpdateNotifier.notify()
@@ -301,7 +301,7 @@ class BaseElement extends HTMLElement {
         interceptions.render
       )
 
-      initialized = true
+      rendered = true
 
       if (!mounted) {
         mounted = true
@@ -312,27 +312,25 @@ class BaseElement extends HTMLElement {
       }
     }
 
-    ;(this as any).connectedCallback = () => {
-      if (!this.__hasAddedPropHandling) {
-        addPropHandling(this)
-        this.__hasAddedPropHandling = true
-      }
+    runIntercepted(
+      () => {
+        getContent = init(this, ctrl)
+      },
+      ctrl,
+      interceptions.init
+    )
 
-      if (!initialized) {
-        runIntercepted(
-          () => {
-            getContent = init(this, ctrl)
-          },
-          ctrl,
-          interceptions.init
-        )
+    self.connectedCallback = () => {
+      if (!rendered) {
+        addPropHandling(this)
+        onceBeforeMountNotifier.notify()
       }
 
       beforeMountNotifier.notify()
-
       commit()
     }
-    ;(this as any).disconnectedCallback = () => {
+
+    self.disconnectedCallback = () => {
       beforeUnmountNotifier.notify()
       contentElement.innerHTML = ''
     }
@@ -381,11 +379,6 @@ function addAttributeHandling(
     oldValue: string | null,
     value: string | null
   ) {
-    if (!this.__hasAddedPropHandling) {
-      addPropHandling(this)
-      this.__hasAddedPropHandling = true
-    }
-
     if (!ignoreAttributeChange) {
       const { propName, mapAttrToProp } = propConfigByAttrName.get(
         attrName
@@ -409,6 +402,8 @@ function addPropHandling(obj: any) {
     let propValue = obj[propName]
 
     Object.defineProperty(obj, propName, {
+      configurable: true, // TODO!!!!!!!!!!!!!!!!!!!!!!!!!!
+
       get() {
         return propValue
       },
@@ -466,7 +461,9 @@ function createNotifier() {
 
   return {
     subscribe: (subscriber: () => void) => void subscribers.push(subscriber),
-    notify: () => void (subscribers.length && subscribers.forEach((it) => it()))
+    notify: () =>
+      void (subscribers.length && subscribers.forEach((it) => it())),
+    clear: () => (subscribers.length = 0)
   }
 }
 
