@@ -280,7 +280,7 @@ class BaseElement extends HTMLElement {
         try {
           onceBeforeUpdateNotifier.notify()
         } finally {
-          onceBeforeMountNotifier.clear()
+          onceBeforeUpdateNotifier.clear()
         }
 
         beforeUpdateNotifier.notify()
@@ -324,6 +324,7 @@ class BaseElement extends HTMLElement {
       if (!rendered) {
         addPropHandling(this)
         onceBeforeMountNotifier.notify()
+        onceBeforeMountNotifier.close()
       }
 
       beforeMountNotifier.notify()
@@ -457,13 +458,24 @@ function propNameToAttrName(propName: string) {
 }
 
 function createNotifier() {
-  const subscribers: (() => void)[] = []
+  let subscribers: (() => void)[] | null = []
 
   return {
-    subscribe: (subscriber: () => void) => void subscribers.push(subscriber),
-    notify: () =>
-      void (subscribers.length && subscribers.forEach((it) => it())),
-    clear: () => (subscribers.length = 0)
+    subscribe(subscriber: () => void) {
+      subscribers && subscribers.push(subscriber)
+    },
+
+    notify() {
+      subscribers && subscribers.length && subscribers.forEach((it) => it())
+    },
+
+    clear() {
+      subscribers && (subscribers.length = 0)
+    },
+
+    close() {
+      subscribers = null
+    }
   }
 }
 

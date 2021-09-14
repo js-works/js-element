@@ -309,8 +309,27 @@ export const useAfterMount = hook(
 
 // === useBeforeUpdate ===================================================
 
-export const useBeforeMount = hook(
+export const useBeforeUpdate = hook(
   'useBeforeUpdate',
+  function (action: () => void | undefined | null | (() => void)) {
+    let cleanup: Task | null | undefined | void
+    const c = currentCtrl!
+
+    c.beforeUpdate(() => {
+      cleanup && cleanup()
+      cleanup = action()
+    })
+
+    c.beforeUnmount(() => {
+      cleanup && cleanup()
+    })
+  }
+)
+
+// === useBeforeMount ====================================================
+
+export const useBeforeMount = hook(
+  'useBeforeMount',
   function (action: () => void | undefined | null | (() => void)) {
     let cleanup: Task | null | undefined | void
     const c = currentCtrl!
