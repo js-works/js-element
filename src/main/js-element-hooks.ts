@@ -307,12 +307,35 @@ export const useAfterMount = hook(
   }
 )
 
-// === useBeforeUpdate ===================================================
+// === useBeforeRender ===============================================
+
+export const useBeforeRender = hook(
+  'useBeforeRender',
+  function (action: () => void | undefined | null | (() => void)) {
+    let cleanup: Task | null | undefined | void = null
+    const c = currentCtrl!
+
+    const task = () => {
+      cleanup && cleanup()
+      cleanup = action()
+    }
+
+    c.beforeMount(task)
+    c.beforeUpdate(task)
+
+    c.beforeUnmount(() => {
+      cleanup && cleanup()
+      cleanup = null
+    })
+  }
+)
+
+// === useBeforeUpdate ===============================================
 
 export const useBeforeUpdate = hook(
   'useBeforeUpdate',
   function (action: () => void | undefined | null | (() => void)) {
-    let cleanup: Task | null | undefined | void
+    let cleanup: Task | null | undefined | void = null
     const c = currentCtrl!
 
     c.beforeUpdate(() => {
@@ -322,6 +345,7 @@ export const useBeforeUpdate = hook(
 
     c.beforeUnmount(() => {
       cleanup && cleanup()
+      cleanup = null
     })
   }
 )
