@@ -4,6 +4,7 @@ import { createRef, html, lit, ref } from 'js-element/lit'
 
 @elem({
   tag: 'x-counter',
+  shadow: false,
   styles: () => styles,
   impl: lit(counterImpl)
 })

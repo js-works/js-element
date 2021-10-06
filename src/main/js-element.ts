@@ -13,6 +13,7 @@ const elemConfigByClass = new Map<
   {
     tag: string
     impl: any // TODO!!!!!,
+    shadow: boolean
     styles: string | string[] | (() => string | string[]) | null
     props: Map<string, PropConfig>
   }
@@ -77,6 +78,7 @@ type Listener<T> = (v: T) => void
 
 function elem<E extends Component, C>(params: {
   tag: string
+  shadow?: boolean
   impl: {
     patch: (content: C, container: HTMLElement) => void
     init: (self: E, ctrl: Ctrl) => () => C
@@ -112,13 +114,14 @@ function elem<E extends Component>(params: any) {
       elemConfig = {
         tag: params.tag,
         impl: params.impl,
+        shadow: params.shadow !== false,
         styles: params.styles || null,
         props: new Map()
       }
-
       elemConfigByClass.set(clazz, elemConfig)
     } else {
       elemConfig.tag = params.tag
+      elemConfig.shadow = params.shadow !== false
       elemConfig.styles = params.styles || null
       elemConfig.impl = params.impl
     }
@@ -169,7 +172,14 @@ function prop(arg1?: any, arg2?: any): any {
     let elemConfig = elemConfigByClass.get(constructor)
 
     if (!elemConfig) {
-      elemConfig = { tag: '', impl: null, styles: null, props: new Map() }
+      elemConfig = {
+        tag: '',
+        shadow: true,
+        impl: null,
+        styles: null,
+        props: new Map()
+      }
+
       elemConfigByClass.set(constructor, elemConfig)
     }
 
@@ -215,23 +225,36 @@ class BaseElement extends HTMLElement {
         styles = ''
       }
 
-      elemConfigByClass.get(this.constructor)!.styles = styles
+      elemConfig.styles = styles
     }
-
-    const stylesElement = document.createElement('span')
-    stylesElement.setAttribute('data-role', 'styles')
+    console.log(11111, elemConfig)
+    if (elemConfig.shadow) {
+      this.attachShadow({ mode: 'open' })
+    }
 
     if (styles) {
       const styleElem = document.createElement('style')
       styleElem.appendChild(document.createTextNode(styles))
-      stylesElement.appendChild(styleElem)
+
+      if (!elemConfig.shadow) {
+        document.head.append(styleElem)
+        elemConfig.styles = null
+      } else {
+        const stylesElement = document.createElement('span')
+        stylesElement.appendChild(styleElem)
+        stylesElement.setAttribute('data-role', 'styles')
+        this.shadowRoot!.append(stylesElement)
+      }
     }
 
     const contentElement = document.createElement('span')
     contentElement.setAttribute('data-role', 'content')
-    this.attachShadow({ mode: 'open' })
-    //contentElement.append(document.createElement('span'))
-    this.shadowRoot!.append(stylesElement, contentElement)
+
+    if (elemConfig.shadow) {
+      this.shadowRoot!.append(contentElement)
+    } else {
+      this.append(contentElement)
+    }
 
     let rendered = false
     let mounted = false
