@@ -24,7 +24,7 @@
       "js-element": ["src/main/js-element.ts"]
     },
     "typeRoots": ["node_modules/@types"],
-    "types": ["node"]
+    "types": ["node", "web"]
   },
   "files": [
     "src/main/js-element.ts",

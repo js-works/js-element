@@ -84,6 +84,7 @@ function elem<E extends Component, C>(params: {
     init: (self: E, ctrl: Ctrl) => () => C
   }
   styles?: string | string[] | (() => string | string[])
+  formAssociated?: boolean
   uses?: any[]
 }): (clazz: new () => E) => void
 
@@ -127,6 +128,10 @@ function elem<E extends Component>(params: any) {
     }
 
     const propConfigs = Array.from(elemConfigByClass.get(clazz)!.props.values())
+
+    if (params.formAssociated) {
+      definePropValue(clazz, 'formAssociated', true)
+    }
 
     if (propConfigs.length > 0) {
       addAttributeHandling(clazz, propConfigs)
@@ -227,7 +232,7 @@ class BaseElement extends HTMLElement {
 
       elemConfig.styles = styles
     }
-    console.log(11111, elemConfig)
+
     if (elemConfig.shadow) {
       this.attachShadow({ mode: 'open' })
     }

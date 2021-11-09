@@ -16,7 +16,7 @@
     "baseUrl": ".",
     "skipLibCheck": true,
     "typeRoots": ["node_modules/@types"],
-    "types": ["node", "mocha", "chai"],
+    "types": ["node", "mocha", "chai", "web"],
     "paths": {
       "js-element/hooks": ["src/main/js-element-hooks.ts"],
       "js-element/utils": ["src/main/js-element-utils.ts"],

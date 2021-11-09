@@ -504,7 +504,23 @@ export const useEffect = hook(
   }
 )
 
-// === useInterval ======================================================
+// === useInternals ==================================================
+
+const internalsByElement = new WeakMap<HTMLElement, ElementInternals>()
+
+export const useInternals = hook('useInternals', () => {
+  const host = currentCtrl!.getHost()
+  let internals = internalsByElement.get(host)
+
+  if (!internals) {
+    internals = host.attachInternals()
+    internalsByElement.set(host, internals)
+  }
+
+  return internals
+})
+
+// === useInterval ===================================================
 
 export const useInterval = hook(
   'useInterval',

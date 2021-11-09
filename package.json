@@ -1,6 +1,6 @@
 {
   "name": "js-element",
-  "version": "0.0.230",
+  "version": "0.0.231",
   "description": "",
   "license": "LGPL-3.0",
   "main": "./index.js",
@@ -166,6 +166,7 @@
     "@types/chai": "^4.2.21",
     "@types/jest": "^27.0.1",
     "@types/mocha": "^9.0.0",
+    "@types/web": "^0.0.46",
     "babel-loader": "^8.2.2",
     "bestzip": "^2.2.0",
     "copyfiles": "^2.4.1",
