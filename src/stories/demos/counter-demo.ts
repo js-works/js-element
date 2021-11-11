@@ -4,7 +4,7 @@ import { createRef, html, lit, ref } from 'js-element/lit'
 
 @elem({
   tag: 'x-counter',
-  shadow: false,
+  // shadow: false, // TODO: Why exactly is this demo not working in light DOM?
   styles: () => styles,
   impl: lit(counterImpl)
 })

@@ -151,29 +151,29 @@ export const useState = hook('useState', function <
     mergeNecessary = false
 
   const c = currentCtrl!
+  const state = { ...initialState }
 
-  const state = { ...initialState },
-    setState = (arg1: any, arg2: any) => {
-      mergeNecessary = true
+  const setState = (arg1: any, arg2: any) => {
+    mergeNecessary = true
 
-      if (typeof arg1 === 'string') {
-        nextState[arg1] =
-          typeof arg2 === 'function' ? arg2(nextState[arg1]) : arg2
-      } else if (typeof arg1 === 'function') {
-        Object.assign(nextState, arg1(nextState))
-      } else {
-        Object.assign(nextState, arg1)
-      }
-
-      c.onceBeforeUpdate(() => {
-        if (mergeNecessary) {
-          Object.assign(state, nextState)
-          mergeNecessary = false
-        }
-      })
-
-      c.refresh()
+    if (typeof arg1 === 'string') {
+      nextState[arg1] =
+        typeof arg2 === 'function' ? arg2(nextState[arg1]) : arg2
+    } else if (typeof arg1 === 'function') {
+      Object.assign(nextState, arg1(nextState))
+    } else {
+      Object.assign(nextState, arg1)
     }
+
+    c.onceBeforeUpdate(() => {
+      if (mergeNecessary) {
+        Object.assign(state, nextState)
+        mergeNecessary = false
+      }
+    })
+
+    c.refresh()
+  }
 
   nextState = { ...state }
 
