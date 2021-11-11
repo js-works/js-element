@@ -136,13 +136,11 @@ function elem<E extends Component>(params: any) {
     const propConfigs = Array.from(elemConfigByClass.get(clazz)!.props.values())
 
     if (params.formAssoc) {
-      const fn = function () {}
-
       definePropValue(clazz, 'formAssociated', true)
 
       // all those four methods will be overridden
       // in construtor
-      Object.assign(clazz, {
+      Object.assign(clazz.prototype, {
         formAssociatedCallback(form: HTMLFormElement) {
           this.formAssociatedCallback(form)
         },
