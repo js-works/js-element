@@ -56,6 +56,7 @@ type Ctrl = {
   isMounted(): boolean
   hasUpdated(): boolean
   refresh(): void
+
   onceBeforeMount(task: () => void): void
   beforeMount(taks: () => void): void
   afterMount(task: () => void): void
@@ -63,6 +64,11 @@ type Ctrl = {
   beforeUpdate(task: () => void): void
   afterUpdate(task: () => void): void
   beforeUnmount(task: () => void): void
+
+  onFormAssociated(task: (form: HTMLFormElement) => void): void
+  onFormStateRestore(task: (state: any, mode: any) => void): void // TODO!!!
+  onFormDisabled(task: (disabled: boolean) => void): void
+  onFormReset(task: () => void): void
 }
 
 type InterceptFn = (ctrl: Ctrl, next: () => void) => void
@@ -84,7 +90,7 @@ function elem<E extends Component, C>(params: {
     init: (self: E, ctrl: Ctrl) => () => C
   }
   styles?: string | string[] | (() => string | string[])
-  formAssociated?: boolean
+  formAssoc?: boolean
   uses?: any[]
 }): (clazz: new () => E) => void
 
@@ -129,7 +135,7 @@ function elem<E extends Component>(params: any) {
 
     const propConfigs = Array.from(elemConfigByClass.get(clazz)!.props.values())
 
-    if (params.formAssociated) {
+    if (params.formAssoc) {
       definePropValue(clazz, 'formAssociated', true)
     }
 
@@ -215,6 +221,7 @@ class BaseElement extends HTMLElement {
     super()
 
     const self: any = this
+    const formAssociated = (this.constructor as any).formAssociated === true // TODO
     const elemConfig = elemConfigByClass.get(this.constructor)!
     const { init, patch } = elemConfig.impl
     let styles = elemConfig.styles
@@ -275,6 +282,11 @@ class BaseElement extends HTMLElement {
     const afterUpdateNotifier = createNotifier()
     const beforeUnmountNotifier = createNotifier()
 
+    const formAssociatedNotifier = createNotifier<HTMLFormElement>()
+    const formStateRestoreNotifier = createNotifier<any, any>() // TODO
+    const formDisabledNotifier = createNotifier<boolean>()
+    const formResetNotifier = createNotifier()
+
     const ctrl: Ctrl = {
       getName: () => this.localName,
       getHost: () => this,
@@ -288,6 +300,11 @@ class BaseElement extends HTMLElement {
       beforeUpdate: beforeUpdateNotifier.subscribe,
       afterUpdate: afterUpdateNotifier.subscribe,
       beforeUnmount: beforeUnmountNotifier.subscribe,
+
+      onFormAssociated: formAssociatedNotifier.subscribe,
+      onFormStateRestore: formStateRestoreNotifier.subscribe,
+      onFormDisabled: formDisabledNotifier.subscribe,
+      onFormReset: formStateRestoreNotifier.subscribe,
 
       refresh: () => {
         if (!shallCommit) {
@@ -362,6 +379,25 @@ class BaseElement extends HTMLElement {
     self.disconnectedCallback = () => {
       beforeUnmountNotifier.notify()
       contentElement.innerHTML = ''
+    }
+
+    if (formAssociated) {
+      self.formAssociatedCallback = (form: HTMLFormElement) => {
+        formAssociatedNotifier.notify(form)
+      }
+
+      self.formDisabledCallback = (disabled: boolean) => {
+        formDisabledNotifier.notify(disabled)
+      }
+
+      self.formResetCallback = () => {
+        formResetNotifier.notify()
+      }
+
+      // TODO!!!
+      self.formStateRestoreCallback = (state: any, mode: any) => {
+        formStateRestoreNotifier.notify(state, mode)
+      }
     }
   }
 
@@ -485,16 +521,18 @@ function propNameToAttrName(propName: string) {
   return propName.replace(/([a-z0-9]|(?=[A-Z]))([A-Z])/g, '$1-$2').toLowerCase()
 }
 
-function createNotifier() {
-  let subscribers: (() => void)[] | null = []
+function createNotifier<T = void, T2 = void>() {
+  let subscribers: ((value: T, value2: T2) => void)[] | null = []
 
   return {
-    subscribe(subscriber: () => void) {
+    subscribe(subscriber: (value: T, value2: T2) => void) {
       subscribers && subscribers.push(subscriber)
     },
 
-    notify() {
-      subscribers && subscribers.length && subscribers.forEach((it) => it())
+    notify(value: T, value2: T2) {
+      subscribers &&
+        subscribers.length &&
+        subscribers.forEach((it) => it(value, value2))
     },
 
     clear() {

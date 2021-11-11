@@ -504,6 +504,39 @@ export const useEffect = hook(
   }
 )
 
+// === useOnFormAssociated ===========================================
+
+export const useOnFormAssociated = hook(
+  'useOnFormAssociated',
+  (action: (frm: HTMLFormElement) => void) => {
+    currentCtrl!.onFormAssociated(action)
+  }
+)
+
+// === useOnFormDisabled =============================================
+
+export const useOnFormDisabled = hook(
+  'useOnFormDisabled',
+  (action: (disabled: boolean) => void) => {
+    currentCtrl!.onFormDisabled(action)
+  }
+)
+
+// === useOnFormReset ================================================
+
+export const useOnFormReset = hook('useOnFormReset', (action: () => void) => {
+  currentCtrl!.onFormReset(action)
+})
+
+// === useOnStateRestore =============================================^
+
+export const useOnFormStateRestore = hook(
+  'useOnFormStateRestore',
+  (action: (state: any, mode: any) => void) => {
+    currentCtrl!.onFormStateRestore(action)
+  }
+)
+
 // === useInternals ==================================================
 
 const internalsByElement = new WeakMap<HTMLElement, ElementInternals>()
