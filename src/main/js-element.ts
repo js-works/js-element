@@ -1,10 +1,10 @@
 // === exports =======================================================
 
 // functions and singletons
-export { component, createCtx, elem, intercept, prop, setMethods, Attrs }
+export { createCtx, elem, intercept, method, prop, setMethods, Attrs }
 
 // types
-export { Ctx, Ctrl, MethodsOf, Listener }
+export { Ctx, Ctrl, Listener }
 
 // === data ==========================================================
 
@@ -27,13 +27,6 @@ const interceptions = {
 }
 
 // === types =========================================================
-
-type Methods = Record<string, (...args: any[]) => any>
-
-type Component<M extends Methods = {}> = HTMLElement &
-  M & { valueOf(): Component<M> }
-
-type MethodsOf<T> = T extends Component<infer M> ? M : never
 
 type PropConfig =
   | {
@@ -82,7 +75,7 @@ type Listener<T> = (v: T) => void
 
 // === decorators (all public) =======================================
 
-function elem<E extends Component, C>(params: {
+function elem<E extends HTMLElement, C>(params: {
   tag: string
   shadow?: boolean
   impl: {
@@ -94,15 +87,13 @@ function elem<E extends Component, C>(params: {
   uses?: any[]
 }): (clazz: new () => E) => void
 
-function elem<T, E extends Component & { value?: T }>(params: {
+function elem<T, E extends HTMLElement & { value?: T }>(params: {
   tag: `${string}-provider`
   ctx: Ctx<T>
 }): (clazz: new () => E) => void
 
-function elem<E extends Component>(params: any) {
+function elem<E extends HTMLElement>(params: any) {
   return (clazz: new () => E): void => {
-    definePropValue(clazz, 'tagName', params.tag)
-
     if (params.ctx) {
       const ctx = params.ctx
 
@@ -164,11 +155,32 @@ function elem<E extends Component>(params: any) {
       addAttributeHandling(clazz, propConfigs)
     }
 
-    registerElement(params.tag, clazz)
+    const ret = class extends (clazz as any) {
+      constructor() {
+        super()
+        initComponent(this)
+      }
+
+      // will be overridden in constructor
+      connectedCallback() {
+        this.connectedCallback()
+      }
+      // will be overridden in constructor
+      disconnectedCallback() {
+        this.disconnectedCallback()
+      }
+    }
+
+    definePropValue(ret, 'name', clazz.name)
+    definePropValue(clazz, 'name', '')
+    definePropValue(ret, 'tagName', params.tag)
+
+    registerElement(params.tag, ret as any)
+    return ret as any
   }
 }
 
-function prop<T>(proto: Component, propName: string): void
+function prop<T>(proto: HTMLElement, propName: string): void
 
 function prop<T>(params?: {
   attr: {
@@ -176,7 +188,7 @@ function prop<T>(params?: {
     mapAttrToProp(value: string | null): T
   }
   refl?: boolean
-}): (proto: Component, propName: string) => void
+}): (proto: HTMLElement, propName: string) => void
 
 function prop(arg1?: any, arg2?: any): any {
   if (typeof arg2 === 'string') {
@@ -187,7 +199,7 @@ function prop(arg1?: any, arg2?: any): any {
 
   const { attr, refl: reflect } = params || {}
 
-  return (proto: Component, propName: string) => {
+  return (proto: HTMLElement, propName: string) => {
     const constructor = proto.constructor
 
     const propConfig: PropConfig = !attr
@@ -219,13 +231,12 @@ function prop(arg1?: any, arg2?: any): any {
   }
 }
 
+function method(proto: HTMLElement, propName: string): void {}
+
 // === other public functions ========================================
 
-function component<M extends Methods = {}>(): new () => Component<M> {
-  return BaseElement as any
-}
-
-function setMethods<M extends Methods>(obj: Component<M>, methods: M) {
+// TODO - types
+function setMethods<T extends HTMLElement>(obj: T, methods: Partial<T>) {
   Object.assign(obj, methods)
 }
 
@@ -233,208 +244,196 @@ function intercept(point: 'init' | 'render', fn: InterceptFn) {
   interceptions[point].push(fn)
 }
 
-// === base custom element class =====================================
+// === local funtions ================================================
 
-class BaseElement extends HTMLElement {
-  private __ctrl!: Ctrl
+function initComponent(self: any) {
+  const formAssociated =
+    Object.getPrototypeOf(self.constructor).formAssociated === true // TODO!!!
 
-  constructor() {
-    super()
+  const elemConfig = elemConfigByClass.get(
+    Object.getPrototypeOf(self.constructor)
+  )!
 
-    const self: any = this
-    const formAssociated = (this.constructor as any).formAssociated === true // TODO
-    const elemConfig = elemConfigByClass.get(this.constructor)!
-    const { init, patch } = elemConfig.impl
-    let styles = elemConfig.styles
+  const { init, patch } = elemConfig.impl
+  let styles = elemConfig.styles
 
-    if (typeof styles !== 'string') {
-      styles = typeof styles === 'function' ? styles() : styles
+  if (typeof styles !== 'string') {
+    styles = typeof styles === 'function' ? styles() : styles
 
-      if (Array.isArray(styles)) {
-        styles = styles.map((it) => it.trim()).join('\n\n/*******/\n\n')
-      }
-
-      if (!styles) {
-        styles = ''
-      }
-
-      elemConfig.styles = styles
+    if (Array.isArray(styles)) {
+      styles = styles.map((it) => it.trim()).join('\n\n/*******/\n\n')
     }
 
-    if (elemConfig.shadow) {
-      this.attachShadow({ mode: 'open' })
+    if (!styles) {
+      styles = ''
     }
 
-    if (styles) {
-      const styleElem = document.createElement('style')
-      styleElem.appendChild(document.createTextNode(styles))
+    elemConfig.styles = styles
+  }
 
-      if (!elemConfig.shadow) {
-        document.head.append(styleElem)
-        elemConfig.styles = null
-      } else {
-        const stylesElement = document.createElement('span')
-        stylesElement.appendChild(styleElem)
-        stylesElement.setAttribute('data-role', 'styles')
-        this.shadowRoot!.append(stylesElement)
-      }
-    }
+  if (elemConfig.shadow) {
+    self.attachShadow({ mode: 'open' })
+  }
 
-    const contentElement = document.createElement('span')
-    contentElement.setAttribute('data-role', 'content')
+  if (styles) {
+    const styleElem = document.createElement('style')
+    styleElem.appendChild(document.createTextNode(styles))
 
-    if (elemConfig.shadow) {
-      this.shadowRoot!.append(contentElement)
+    if (!elemConfig.shadow) {
+      document.head.append(styleElem)
+      elemConfig.styles = null
     } else {
-      this.append(contentElement)
+      const stylesElement = document.createElement('span')
+      stylesElement.appendChild(styleElem)
+      stylesElement.setAttribute('data-role', 'styles')
+      self.shadowRoot!.append(stylesElement)
     }
+  }
 
-    let rendered = false
-    let mounted = false
-    let updated = false
-    let shallCommit = false
-    let getContent: () => any // TODO
+  const contentElement = document.createElement('span')
+  contentElement.setAttribute('data-role', 'content')
 
-    const onceBeforeMountNotifier = createNotifier()
-    const onceBeforeUpdateNotifier = createNotifier()
-    const beforeMountNotifier = createNotifier()
-    const afterMountNotifier = createNotifier()
-    const beforeUpdateNotifier = createNotifier()
-    const afterUpdateNotifier = createNotifier()
-    const beforeUnmountNotifier = createNotifier()
+  if (elemConfig.shadow) {
+    self.shadowRoot!.append(contentElement)
+  } else {
+    self.append(contentElement)
+  }
 
-    const formAssociatedNotifier = createNotifier<HTMLFormElement>()
-    const formStateRestoreNotifier = createNotifier<any, any>() // TODO
-    const formDisabledNotifier = createNotifier<boolean>()
-    const formResetNotifier = createNotifier()
+  let rendered = false
+  let mounted = false
+  let updated = false
+  let shallCommit = false
+  let getContent: () => any // TODO
 
-    const ctrl: Ctrl = {
-      getName: () => this.localName,
-      getHost: () => this,
-      hasRendered: () => rendered,
-      isMounted: () => mounted,
-      hasUpdated: () => updated,
-      onceBeforeMount: onceBeforeMountNotifier.subscribe,
-      beforeMount: beforeMountNotifier.subscribe,
-      afterMount: afterMountNotifier.subscribe,
-      onceBeforeUpdate: onceBeforeUpdateNotifier.subscribe,
-      beforeUpdate: beforeUpdateNotifier.subscribe,
-      afterUpdate: afterUpdateNotifier.subscribe,
-      beforeUnmount: beforeUnmountNotifier.subscribe,
+  const onceBeforeMountNotifier = createNotifier()
+  const onceBeforeUpdateNotifier = createNotifier()
+  const beforeMountNotifier = createNotifier()
+  const afterMountNotifier = createNotifier()
+  const beforeUpdateNotifier = createNotifier()
+  const afterUpdateNotifier = createNotifier()
+  const beforeUnmountNotifier = createNotifier()
 
-      onFormAssociated: formAssociatedNotifier.subscribe,
-      onFormStateRestore: formStateRestoreNotifier.subscribe,
-      onFormDisabled: formDisabledNotifier.subscribe,
-      onFormReset: formStateRestoreNotifier.subscribe,
+  const formAssociatedNotifier = createNotifier<HTMLFormElement>()
+  const formStateRestoreNotifier = createNotifier<any, any>() // TODO
+  const formDisabledNotifier = createNotifier<boolean>()
+  const formResetNotifier = createNotifier()
 
-      refresh: () => {
-        if (!shallCommit) {
-          shallCommit = true
+  const ctrl: Ctrl = {
+    getName: () => self.localName,
+    getHost: () => self,
+    hasRendered: () => rendered,
+    isMounted: () => mounted,
+    hasUpdated: () => updated,
+    onceBeforeMount: onceBeforeMountNotifier.subscribe,
+    beforeMount: beforeMountNotifier.subscribe,
+    afterMount: afterMountNotifier.subscribe,
+    onceBeforeUpdate: onceBeforeUpdateNotifier.subscribe,
+    beforeUpdate: beforeUpdateNotifier.subscribe,
+    afterUpdate: afterUpdateNotifier.subscribe,
+    beforeUnmount: beforeUnmountNotifier.subscribe,
 
-          requestAnimationFrame(() => {
-            shallCommit = false
-            commit()
-          })
-        }
+    onFormAssociated: formAssociatedNotifier.subscribe,
+    onFormStateRestore: formStateRestoreNotifier.subscribe,
+    onFormDisabled: formDisabledNotifier.subscribe,
+    onFormReset: formStateRestoreNotifier.subscribe,
+
+    refresh: () => {
+      if (!shallCommit) {
+        shallCommit = true
+
+        requestAnimationFrame(() => {
+          shallCommit = false
+          commit()
+        })
       }
     }
+  }
 
-    this.__ctrl = ctrl
+  self.__ctrl = ctrl
 
-    const commit = () => {
-      if (mounted) {
-        try {
-          onceBeforeUpdateNotifier.notify()
-        } finally {
-          onceBeforeUpdateNotifier.clear()
-        }
-
-        beforeUpdateNotifier.notify()
+  const commit = () => {
+    if (mounted) {
+      try {
+        onceBeforeUpdateNotifier.notify()
+      } finally {
+        onceBeforeUpdateNotifier.clear()
       }
 
-      runIntercepted(
-        () => {
-          const content = getContent()
-          // TODO
-          try {
-            patch(content, contentElement)
-          } catch (e) {
-            console.error(`Render error in "${ctrl.getName()}"`)
-            throw e
-          }
-        },
-        ctrl,
-        interceptions.render
-      )
-
-      rendered = true
-
-      if (!mounted) {
-        mounted = true
-        afterMountNotifier.notify()
-      } else {
-        updated = true
-        afterUpdateNotifier.notify()
-      }
+      beforeUpdateNotifier.notify()
     }
 
     runIntercepted(
       () => {
-        getContent = init(this, ctrl)
+        const content = getContent()
+        // TODO
+        try {
+          patch(content, contentElement)
+        } catch (e) {
+          console.error(`Render error in "${ctrl.getName()}"`)
+          throw e
+        }
       },
       ctrl,
-      interceptions.init
+      interceptions.render
     )
 
-    self.connectedCallback = () => {
-      if (!rendered) {
-        addPropHandling(this)
-        onceBeforeMountNotifier.notify()
-        onceBeforeMountNotifier.close()
-      }
+    rendered = true
 
-      beforeMountNotifier.notify()
-      commit()
-    }
-
-    self.disconnectedCallback = () => {
-      beforeUnmountNotifier.notify()
-      contentElement.innerHTML = ''
-    }
-
-    if (formAssociated) {
-      self.formAssociatedCallback = (form: HTMLFormElement) => {
-        formAssociatedNotifier.notify(form)
-      }
-
-      self.formDisabledCallback = (disabled: boolean) => {
-        formDisabledNotifier.notify(disabled)
-      }
-
-      self.formResetCallback = () => {
-        formResetNotifier.notify()
-      }
-
-      // TODO!!!
-      self.formStateRestoreCallback = (state: any, mode: any) => {
-        formStateRestoreNotifier.notify(state, mode)
-      }
+    if (!mounted) {
+      mounted = true
+      afterMountNotifier.notify()
+    } else {
+      updated = true
+      afterUpdateNotifier.notify()
     }
   }
 
-  // will be overridden in constructor
-  connectedCallback() {
-    this.connectedCallback()
+  runIntercepted(
+    () => {
+      getContent = init(self, ctrl)
+    },
+    ctrl,
+    interceptions.init
+  )
+
+  self.connectedCallback = () => {
+    if (!rendered) {
+      addPropHandling(self)
+      onceBeforeMountNotifier.notify()
+      onceBeforeMountNotifier.close()
+    }
+
+    beforeMountNotifier.notify()
+    commit()
   }
 
-  // will be overridden in constructor
-  disconnectedCallback() {
-    this.disconnectedCallback()
+  self.disconnectedCallback = () => {
+    beforeUnmountNotifier.notify()
+    contentElement.innerHTML = ''
+  }
+
+  if (formAssociated) {
+    self.formAssociatedCallback = (form: HTMLFormElement) => {
+      formAssociatedNotifier.notify(form)
+    }
+
+    self.formDisabledCallback = (disabled: boolean) => {
+      formDisabledNotifier.notify(disabled)
+    }
+
+    self.formResetCallback = () => {
+      formResetNotifier.notify()
+    }
+
+    // TODO!!!
+    self.formStateRestoreCallback = (state: any, mode: any) => {
+      formStateRestoreNotifier.notify(state, mode)
+    }
   }
 }
 
 function addAttributeHandling(
-  clazz: new () => Component,
+  clazz: new () => HTMLElement,
   propConfigs: PropConfig[]
 ) {
   const proto: any = clazz.prototype
@@ -478,7 +477,7 @@ function addAttributeHandling(
 }
 
 function addPropHandling(obj: any) {
-  const clazz = obj.constructor
+  const clazz = Object.getPrototypeOf(obj.constructor)
   const ctrl: Ctrl = obj.__ctrl
   const propConfigs = Array.from(elemConfigByClass.get(clazz)!.props.values())
 

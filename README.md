@@ -10,7 +10,7 @@ and it is currently not meant to ever be used in production.
 ## Example (simple counter)
 
 ```tsx
-import { component, elem, prop, setMethods, Attrs } from 'js-element'
+import { elem, method, prop, setMethods, Attrs } from 'js-element'
 import { html, lit } from 'js-element/lit'
 import { useState } from 'js-element/hooks'
 import counterStyles from './counter.css'
@@ -20,16 +20,18 @@ import counterStyles from './counter.css'
   styles: counterStyles,
   impl: lit(counterImpl)
 })
-class Counter extends component<{
-  reset(): void
-  increment(): void
-  decrement(): void
-}>() {
+class Counter extends HTMLElement<{
   @prop({ attr: Attrs.string, refl: true })
   labelText = 'Counter'
 
   @prop({ attr: Attrs.boolean, refl: true })
   disabled = false
+
+  @method
+  reset!: () => void
+  
+  @method
+  increment!: (delta?: number) => void
 }
 
 function counterImpl(self: Counter) {
@@ -40,9 +42,13 @@ function counterImpl(self: Counter) {
   const onClick = () => setState('count', (it) => it + 1)
 
   setMethods(self, {
-    reset: () => setState('count', 0),
-    increment: () => setState('count', (it) => it + 1),
-    decrement: () => setState('count', (it) => it - 1)
+    reset() {
+      setState('count', 0),
+    }
+
+    increment(delta = 1) {
+      setState('count', (it) => it + delta),
+    }
   })
 
   return () => html`

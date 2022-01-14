@@ -1,4 +1,4 @@
-import { component, elem, prop, setMethods, Attrs } from 'js-element'
+import { elem, prop, method, setMethods, Attrs } from 'js-element'
 import { useOnInit, useState } from 'js-element/hooks'
 import { createRef, html, lit, ref } from 'js-element/lit'
 
@@ -8,11 +8,7 @@ import { createRef, html, lit, ref } from 'js-element/lit'
   styles: () => styles,
   impl: lit(counterImpl)
 })
-class Counter extends component<{
-  reset(): void
-  increment(): void
-  decrement(): void
-}>() {
+class Counter extends HTMLElement {
   @prop({ attr: Attrs.number, refl: true })
   initialCount = 0
 
@@ -21,9 +17,19 @@ class Counter extends component<{
 
   @prop({ attr: Attrs.boolean, refl: true })
   disabled = false
+
+  @method
+  reset!: () => void
+
+  @method
+  increment!: () => void
+
+  @method
+  decrement!: () => void
 }
 
 function counterImpl(self: Counter) {
+  console.log('counterImpl')
   const [state, setState] = useState({
     count: 0
   })
@@ -52,7 +58,7 @@ function counterImpl(self: Counter) {
   styles: () => styles,
   impl: lit(counterDemoImpl)
 })
-class CounterDemo extends component() {}
+class CounterDemo extends HTMLElement {}
 
 function counterDemoImpl() {
   const counterRef = createRef<Counter>()
