@@ -44,7 +44,7 @@ function counterImpl(self: Counter) {
   override(self, {
     reset() {
       setState('count', 0),
-    }
+    },
 
     increment(delta = 1) {
       setState('count', (it) => it + delta),
