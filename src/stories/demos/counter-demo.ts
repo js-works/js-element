@@ -1,4 +1,4 @@
-import { elem, prop, method, setMethods, Attrs } from 'js-element'
+import { elem, prop, method, override, Attrs } from 'js-element'
 import { useOnInit, useState } from 'js-element/hooks'
 import { createRef, html, lit, ref } from 'js-element/lit'
 
@@ -22,24 +22,24 @@ class Counter extends HTMLElement {
   reset!: () => void
 
   @method
-  increment!: () => void
-
-  @method
-  decrement!: () => void
+  increment!: (delta?: number) => void
 }
 
 function counterImpl(self: Counter) {
-  console.log('counterImpl')
   const [state, setState] = useState({
     count: 0
   })
 
   const onClick = () => setState('count', (it) => it + 1)
 
-  setMethods(self, {
-    reset: () => setState('count', 0),
-    increment: () => setState('count', (it) => it + 1),
-    decrement: () => setState('count', (it) => it - 1)
+  override(self, {
+    reset() {
+      setState('count', 0)
+    },
+
+    increment(delta = 1) {
+      setState('count', (it) => it + delta)
+    }
   })
 
   useOnInit(() => {
@@ -64,7 +64,7 @@ function counterDemoImpl() {
   const counterRef = createRef<Counter>()
 
   const onResetClick = () => counterRef.value!.reset()
-  const onDecrementClick = () => counterRef.value!.decrement()
+  const onDecrementClick = () => counterRef.value!.increment(-1)
   const onIncrementClick = () => counterRef.value!.increment()
 
   return () => html`

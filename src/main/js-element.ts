@@ -1,7 +1,7 @@
 // === exports =======================================================
 
 // functions and singletons
-export { createCtx, elem, intercept, method, prop, setMethods, Attrs }
+export { createCtx, elem, intercept, method, prop, override, Attrs }
 
 // types
 export { Ctx, Ctrl, Listener }
@@ -235,9 +235,8 @@ function method(proto: HTMLElement, propName: string): void {}
 
 // === other public functions ========================================
 
-// TODO - types
-function setMethods<T extends HTMLElement>(obj: T, methods: Partial<T>) {
-  Object.assign(obj, methods)
+function override<T>(obj: T, overrides: Partial<T>) {
+  Object.assign(obj, overrides)
 }
 
 function intercept(point: 'init' | 'render', fn: InterceptFn) {

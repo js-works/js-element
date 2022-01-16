@@ -10,7 +10,7 @@ and it is currently not meant to ever be used in production.
 ## Example (simple counter)
 
 ```tsx
-import { elem, method, prop, setMethods, Attrs } from 'js-element'
+import { elem, method, prop, override, Attrs } from 'js-element'
 import { html, lit } from 'js-element/lit'
 import { useState } from 'js-element/hooks'
 import counterStyles from './counter.css'
@@ -41,7 +41,7 @@ function counterImpl(self: Counter) {
 
   const onClick = () => setState('count', (it) => it + 1)
 
-  setMethods(self, {
+  override(self, {
     reset() {
       setState('count', 0),
     }
@@ -58,4 +58,3 @@ function counterImpl(self: Counter) {
   `
 }
 ```
-
