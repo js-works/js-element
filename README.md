@@ -20,7 +20,7 @@ import counterStyles from './counter.css'
   styles: counterStyles,
   impl: lit(counterImpl)
 })
-class Counter extends HTMLElement<{
+class Counter extends HTMLElement {
   @prop({ attr: Attrs.string, refl: true })
   labelText = 'Counter'
 
